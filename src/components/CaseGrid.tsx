@@ -3,7 +3,6 @@ import { CaseCard } from "./CaseCard";
 import { PriceFilter } from "./PriceFilter";
 
 const cases = [
-  // Existing cases
   {
     id: 1,
     name: "Starter Case",
@@ -15,9 +14,9 @@ const cases = [
   {
     id: 2,
     name: "Premium Tech",
-    price: 1200,
+    price: 12000,
     image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
-    bestDrop: "$24,000 Value",
+    bestDrop: "$240,000 Value",
     category: "premium"
   },
   {
@@ -40,49 +39,49 @@ const cases = [
   {
     id: 5,
     name: "WGTV Exclusive",
-    price: 2500,
+    price: 8500,
     image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
-    bestDrop: "$50,000 Value",
+    bestDrop: "$170,000 Value",
     category: "premium"
   },
   {
     id: 6,
     name: "ZOID Special",
-    price: 1800,
+    price: 7800,
     image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
-    bestDrop: "$35,000 Value",
+    bestDrop: "$156,000 Value",
     category: "premium"
   },
   {
     id: 7,
     name: "XPOSED Mystery",
-    price: 3000,
+    price: 9000,
     image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e",
-    bestDrop: "$60,000 Value",
+    bestDrop: "$180,000 Value",
     category: "premium"
   },
   {
     id: 8,
     name: "YASSUO Challenge",
-    price: 2000,
+    price: 8000,
     image: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7",
-    bestDrop: "$40,000 Value",
+    bestDrop: "$160,000 Value",
     category: "premium"
   },
   {
     id: 9,
     name: "Mr BEAST Mega",
-    price: 5000,
+    price: 11000,
     image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
-    bestDrop: "$100,000 Value",
+    bestDrop: "$220,000 Value",
     category: "premium"
   },
   {
     id: 10,
     name: "WWE Legends",
-    price: 1500,
+    price: 7500,
     image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
-    bestDrop: "$30,000 Value",
+    bestDrop: "$150,000 Value",
     category: "premium"
   },
   {
@@ -112,17 +111,17 @@ const cases = [
   {
     id: 14,
     name: "Content Creator",
-    price: 1200,
+    price: 6000,
     image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
-    bestDrop: "$12,000 Value",
+    bestDrop: "$120,000 Value",
     category: "premium"
   },
   {
     id: 15,
     name: "Pro Gamer",
-    price: 2000,
+    price: 8000,
     image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e",
-    bestDrop: "$20,000 Value",
+    bestDrop: "$160,000 Value",
     category: "premium"
   },
   // New Additional Cases
@@ -177,73 +176,73 @@ const cases = [
   {
     id: 22,
     name: "NINJA Special",
-    price: 2200,
+    price: 8200,
     image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e",
-    bestDrop: "$44,000 Value",
+    bestDrop: "$164,000 Value",
     category: "premium"
   },
   {
     id: 23,
     name: "POKIMANE Select",
-    price: 1900,
+    price: 7900,
     image: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7",
-    bestDrop: "$38,000 Value",
+    bestDrop: "$158,000 Value",
     category: "premium"
   },
   {
     id: 24,
     name: "SHROUD Elite",
-    price: 2800,
+    price: 8800,
     image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
-    bestDrop: "$56,000 Value",
+    bestDrop: "$176,000 Value",
     category: "premium"
   },
   {
     id: 25,
     name: "TFUE Legend",
-    price: 2300,
+    price: 8300,
     image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
-    bestDrop: "$46,000 Value",
+    bestDrop: "$166,000 Value",
     category: "premium"
   },
   {
     id: 26,
     name: "ASMONGOLD Gold",
-    price: 2100,
+    price: 8100,
     image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e",
-    bestDrop: "$42,000 Value",
+    bestDrop: "$162,000 Value",
     category: "premium"
   },
   {
     id: 27,
     name: "SUMMIT1G Peak",
-    price: 2600,
+    price: 8600,
     image: "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7",
-    bestDrop: "$52,000 Value",
+    bestDrop: "$172,000 Value",
     category: "premium"
   },
   {
     id: 28,
     name: "TIMTHETATMAN Time",
-    price: 2400,
+    price: 8400,
     image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
-    bestDrop: "$48,000 Value",
+    bestDrop: "$168,000 Value",
     category: "premium"
   },
   {
     id: 29,
     name: "NICKMERCS Power",
-    price: 2700,
+    price: 8700,
     image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
-    bestDrop: "$54,000 Value",
+    bestDrop: "$174,000 Value",
     category: "premium"
   },
   {
     id: 30,
     name: "DRLUPO Ultra",
-    price: 2900,
+    price: 8900,
     image: "https://images.unsplash.com/photo-1485827404703-89b55fcc595e",
-    bestDrop: "$58,000 Value",
+    bestDrop: "$178,000 Value",
     category: "premium"
   }
 ];
