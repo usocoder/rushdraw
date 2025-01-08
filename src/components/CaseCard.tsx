@@ -3,10 +3,10 @@ import { Case } from "../types/case";
 
 interface CaseCardProps extends Case {}
 
-export const CaseCard = ({ name, price, image, bestDrop, items }: CaseCardProps) => {
-  const bestItem = items.reduce((prev, current) => 
+export const CaseCard = ({ name, price, image, bestDrop, items = [] }: CaseCardProps) => {
+  const bestItem = items?.reduce((prev, current) => 
     current.multiplier > prev.multiplier ? current : prev
-  );
+  , items[0]);
 
   return (
     <motion.div
@@ -28,7 +28,7 @@ export const CaseCard = ({ name, price, image, bestDrop, items }: CaseCardProps)
       <h3 className="text-lg font-semibold text-white mb-2">{name}</h3>
       <div className="text-secondary text-sm space-y-1 mb-4">
         <p>Best drop: {bestDrop}</p>
-        <p>Top multiplier: {bestItem.multiplier}x</p>
+        <p>Top multiplier: {bestItem?.multiplier || 0}x</p>
         <p>Legendary odds: {(items.find(item => item.rarity === 'legendary')?.odds || 0) * 100}%</p>
       </div>
       <div className="mt-auto">
