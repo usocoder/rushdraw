@@ -5,7 +5,7 @@ import { CaseOpeningModal } from "./CaseOpeningModal";
 
 interface CaseCardProps extends Case {}
 
-export const CaseCard = ({ name, price, image, bestDrop, items = [] }: CaseCardProps) => {
+export const CaseCard = ({ name, price, image, bestDrop, items = [], id, category }: CaseCardProps) => {
   const [isOpeningCase, setIsOpeningCase] = useState(false);
   
   const bestItem = items?.reduce((prev, current) => 
@@ -49,7 +49,7 @@ export const CaseCard = ({ name, price, image, bestDrop, items = [] }: CaseCardP
       <CaseOpeningModal
         isOpen={isOpeningCase}
         onOpenChange={setIsOpeningCase}
-        caseData={{ name, price, image, bestDrop, items }}
+        caseData={{ id, name, price, image, bestDrop, items, category }}
       />
     </>
   );

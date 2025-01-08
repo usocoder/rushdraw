@@ -5,6 +5,7 @@ export interface CaseItem {
   odds: number;
   multiplier: number;
   rarity: 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary';
+  image: string;
 }
 
 export interface Case {

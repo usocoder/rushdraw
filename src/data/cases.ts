@@ -6,7 +6,7 @@ export const cases: Case[] = [
     name: "Starter Case",
     price: 1,
     image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
-    bestDrop: "$20 Value",
+    bestDrop: "$5,000 Value",
     category: "budget",
     items: [
       {
@@ -15,31 +15,35 @@ export const cases: Case[] = [
         value: 0.1,
         odds: 0.45,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
         name: "Medium Cash Prize",
-        value: 0.5,
+        value: 2.5,
         odds: 0.35,
-        multiplier: 0.5,
-        rarity: "common"
+        multiplier: 2.5,
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
         name: "Large Cash Prize",
-        value: 2,
-        odds: 0.15,
-        multiplier: 2,
-        rarity: "uncommon"
+        value: 50,
+        odds: 0.195,
+        multiplier: 50,
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
         name: "Jackpot Prize",
-        value: 20,
-        odds: 0.05,
-        multiplier: 20,
-        rarity: "legendary"
+        value: 5000,
+        odds: 0.005,
+        multiplier: 5000,
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -57,7 +61,8 @@ export const cases: Case[] = [
         value: 1200,
         odds: 0.45,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -65,7 +70,8 @@ export const cases: Case[] = [
         value: 18000,
         odds: 0.35,
         multiplier: 1.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -73,7 +79,8 @@ export const cases: Case[] = [
         value: 36000,
         odds: 0.195,
         multiplier: 3,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -81,7 +88,8 @@ export const cases: Case[] = [
         value: 240000,
         odds: 0.005,
         multiplier: 20,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -99,7 +107,8 @@ export const cases: Case[] = [
         value: 5,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -107,7 +116,8 @@ export const cases: Case[] = [
         value: 25,
         odds: 0.35,
         multiplier: 0.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -115,7 +125,8 @@ export const cases: Case[] = [
         value: 100,
         odds: 0.15,
         multiplier: 2,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -123,7 +134,8 @@ export const cases: Case[] = [
         value: 500,
         odds: 0.05,
         multiplier: 10,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -141,7 +153,8 @@ export const cases: Case[] = [
         value: 50,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -149,7 +162,8 @@ export const cases: Case[] = [
         value: 250,
         odds: 0.35,
         multiplier: 0.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -157,7 +171,8 @@ export const cases: Case[] = [
         value: 1000,
         odds: 0.15,
         multiplier: 2,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -165,7 +180,8 @@ export const cases: Case[] = [
         value: 5000,
         odds: 0.05,
         multiplier: 10,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -183,7 +199,8 @@ export const cases: Case[] = [
         value: 1000,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -191,7 +208,8 @@ export const cases: Case[] = [
         value: 5000,
         odds: 0.35,
         multiplier: 1.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -199,7 +217,8 @@ export const cases: Case[] = [
         value: 20000,
         odds: 0.195,
         multiplier: 3,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -207,7 +226,8 @@ export const cases: Case[] = [
         value: 100000,
         odds: 0.005,
         multiplier: 20,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -225,7 +245,8 @@ export const cases: Case[] = [
         value: 800,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -233,7 +254,8 @@ export const cases: Case[] = [
         value: 4000,
         odds: 0.35,
         multiplier: 1.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -241,7 +263,8 @@ export const cases: Case[] = [
         value: 16000,
         odds: 0.195,
         multiplier: 3,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -249,7 +272,8 @@ export const cases: Case[] = [
         value: 80000,
         odds: 0.005,
         multiplier: 20,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -267,7 +291,8 @@ export const cases: Case[] = [
         value: 900,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -275,7 +300,8 @@ export const cases: Case[] = [
         value: 4500,
         odds: 0.35,
         multiplier: 1.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -283,7 +309,8 @@ export const cases: Case[] = [
         value: 18000,
         odds: 0.195,
         multiplier: 3,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -291,7 +318,8 @@ export const cases: Case[] = [
         value: 90000,
         odds: 0.005,
         multiplier: 20,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -309,7 +337,8 @@ export const cases: Case[] = [
         value: 800,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -317,7 +346,8 @@ export const cases: Case[] = [
         value: 4000,
         odds: 0.35,
         multiplier: 1.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -325,7 +355,8 @@ export const cases: Case[] = [
         value: 16000,
         odds: 0.195,
         multiplier: 3,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -333,7 +364,8 @@ export const cases: Case[] = [
         value: 80000,
         odds: 0.005,
         multiplier: 20,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -351,7 +383,8 @@ export const cases: Case[] = [
         value: 1100,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -359,7 +392,8 @@ export const cases: Case[] = [
         value: 5500,
         odds: 0.35,
         multiplier: 1.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -367,7 +401,8 @@ export const cases: Case[] = [
         value: 22000,
         odds: 0.195,
         multiplier: 3,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -375,7 +410,8 @@ export const cases: Case[] = [
         value: 110000,
         odds: 0.005,
         multiplier: 20,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -393,7 +429,8 @@ export const cases: Case[] = [
         value: 750,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -401,7 +438,8 @@ export const cases: Case[] = [
         value: 3750,
         odds: 0.35,
         multiplier: 1.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -409,7 +447,8 @@ export const cases: Case[] = [
         value: 15000,
         odds: 0.195,
         multiplier: 3,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -417,7 +456,8 @@ export const cases: Case[] = [
         value: 75000,
         odds: 0.005,
         multiplier: 20,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -435,7 +475,8 @@ export const cases: Case[] = [
         value: 2.5,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -443,7 +484,8 @@ export const cases: Case[] = [
         value: 12.5,
         odds: 0.35,
         multiplier: 0.5,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -451,7 +493,8 @@ export const cases: Case[] = [
         value: 50,
         odds: 0.15,
         multiplier: 2,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -459,7 +502,8 @@ export const cases: Case[] = [
         value: 250,
         odds: 0.05,
         multiplier: 10,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -477,7 +521,8 @@ export const cases: Case[] = [
         value: 10,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -485,7 +530,8 @@ export const cases: Case[] = [
         value: 50,
         odds: 0.35,
         multiplier: 0.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -493,7 +539,8 @@ export const cases: Case[] = [
         value: 200,
         odds: 0.15,
         multiplier: 2,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -501,7 +548,8 @@ export const cases: Case[] = [
         value: 1000,
         odds: 0.05,
         multiplier: 10,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -519,7 +567,8 @@ export const cases: Case[] = [
         value: 75,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -527,7 +576,8 @@ export const cases: Case[] = [
         value: 375,
         odds: 0.35,
         multiplier: 0.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -535,7 +585,8 @@ export const cases: Case[] = [
         value: 1500,
         odds: 0.15,
         multiplier: 2,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -543,7 +594,8 @@ export const cases: Case[] = [
         value: 7500,
         odds: 0.05,
         multiplier: 10,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -561,7 +613,8 @@ export const cases: Case[] = [
         value: 600,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -569,7 +622,8 @@ export const cases: Case[] = [
         value: 3000,
         odds: 0.35,
         multiplier: 1.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -577,7 +631,8 @@ export const cases: Case[] = [
         value: 12000,
         odds: 0.195,
         multiplier: 3,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -585,7 +640,8 @@ export const cases: Case[] = [
         value: 60000,
         odds: 0.005,
         multiplier: 20,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -603,7 +659,8 @@ export const cases: Case[] = [
         value: 800,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -611,7 +668,8 @@ export const cases: Case[] = [
         value: 4000,
         odds: 0.35,
         multiplier: 1.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -619,7 +677,8 @@ export const cases: Case[] = [
         value: 16000,
         odds: 0.195,
         multiplier: 3,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -627,7 +686,8 @@ export const cases: Case[] = [
         value: 80000,
         odds: 0.005,
         multiplier: 20,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -645,7 +705,8 @@ export const cases: Case[] = [
         value: 0.5,
         odds: 0.45,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -653,7 +714,8 @@ export const cases: Case[] = [
         value: 2.5,
         odds: 0.35,
         multiplier: 0.5,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -661,7 +723,8 @@ export const cases: Case[] = [
         value: 10,
         odds: 0.15,
         multiplier: 2,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -669,7 +732,8 @@ export const cases: Case[] = [
         value: 50,
         odds: 0.05,
         multiplier: 10,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -687,7 +751,8 @@ export const cases: Case[] = [
         value: 3,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -695,7 +760,8 @@ export const cases: Case[] = [
         value: 15,
         odds: 0.35,
         multiplier: 0.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -703,7 +769,8 @@ export const cases: Case[] = [
         value: 60,
         odds: 0.15,
         multiplier: 2,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -711,7 +778,8 @@ export const cases: Case[] = [
         value: 300,
         odds: 0.05,
         multiplier: 10,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -729,7 +797,8 @@ export const cases: Case[] = [
         value: 7.5,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -737,7 +806,8 @@ export const cases: Case[] = [
         value: 37.5,
         odds: 0.35,
         multiplier: 0.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -745,7 +815,8 @@ export const cases: Case[] = [
         value: 150,
         odds: 0.15,
         multiplier: 2,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -753,7 +824,8 @@ export const cases: Case[] = [
         value: 750,
         odds: 0.05,
         multiplier: 10,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -771,7 +843,8 @@ export const cases: Case[] = [
         value: 15,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -779,7 +852,8 @@ export const cases: Case[] = [
         value: 75,
         odds: 0.35,
         multiplier: 0.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -787,7 +861,8 @@ export const cases: Case[] = [
         value: 300,
         odds: 0.15,
         multiplier: 2,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -795,7 +870,8 @@ export const cases: Case[] = [
         value: 1500,
         odds: 0.05,
         multiplier: 10,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -813,7 +889,8 @@ export const cases: Case[] = [
         value: 30,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -821,7 +898,8 @@ export const cases: Case[] = [
         value: 150,
         odds: 0.35,
         multiplier: 0.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -829,7 +907,8 @@ export const cases: Case[] = [
         value: 600,
         odds: 0.15,
         multiplier: 2,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -837,7 +916,8 @@ export const cases: Case[] = [
         value: 3000,
         odds: 0.05,
         multiplier: 10,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -855,7 +935,8 @@ export const cases: Case[] = [
         value: 60,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -863,7 +944,8 @@ export const cases: Case[] = [
         value: 300,
         odds: 0.35,
         multiplier: 0.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -871,7 +953,8 @@ export const cases: Case[] = [
         value: 1200,
         odds: 0.15,
         multiplier: 2,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -879,7 +962,8 @@ export const cases: Case[] = [
         value: 6000,
         odds: 0.05,
         multiplier: 10,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -897,7 +981,8 @@ export const cases: Case[] = [
         value: 820,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -905,7 +990,8 @@ export const cases: Case[] = [
         value: 4100,
         odds: 0.35,
         multiplier: 1.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -913,7 +999,8 @@ export const cases: Case[] = [
         value: 16400,
         odds: 0.195,
         multiplier: 3,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -921,7 +1008,8 @@ export const cases: Case[] = [
         value: 82000,
         odds: 0.005,
         multiplier: 20,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -939,7 +1027,8 @@ export const cases: Case[] = [
         value: 790,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -947,7 +1036,8 @@ export const cases: Case[] = [
         value: 3950,
         odds: 0.35,
         multiplier: 1.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -955,7 +1045,8 @@ export const cases: Case[] = [
         value: 15800,
         odds: 0.195,
         multiplier: 3,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -963,7 +1054,8 @@ export const cases: Case[] = [
         value: 79000,
         odds: 0.005,
         multiplier: 20,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -981,7 +1073,8 @@ export const cases: Case[] = [
         value: 880,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -989,7 +1082,8 @@ export const cases: Case[] = [
         value: 4400,
         odds: 0.35,
         multiplier: 1.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -997,7 +1091,8 @@ export const cases: Case[] = [
         value: 17600,
         odds: 0.195,
         multiplier: 3,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -1005,7 +1100,8 @@ export const cases: Case[] = [
         value: 88000,
         odds: 0.005,
         multiplier: 20,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -1023,7 +1119,8 @@ export const cases: Case[] = [
         value: 830,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -1031,7 +1128,8 @@ export const cases: Case[] = [
         value: 4150,
         odds: 0.35,
         multiplier: 1.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -1039,7 +1137,8 @@ export const cases: Case[] = [
         value: 16600,
         odds: 0.195,
         multiplier: 3,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -1047,7 +1146,8 @@ export const cases: Case[] = [
         value: 83000,
         odds: 0.005,
         multiplier: 20,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -1065,7 +1165,8 @@ export const cases: Case[] = [
         value: 810,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -1073,7 +1174,8 @@ export const cases: Case[] = [
         value: 4050,
         odds: 0.35,
         multiplier: 1.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -1081,7 +1183,8 @@ export const cases: Case[] = [
         value: 16200,
         odds: 0.195,
         multiplier: 3,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -1089,7 +1192,8 @@ export const cases: Case[] = [
         value: 81000,
         odds: 0.005,
         multiplier: 20,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -1107,7 +1211,8 @@ export const cases: Case[] = [
         value: 860,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -1115,7 +1220,8 @@ export const cases: Case[] = [
         value: 4300,
         odds: 0.35,
         multiplier: 1.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -1123,7 +1229,8 @@ export const cases: Case[] = [
         value: 17200,
         odds: 0.195,
         multiplier: 3,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -1131,7 +1238,8 @@ export const cases: Case[] = [
         value: 86000,
         odds: 0.005,
         multiplier: 20,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -1149,7 +1257,8 @@ export const cases: Case[] = [
         value: 840,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -1157,7 +1266,8 @@ export const cases: Case[] = [
         value: 4200,
         odds: 0.35,
         multiplier: 1.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -1165,7 +1275,8 @@ export const cases: Case[] = [
         value: 16800,
         odds: 0.195,
         multiplier: 3,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -1173,7 +1284,8 @@ export const cases: Case[] = [
         value: 84000,
         odds: 0.005,
         multiplier: 20,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -1191,7 +1303,8 @@ export const cases: Case[] = [
         value: 870,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -1199,7 +1312,8 @@ export const cases: Case[] = [
         value: 4350,
         odds: 0.35,
         multiplier: 1.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -1207,7 +1321,8 @@ export const cases: Case[] = [
         value: 17400,
         odds: 0.195,
         multiplier: 3,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -1215,7 +1330,8 @@ export const cases: Case[] = [
         value: 87000,
         odds: 0.005,
         multiplier: 20,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   },
@@ -1233,7 +1349,8 @@ export const cases: Case[] = [
         value: 890,
         odds: 0.4,
         multiplier: 0.1,
-        rarity: "common"
+        rarity: "common",
+        image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
       },
       {
         id: 2,
@@ -1241,7 +1358,8 @@ export const cases: Case[] = [
         value: 4450,
         odds: 0.35,
         multiplier: 1.5,
-        rarity: "uncommon"
+        rarity: "uncommon",
+        image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
       },
       {
         id: 3,
@@ -1249,7 +1367,8 @@ export const cases: Case[] = [
         value: 17800,
         odds: 0.195,
         multiplier: 3,
-        rarity: "rare"
+        rarity: "rare",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       },
       {
         id: 4,
@@ -1257,7 +1376,8 @@ export const cases: Case[] = [
         value: 89000,
         odds: 0.005,
         multiplier: 20,
-        rarity: "legendary"
+        rarity: "legendary",
+        image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
       }
     ]
   }
