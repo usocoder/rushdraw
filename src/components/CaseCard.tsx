@@ -1,14 +1,13 @@
 import { motion } from "framer-motion";
+import { Case } from "../types/case";
 
-interface CaseCardProps {
-  name: string;
-  price: number;
-  image: string;
-  bestDrop: string;
-  category: string;
-}
+interface CaseCardProps extends Case {}
 
-export const CaseCard = ({ name, price, image, bestDrop, category }: CaseCardProps) => {
+export const CaseCard = ({ name, price, image, bestDrop, items }: CaseCardProps) => {
+  const bestItem = items.reduce((prev, current) => 
+    current.multiplier > prev.multiplier ? current : prev
+  );
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -27,7 +26,11 @@ export const CaseCard = ({ name, price, image, bestDrop, category }: CaseCardPro
         </div>
       </div>
       <h3 className="text-lg font-semibold text-white mb-2">{name}</h3>
-      <p className="text-secondary text-sm mb-2">Best drop: {bestDrop}</p>
+      <div className="text-secondary text-sm space-y-1 mb-4">
+        <p>Best drop: {bestDrop}</p>
+        <p>Top multiplier: {bestItem.multiplier}x</p>
+        <p>Legendary odds: {(items.find(item => item.rarity === 'legendary')?.odds || 0) * 100}%</p>
+      </div>
       <div className="mt-auto">
         <button className="w-full bg-primary hover:bg-accent text-white font-semibold py-2 rounded-lg transition-colors duration-300">
           Open Case
