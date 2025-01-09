@@ -1,4 +1,4 @@
-import { Dialog, DialogContent } from "./ui/dialog";
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from "./ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Case, CaseItem } from "../types/case";
@@ -37,18 +37,15 @@ export const CaseOpeningModal = ({
       .map(() => caseData.items[Math.floor(Math.random() * caseData.items.length)]);
     setCurrentItems(spinningItems);
 
-    // Speed control sequence
-    setTimeout(() => setSpinSpeed(15), 300);
-    setTimeout(() => setSpinSpeed(10), 600);
-    setTimeout(() => setSpinSpeed(5), 900);
+    // Fast spin for 4 seconds
+    setTimeout(() => setSpinSpeed(15), 1000);
+    setTimeout(() => setSpinSpeed(10), 2000);
+    setTimeout(() => setSpinSpeed(5), 3000);
     
-    // Start slowing down
-    setTimeout(() => setSpinSpeed(8), 2500);
-    setTimeout(() => setSpinSpeed(12), 3000);
-    setTimeout(() => setSpinSpeed(15), 3300);
-    setTimeout(() => setSpinSpeed(20), 3600);
-
-    // Stop and reveal winner
+    // Slow down over 3 seconds
+    setTimeout(() => setSpinSpeed(8), 4000);
+    setTimeout(() => setSpinSpeed(12), 5000);
+    setTimeout(() => setSpinSpeed(15), 6000);
     setTimeout(() => {
       setIsSpinning(false);
       const random = Math.random();
@@ -58,15 +55,18 @@ export const CaseOpeningModal = ({
         return random <= cumulative;
       }) || caseData.items[0];
       setFinalItem(winner);
-    }, 4000);
+    }, 7000);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] bg-card border-accent">
+        <DialogTitle className="text-2xl font-bold text-center">{caseData.name}</DialogTitle>
+        <DialogDescription className="text-center text-muted-foreground">
+          Opening your case...
+        </DialogDescription>
+        
         <div className="p-6">
-          <h2 className="text-2xl font-bold text-center mb-6">{caseData.name}</h2>
-          
           <div className="relative h-48 overflow-hidden rounded-lg bg-muted">
             {/* Center marker */}
             <div className="absolute top-1/2 left-1/2 w-0.5 h-full bg-primary -translate-x-1/2 -translate-y-1/2 z-10">
@@ -99,11 +99,11 @@ export const CaseOpeningModal = ({
                   transition={{ duration: 0.5 }}
                 >
                   <div className="flex flex-col items-center justify-center h-full">
-                    <div className="relative w-24 h-24 mb-2 overflow-hidden rounded-lg">
+                    <div className="relative w-full h-32 mb-2">
                       <img 
                         src={item.image || "https://images.unsplash.com/photo-1579621970795-87facc2f976d"}
                         alt={item.name}
-                        className="object-cover w-full h-full"
+                        className="w-full h-full object-cover rounded-lg"
                       />
                     </div>
                     <h3 className="text-lg font-semibold text-center mb-1">{item.name}</h3>
@@ -130,7 +130,7 @@ export const CaseOpeningModal = ({
                 <img 
                   src={finalItem.image || "https://images.unsplash.com/photo-1579621970795-87facc2f976d"}
                   alt={finalItem.name}
-                  className="w-32 h-32 object-cover rounded-lg"
+                  className="w-48 h-48 object-cover rounded-lg"
                 />
               </div>
               <h3 className="text-xl font-bold mb-2">
