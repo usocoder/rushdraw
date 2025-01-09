@@ -1,32 +1,30 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { Button } from "./ui/button";
+import { CryptoDeposit } from "./CryptoDeposit";
 
 export const Hero = () => {
+  const [isDepositOpen, setIsDepositOpen] = useState(false);
+
   return (
-    <div className="relative overflow-hidden py-20 px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
-          className="text-center"
-        >
-          <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
-            <span className="text-primary">Rush</span>Drop
-          </h1>
-          <p className="mt-6 text-lg leading-8 text-secondary">
-            Open cases and win amazing prizes. From budget-friendly to premium cases,
-            there's something for everyone.
-          </p>
-          <div className="mt-10 flex items-center justify-center gap-x-6">
-            <a
-              href="#cases"
-              className="rounded-md bg-primary px-6 py-3 text-sm font-semibold text-white shadow-sm hover:bg-accent transition-colors duration-300"
-            >
-              Explore Cases
-            </a>
-          </div>
-        </motion.div>
+    <div className="relative overflow-hidden bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <div className="container mx-auto px-4 py-16 text-center">
+        <h1 className="text-4xl font-bold tracking-tight sm:text-6xl mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-pink-600">
+          Open Cases, Win Big
+        </h1>
+        <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
+          Experience the thrill of opening cases and winning incredible rewards. Start your journey now!
+        </p>
+        <div className="flex justify-center gap-4">
+          <Button size="lg" onClick={() => setIsDepositOpen(true)}>
+            Deposit Crypto
+          </Button>
+        </div>
       </div>
+
+      <CryptoDeposit 
+        isOpen={isDepositOpen}
+        onOpenChange={setIsDepositOpen}
+      />
     </div>
   );
 };

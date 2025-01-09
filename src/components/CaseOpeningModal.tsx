@@ -17,7 +17,7 @@ export const CaseOpeningModal = ({
   const [isSpinning, setIsSpinning] = useState(false);
   const [currentItems, setCurrentItems] = useState<CaseItem[]>([]);
   const [finalItem, setFinalItem] = useState<CaseItem | null>(null);
-  const [spinSpeed, setSpinSpeed] = useState(4);
+  const [spinSpeed, setSpinSpeed] = useState(20);
 
   useEffect(() => {
     if (isOpen) {
@@ -25,31 +25,32 @@ export const CaseOpeningModal = ({
     } else {
       setIsSpinning(false);
       setFinalItem(null);
-      setSpinSpeed(4);
+      setSpinSpeed(20);
     }
   }, [isOpen]);
 
   const startSpinning = () => {
     setIsSpinning(true);
     // Generate random items for the spinning animation
-    const spinningItems = Array(50)
+    const spinningItems = Array(100)
       .fill(null)
       .map(() => caseData.items[Math.floor(Math.random() * caseData.items.length)]);
     setCurrentItems(spinningItems);
 
-    // Speed up initially
-    setTimeout(() => setSpinSpeed(2), 500);
-    setTimeout(() => setSpinSpeed(1), 1000);
-
+    // Speed control sequence
+    setTimeout(() => setSpinSpeed(15), 300);
+    setTimeout(() => setSpinSpeed(10), 600);
+    setTimeout(() => setSpinSpeed(5), 900);
+    
     // Start slowing down
-    setTimeout(() => setSpinSpeed(2), 2500);
-    setTimeout(() => setSpinSpeed(3), 3000);
-    setTimeout(() => setSpinSpeed(4), 3500);
+    setTimeout(() => setSpinSpeed(8), 2500);
+    setTimeout(() => setSpinSpeed(12), 3000);
+    setTimeout(() => setSpinSpeed(15), 3300);
+    setTimeout(() => setSpinSpeed(20), 3600);
 
     // Stop and reveal winner
     setTimeout(() => {
       setIsSpinning(false);
-      // Select a random item as the winner based on odds
       const random = Math.random();
       let cumulative = 0;
       const winner = caseData.items.find((item) => {
@@ -77,11 +78,12 @@ export const CaseOpeningModal = ({
             <motion.div
               className="flex items-center absolute top-1/2 -translate-y-1/2"
               animate={{
-                x: isSpinning ? [0, -2000] : -240,
+                x: isSpinning ? [0, -4000] : -240,
               }}
               transition={{
                 duration: isSpinning ? spinSpeed : 0.5,
                 ease: isSpinning ? "linear" : "easeOut",
+                repeat: isSpinning ? Infinity : 0,
               }}
             >
               {(isSpinning ? currentItems : finalItem ? [finalItem] : []).map((item, index) => (
