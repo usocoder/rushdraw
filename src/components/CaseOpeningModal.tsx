@@ -2,6 +2,9 @@ import { Dialog, DialogContent, DialogTitle, DialogDescription } from "./ui/dial
 import { motion, AnimatePresence } from "framer-motion";
 import { useState, useEffect } from "react";
 import { Case, CaseItem } from "../types/case";
+import { useBalance } from "@/contexts/BalanceContext";
+import { useToast } from "./ui/use-toast";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface CaseOpeningModalProps {
   isOpen: boolean;
@@ -18,18 +21,48 @@ export const CaseOpeningModal = ({
   const [currentItems, setCurrentItems] = useState<CaseItem[]>([]);
   const [finalItem, setFinalItem] = useState<CaseItem | null>(null);
   const [spinSpeed, setSpinSpeed] = useState(20);
+  const { balance, createTransaction } = useBalance();
+  const { user } = useAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (isOpen) {
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please sign in to open cases",
+          variant: "destructive",
+        });
+        onOpenChange(false);
+        return;
+      }
+      
+      if (balance < caseData.price) {
+        toast({
+          title: "Insufficient balance",
+          description: "Please deposit more funds to open this case",
+          variant: "destructive",
+        });
+        onOpenChange(false);
+        return;
+      }
+      
       startSpinning();
     } else {
       setIsSpinning(false);
       setFinalItem(null);
       setSpinSpeed(20);
     }
-  }, [isOpen]);
+  }, [isOpen, balance, caseData.price, user]);
 
-  const startSpinning = () => {
+  const startSpinning = async () => {
+    // Create transaction first
+    const success = await createTransaction('case_open', caseData.price);
+    if (!success) {
+      onOpenChange(false);
+      return;
+    }
+
     setIsSpinning(true);
     // Generate random items for the spinning animation
     const spinningItems = Array(100)
