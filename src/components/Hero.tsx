@@ -1,9 +1,12 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { CryptoDeposit } from "./CryptoDeposit";
+import { useAuth } from "@/contexts/AuthContext";
+import { LogIn, UserPlus, ArrowDown, ArrowUp } from "lucide-react";
 
 export const Hero = () => {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
+  const { user, signOut } = useAuth();
 
   return (
     <div className="relative overflow-hidden bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -15,14 +18,37 @@ export const Hero = () => {
           Experience the thrill of opening cases and winning incredible rewards. Start your journey now!
         </p>
         <div className="flex justify-center gap-4">
-          <Button size="lg" onClick={() => setIsDepositOpen(true)}>
-            Deposit Crypto
-          </Button>
+          {user ? (
+            <>
+              <Button size="lg" onClick={() => setIsDepositOpen(true)}>
+                <ArrowUp className="mr-2" />
+                Deposit
+              </Button>
+              <Button size="lg" variant="outline">
+                <ArrowDown className="mr-2" />
+                Withdraw
+              </Button>
+              <Button size="lg" variant="secondary" onClick={() => signOut()}>
+                Sign Out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button size="lg" onClick={() => window.location.href = "https://biczkhfnrmsenbejoshe.supabase.co/auth/v1/authorize?provider=google"}>
+                <LogIn className="mr-2" />
+                Login
+              </Button>
+              <Button size="lg" variant="outline" onClick={() => window.location.href = "https://biczkhfnrmsenbejoshe.supabase.co/auth/v1/authorize?provider=google"}>
+                <UserPlus className="mr-2" />
+                Register
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
       <CryptoDeposit 
-        isOpen={isDepositOpen}
+        isOpen={isDepositOpen && !!user}
         onOpenChange={setIsDepositOpen}
       />
     </div>
