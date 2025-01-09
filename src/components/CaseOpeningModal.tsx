@@ -17,6 +17,7 @@ export const CaseOpeningModal = ({
   const [isSpinning, setIsSpinning] = useState(false);
   const [currentItems, setCurrentItems] = useState<CaseItem[]>([]);
   const [finalItem, setFinalItem] = useState<CaseItem | null>(null);
+  const [spinSpeed, setSpinSpeed] = useState(4);
 
   useEffect(() => {
     if (isOpen) {
@@ -24,6 +25,7 @@ export const CaseOpeningModal = ({
     } else {
       setIsSpinning(false);
       setFinalItem(null);
+      setSpinSpeed(4);
     }
   }, [isOpen]);
 
@@ -35,7 +37,16 @@ export const CaseOpeningModal = ({
       .map(() => caseData.items[Math.floor(Math.random() * caseData.items.length)]);
     setCurrentItems(spinningItems);
 
-    // Simulate the spinning and stopping
+    // Speed up initially
+    setTimeout(() => setSpinSpeed(2), 500);
+    setTimeout(() => setSpinSpeed(1), 1000);
+
+    // Start slowing down
+    setTimeout(() => setSpinSpeed(2), 2500);
+    setTimeout(() => setSpinSpeed(3), 3000);
+    setTimeout(() => setSpinSpeed(4), 3500);
+
+    // Stop and reveal winner
     setTimeout(() => {
       setIsSpinning(false);
       // Select a random item as the winner based on odds
@@ -56,8 +67,11 @@ export const CaseOpeningModal = ({
           <h2 className="text-2xl font-bold text-center mb-6">{caseData.name}</h2>
           
           <div className="relative h-48 overflow-hidden rounded-lg bg-muted">
-            {/* Spinner overlay */}
-            <div className="absolute top-1/2 left-1/2 w-0.5 h-full bg-primary -translate-x-1/2 -translate-y-1/2 z-10" />
+            {/* Center marker */}
+            <div className="absolute top-1/2 left-1/2 w-0.5 h-full bg-primary -translate-x-1/2 -translate-y-1/2 z-10">
+              <div className="absolute top-0 left-1/2 w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-primary rotate-45"></div>
+              <div className="absolute bottom-0 left-1/2 w-4 h-4 -translate-x-1/2 translate-y-1/2 bg-primary rotate-45"></div>
+            </div>
             
             {/* Items container */}
             <motion.div
@@ -66,7 +80,7 @@ export const CaseOpeningModal = ({
                 x: isSpinning ? [0, -2000] : -240,
               }}
               transition={{
-                duration: isSpinning ? 4 : 0.5,
+                duration: isSpinning ? spinSpeed : 0.5,
                 ease: isSpinning ? "linear" : "easeOut",
               }}
             >
@@ -82,12 +96,19 @@ export const CaseOpeningModal = ({
                   animate={!isSpinning && { scale: 1, opacity: 1 }}
                   transition={{ duration: 0.5 }}
                 >
-                  <div className="text-center">
-                    <h3 className="text-lg font-semibold mb-2">{item.name}</h3>
+                  <div className="flex flex-col items-center justify-center h-full">
+                    <div className="relative w-24 h-24 mb-2 overflow-hidden rounded-lg">
+                      <img 
+                        src={item.image || "https://images.unsplash.com/photo-1579621970795-87facc2f976d"}
+                        alt={item.name}
+                        className="object-cover w-full h-full"
+                      />
+                    </div>
+                    <h3 className="text-lg font-semibold text-center mb-1">{item.name}</h3>
                     <p className="text-2xl font-bold text-primary">
                       {item.multiplier}x
                     </p>
-                    <p className="text-sm text-muted-foreground mt-2">
+                    <p className="text-sm text-muted-foreground">
                       ${(caseData.price * item.multiplier).toFixed(2)}
                     </p>
                   </div>
@@ -103,6 +124,13 @@ export const CaseOpeningModal = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
             >
+              <div className="flex items-center justify-center mb-4">
+                <img 
+                  src={finalItem.image || "https://images.unsplash.com/photo-1579621970795-87facc2f976d"}
+                  alt={finalItem.name}
+                  className="w-32 h-32 object-cover rounded-lg"
+                />
+              </div>
               <h3 className="text-xl font-bold mb-2">
                 You won: {finalItem.name}!
               </h3>
