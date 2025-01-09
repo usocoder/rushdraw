@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from 'react'
-import { supabase } from '@/integrations/supabase/client'
+import { supabase } from '@/lib/supabase'
 import { useAuth } from './AuthContext'
 import { Balance, Transaction } from '@/types/supabase'
 import { useToast } from '@/components/ui/use-toast'
