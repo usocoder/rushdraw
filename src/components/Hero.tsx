@@ -3,12 +3,13 @@ import { Button } from "./ui/button";
 import { CryptoDeposit } from "./CryptoDeposit";
 import { useAuth } from "@/contexts/AuthContext";
 import { LogIn, UserPlus, ArrowDown, ArrowUp } from "lucide-react";
-import { useToast } from "./ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -31,8 +32,11 @@ export const Hero = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Attempting authentication:', authMode);
+    
     try {
       if (authMode === 'register') {
+        console.log('Starting registration with email:', email);
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -42,30 +46,41 @@ export const Hero = () => {
             },
           },
         });
+        
+        console.log('Registration response:', { data, error });
+        
         if (error) throw error;
+        
         toast({
           title: "Registration successful",
           description: "Please check your email to verify your account.",
         });
       } else {
+        console.log('Starting login with email:', email);
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
+        
+        console.log('Login response:', { data, error });
+        
         if (error) throw error;
+        
         toast({
           title: "Login successful",
           description: "Welcome back!",
         });
       }
+      
       setIsAuthOpen(false);
       setEmail("");
       setPassword("");
       setUsername("");
     } catch (error: any) {
+      console.error('Authentication error:', error);
       toast({
         title: "Authentication Error",
-        description: error.message,
+        description: error.message || "An unexpected error occurred",
         variant: "destructive",
       });
     }
@@ -114,6 +129,11 @@ export const Hero = () => {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>{authMode === 'login' ? 'Login' : 'Register'}</DialogTitle>
+            <DialogDescription>
+              {authMode === 'login' 
+                ? 'Enter your credentials to access your account' 
+                : 'Create a new account to get started'}
+            </DialogDescription>
           </DialogHeader>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
@@ -123,6 +143,7 @@ export const Hero = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                placeholder="Enter your email"
                 required
               />
             </div>
@@ -133,7 +154,9 @@ export const Hero = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
+                placeholder="Enter your password"
                 required
+                minLength={6}
               />
             </div>
             {authMode === 'register' && (
@@ -144,6 +167,7 @@ export const Hero = () => {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
+                  placeholder="Choose a username"
                   required
                 />
               </div>
