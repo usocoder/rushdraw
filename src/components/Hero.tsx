@@ -12,6 +12,14 @@ export const Hero = () => {
 
   const handleAuth = async (action: 'login' | 'register') => {
     try {
+      // First show a toast to inform users that Google auth needs to be enabled
+      toast({
+        title: "Authentication Setup Required",
+        description: "Please enable Google authentication in your Supabase project settings first.",
+        variant: "destructive",
+      });
+      
+      // Still provide the link in case it gets enabled
       window.location.href = "https://biczkhfnrmsenbejoshe.supabase.co/auth/v1/authorize?provider=google";
     } catch (error) {
       toast({
