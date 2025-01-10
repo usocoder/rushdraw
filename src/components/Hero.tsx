@@ -35,9 +35,11 @@ export const Hero = () => {
     console.log('Attempting authentication:', authMode);
     
     try {
+      let authResponse;
+      
       if (authMode === 'register') {
         console.log('Starting registration with email:', email);
-        const { data, error } = await supabase.auth.signUp({
+        authResponse = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -46,32 +48,26 @@ export const Hero = () => {
             },
           },
         });
-        
-        console.log('Registration response:', { data, error });
-        
-        if (error) throw error;
-        
-        toast({
-          title: "Registration successful",
-          description: "Please check your email to verify your account.",
-        });
       } else {
         console.log('Starting login with email:', email);
-        const { data, error } = await supabase.auth.signInWithPassword({
+        authResponse = await supabase.auth.signInWithPassword({
           email,
           password,
         });
-        
-        console.log('Login response:', { data, error });
-        
-        if (error) throw error;
-        
-        toast({
-          title: "Login successful",
-          description: "Welcome back!",
-        });
       }
-      
+
+      const { data, error } = authResponse;
+      console.log(`${authMode} response:`, { data, error });
+
+      if (error) throw error;
+
+      toast({
+        title: authMode === 'register' ? "Registration successful" : "Login successful",
+        description: authMode === 'register' 
+          ? "Please check your email to verify your account."
+          : "Welcome back!",
+      });
+
       setIsAuthOpen(false);
       setEmail("");
       setPassword("");
