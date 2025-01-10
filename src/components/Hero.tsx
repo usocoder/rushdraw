@@ -3,10 +3,24 @@ import { Button } from "./ui/button";
 import { CryptoDeposit } from "./CryptoDeposit";
 import { useAuth } from "@/contexts/AuthContext";
 import { LogIn, UserPlus, ArrowDown, ArrowUp } from "lucide-react";
+import { useToast } from "./ui/use-toast";
 
 export const Hero = () => {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const { user, signOut } = useAuth();
+  const { toast } = useToast();
+
+  const handleAuth = async (action: 'login' | 'register') => {
+    try {
+      window.location.href = "https://biczkhfnrmsenbejoshe.supabase.co/auth/v1/authorize?provider=google";
+    } catch (error) {
+      toast({
+        title: "Authentication Error",
+        description: "Please try again later. If the problem persists, contact support.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="relative overflow-hidden bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -34,11 +48,11 @@ export const Hero = () => {
             </>
           ) : (
             <>
-              <Button size="lg" onClick={() => window.location.href = "https://biczkhfnrmsenbejoshe.supabase.co/auth/v1/authorize?provider=google"}>
+              <Button size="lg" onClick={() => handleAuth('login')}>
                 <LogIn className="mr-2" />
                 Login
               </Button>
-              <Button size="lg" variant="outline" onClick={() => window.location.href = "https://biczkhfnrmsenbejoshe.supabase.co/auth/v1/authorize?provider=google"}>
+              <Button size="lg" variant="outline" onClick={() => handleAuth('register')}>
                 <UserPlus className="mr-2" />
                 Register
               </Button>
