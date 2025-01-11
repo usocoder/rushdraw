@@ -33,11 +33,12 @@ export const Hero = () => {
 
   const getErrorMessage = (error: AuthError) => {
     if (error instanceof AuthApiError) {
+      console.log('Auth API Error:', error.status, error.message, error.code);
+      if (error.message.includes("Email not confirmed") || error.code === "email_not_confirmed") {
+        return "Please check your email and click the verification link before logging in.";
+      }
       switch (error.status) {
         case 400:
-          if (error.message.includes("Email not confirmed")) {
-            return "Please verify your email before logging in.";
-          }
           return "Invalid email or password. Please check your credentials.";
         case 422:
           return "Invalid email format.";
@@ -87,8 +88,9 @@ export const Hero = () => {
 
         toast({
           title: "Registration successful",
-          description: "Please check your email to verify your account.",
+          description: "Please check your email to verify your account before logging in.",
         });
+        setIsAuthOpen(false);
       } else {
         console.log('Starting login process');
         const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -105,9 +107,9 @@ export const Hero = () => {
           title: "Login successful",
           description: "Welcome back!",
         });
+        setIsAuthOpen(false);
       }
 
-      setIsAuthOpen(false);
       setEmail("");
       setPassword("");
       setUsername("");
