@@ -34,9 +34,15 @@ export const Hero = () => {
   const getErrorMessage = (error: AuthError) => {
     if (error instanceof AuthApiError) {
       console.log('Auth API Error:', error.status, error.message, error.code);
+      
+      if (error.code === "invalid_credentials") {
+        return "Invalid email or password. Please check your credentials and try again.";
+      }
+      
       if (error.message.includes("Email not confirmed") || error.code === "email_not_confirmed") {
         return "Please check your email and click the verification link before logging in.";
       }
+
       switch (error.status) {
         case 400:
           return "Invalid email or password. Please check your credentials.";
