@@ -34,11 +34,9 @@ export const Hero = () => {
     e.preventDefault();
     
     try {
-      let response;
-      
       if (authMode === 'register') {
         console.log('Starting registration process');
-        response = await supabase.auth.signUp({
+        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -48,37 +46,39 @@ export const Hero = () => {
           },
         });
 
-        if (response.error) throw response.error;
+        if (signUpError) throw signUpError;
 
-        // Create profile after successful registration
-        if (response.data.user) {
+        if (signUpData.user) {
           const { error: profileError } = await supabase
             .from('profiles')
             .insert([
               {
-                id: response.data.user.id,
+                id: signUpData.user.id,
                 username,
               },
             ]);
 
           if (profileError) throw profileError;
         }
+
+        toast({
+          title: "Registration successful",
+          description: "Please check your email to verify your account.",
+        });
       } else {
         console.log('Starting login process');
-        response = await supabase.auth.signInWithPassword({
+        const { error: signInError } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
+
+        if (signInError) throw signInError;
+
+        toast({
+          title: "Login successful",
+          description: "Welcome back!",
+        });
       }
-
-      if (response.error) throw response.error;
-
-      toast({
-        title: authMode === 'register' ? "Registration successful" : "Login successful",
-        description: authMode === 'register' 
-          ? "Please check your email to verify your account."
-          : "Welcome back!",
-      });
 
       setIsAuthOpen(false);
       setEmail("");
@@ -93,6 +93,8 @@ export const Hero = () => {
       });
     }
   };
+
+  // ... keep existing code (JSX for the hero section and dialog)
 
   return (
     <div className="relative overflow-hidden bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
