@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { supabase } from "@/integrations/supabase/client"; // Updated import
+import { supabase } from "@/integrations/supabase/client";
 
 export const Hero = () => {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
@@ -32,14 +32,13 @@ export const Hero = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Attempting authentication:', authMode);
     
     try {
-      let authResponse;
+      let response;
       
       if (authMode === 'register') {
-        console.log('Starting registration with email:', email);
-        authResponse = await supabase.auth.signUp({
+        console.log('Starting registration process');
+        response = await supabase.auth.signUp({
           email,
           password,
           options: {
@@ -48,18 +47,31 @@ export const Hero = () => {
             },
           },
         });
+
+        if (response.error) throw response.error;
+
+        // Create profile after successful registration
+        if (response.data.user) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .insert([
+              {
+                id: response.data.user.id,
+                username,
+              },
+            ]);
+
+          if (profileError) throw profileError;
+        }
       } else {
-        console.log('Starting login with email:', email);
-        authResponse = await supabase.auth.signInWithPassword({
+        console.log('Starting login process');
+        response = await supabase.auth.signInWithPassword({
           email,
           password,
         });
       }
 
-      const { data, error } = authResponse;
-      console.log(`${authMode} response:`, { data, error });
-
-      if (error) throw error;
+      if (response.error) throw response.error;
 
       toast({
         title: authMode === 'register' ? "Registration successful" : "Login successful",
