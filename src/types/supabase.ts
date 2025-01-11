@@ -9,7 +9,6 @@ export type Json =
 export interface Profile {
   id: string
   username: string | null
-  avatar_url: string | null
   created_at: string
   updated_at: string
 }
@@ -30,4 +29,38 @@ export interface Transaction {
   status: 'pending' | 'completed' | 'failed'
   created_at: string
   updated_at: string
+}
+
+export type Database = {
+  public: {
+    Tables: {
+      profiles: {
+        Row: Profile
+        Insert: Omit<Profile, 'created_at' | 'updated_at'>
+        Update: Partial<Omit<Profile, 'created_at' | 'updated_at'>>
+      }
+      balances: {
+        Row: Balance
+        Insert: Omit<Balance, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<Balance, 'id' | 'created_at' | 'updated_at'>>
+      }
+      transactions: {
+        Row: Transaction
+        Insert: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>
+        Update: Partial<Omit<Transaction, 'id' | 'created_at' | 'updated_at'>>
+      }
+    }
+    Views: {
+      [_ in never]: never
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
+    }
+  }
 }
