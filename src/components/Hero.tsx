@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/integrations/supabase/client"; // Updated import
 
 export const Hero = () => {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
