@@ -14,6 +14,7 @@ import {
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { supabase } from "@/integrations/supabase/client";
+import { AuthError, AuthApiError } from "@supabase/supabase-js";
 
 export const Hero = () => {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
@@ -28,6 +29,23 @@ export const Hero = () => {
   const handleAuth = async (action: 'login' | 'register') => {
     setAuthMode(action);
     setIsAuthOpen(true);
+  };
+
+  const getErrorMessage = (error: AuthError) => {
+    if (error instanceof AuthApiError) {
+      switch (error.status) {
+        case 400:
+          if (error.message.includes("Email not confirmed")) {
+            return "Please verify your email before logging in.";
+          }
+          return "Invalid email or password. Please check your credentials.";
+        case 422:
+          return "Invalid email format.";
+        default:
+          return error.message;
+      }
+    }
+    return "An unexpected error occurred. Please try again.";
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -46,7 +64,10 @@ export const Hero = () => {
           },
         });
 
-        if (signUpError) throw signUpError;
+        if (signUpError) {
+          console.error('Registration error:', signUpError);
+          throw signUpError;
+        }
 
         if (signUpData.user) {
           const { error: profileError } = await supabase
@@ -58,7 +79,10 @@ export const Hero = () => {
               },
             ]);
 
-          if (profileError) throw profileError;
+          if (profileError) {
+            console.error('Profile creation error:', profileError);
+            throw profileError;
+          }
         }
 
         toast({
@@ -72,7 +96,10 @@ export const Hero = () => {
           password,
         });
 
-        if (signInError) throw signInError;
+        if (signInError) {
+          console.error('Login error:', signInError);
+          throw signInError;
+        }
 
         toast({
           title: "Login successful",
@@ -88,7 +115,7 @@ export const Hero = () => {
       console.error('Authentication error:', error);
       toast({
         title: "Authentication Error",
-        description: error.message || "An unexpected error occurred",
+        description: getErrorMessage(error),
         variant: "destructive",
       });
     }
