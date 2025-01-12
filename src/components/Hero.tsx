@@ -1,135 +1,10 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { CryptoDeposit } from "./CryptoDeposit";
-import { useAuth } from "@/contexts/AuthContext";
-import { LogIn, UserPlus, ArrowDown, ArrowUp } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
-import { supabase } from "@/integrations/supabase/client";
-import { AuthError, AuthApiError } from "@supabase/supabase-js";
+import { ArrowDown, ArrowUp } from "lucide-react";
 
 export const Hero = () => {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
-  const [isAuthOpen, setIsAuthOpen] = useState(false);
-  const [authMode, setAuthMode] = useState<'login' | 'register'>('login');
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [username, setUsername] = useState("");
-  const { user, signOut } = useAuth();
-  const { toast } = useToast();
-
-  const handleAuth = async (action: 'login' | 'register') => {
-    setAuthMode(action);
-    setIsAuthOpen(true);
-  };
-
-  const getErrorMessage = (error: AuthError) => {
-    if (error instanceof AuthApiError) {
-      console.log('Auth API Error:', error.status, error.message, error.code);
-      
-      if (error.code === "invalid_credentials") {
-        return "Invalid email or password. Please check your credentials and try again.";
-      }
-      
-      if (error.message.includes("Email not confirmed") || error.code === "email_not_confirmed") {
-        return "Please check your email and click the verification link before logging in.";
-      }
-
-      switch (error.status) {
-        case 400:
-          return "Invalid email or password. Please check your credentials.";
-        case 422:
-          return "Invalid email format.";
-        default:
-          return error.message;
-      }
-    }
-    return "An unexpected error occurred. Please try again.";
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    try {
-      if (authMode === 'register') {
-        console.log('Starting registration process');
-        const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            data: {
-              username,
-            },
-          },
-        });
-
-        if (signUpError) {
-          console.error('Registration error:', signUpError);
-          throw signUpError;
-        }
-
-        if (signUpData.user) {
-          const { error: profileError } = await supabase
-            .from('profiles')
-            .insert([
-              {
-                id: signUpData.user.id,
-                username,
-              },
-            ]);
-
-          if (profileError) {
-            console.error('Profile creation error:', profileError);
-            throw profileError;
-          }
-        }
-
-        toast({
-          title: "Registration successful",
-          description: "Please check your email to verify your account before logging in.",
-        });
-        setIsAuthOpen(false);
-      } else {
-        console.log('Starting login process');
-        const { error: signInError } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (signInError) {
-          console.error('Login error:', signInError);
-          throw signInError;
-        }
-
-        toast({
-          title: "Login successful",
-          description: "Welcome back!",
-        });
-        setIsAuthOpen(false);
-      }
-
-      setEmail("");
-      setPassword("");
-      setUsername("");
-    } catch (error: any) {
-      console.error('Authentication error:', error);
-      toast({
-        title: "Authentication Error",
-        description: getErrorMessage(error),
-        variant: "destructive",
-      });
-    }
-  };
-
-  // ... keep existing code (JSX for the hero section and dialog)
 
   return (
     <div className="relative overflow-hidden bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -141,99 +16,19 @@ export const Hero = () => {
           Experience the thrill of opening cases and winning incredible rewards. Start your journey now!
         </p>
         <div className="flex justify-center gap-4">
-          {user ? (
-            <>
-              <Button size="lg" onClick={() => setIsDepositOpen(true)}>
-                <ArrowUp className="mr-2" />
-                Deposit
-              </Button>
-              <Button size="lg" variant="outline">
-                <ArrowDown className="mr-2" />
-                Withdraw
-              </Button>
-              <Button size="lg" variant="secondary" onClick={() => signOut()}>
-                Sign Out
-              </Button>
-            </>
-          ) : (
-            <>
-              <Button size="lg" onClick={() => handleAuth('login')}>
-                <LogIn className="mr-2" />
-                Login
-              </Button>
-              <Button size="lg" variant="outline" onClick={() => handleAuth('register')}>
-                <UserPlus className="mr-2" />
-                Register
-              </Button>
-            </>
-          )}
+          <Button size="lg" onClick={() => setIsDepositOpen(true)}>
+            <ArrowUp className="mr-2" />
+            Deposit
+          </Button>
+          <Button size="lg" variant="outline">
+            <ArrowDown className="mr-2" />
+            Withdraw
+          </Button>
         </div>
       </div>
 
-      <Dialog open={isAuthOpen} onOpenChange={setIsAuthOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>{authMode === 'login' ? 'Login' : 'Register'}</DialogTitle>
-            <DialogDescription>
-              {authMode === 'login' 
-                ? 'Enter your credentials to access your account' 
-                : 'Create a new account to get started'}
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Enter your email"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
-                required
-                minLength={6}
-              />
-            </div>
-            {authMode === 'register' && (
-              <div className="space-y-2">
-                <Label htmlFor="username">Username</Label>
-                <Input
-                  id="username"
-                  type="text"
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Choose a username"
-                  required
-                />
-              </div>
-            )}
-            <Button type="submit" className="w-full">
-              {authMode === 'login' ? 'Login' : 'Register'}
-            </Button>
-            <Button
-              type="button"
-              variant="link"
-              className="w-full"
-              onClick={() => setAuthMode(authMode === 'login' ? 'register' : 'login')}
-            >
-              {authMode === 'login' ? "Don't have an account? Register" : 'Already have an account? Login'}
-            </Button>
-          </form>
-        </DialogContent>
-      </Dialog>
-
       <CryptoDeposit 
-        isOpen={isDepositOpen && !!user}
+        isOpen={isDepositOpen}
         onOpenChange={setIsDepositOpen}
       />
     </div>
