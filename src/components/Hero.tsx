@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { CryptoDeposit } from "./CryptoDeposit";
-import { ArrowDown, ArrowUp } from "lucide-react";
+import { ArrowDown, ArrowUp, LogIn, UserPlus } from "lucide-react";
+import { RegisterModal } from "./RegisterModal";
+import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 
 export const Hero = () => {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const { user } = useBrowserAuth();
 
   return (
     <div className="relative overflow-hidden bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -16,20 +20,40 @@ export const Hero = () => {
           Experience the thrill of opening cases and winning incredible rewards. Start your journey now!
         </p>
         <div className="flex justify-center gap-4">
-          <Button size="lg" onClick={() => setIsDepositOpen(true)}>
-            <ArrowUp className="mr-2" />
-            Deposit
-          </Button>
-          <Button size="lg" variant="outline">
-            <ArrowDown className="mr-2" />
-            Withdraw
-          </Button>
+          {user ? (
+            <>
+              <Button size="lg" onClick={() => setIsDepositOpen(true)}>
+                <ArrowUp className="mr-2" />
+                Deposit
+              </Button>
+              <Button size="lg" variant="outline">
+                <ArrowDown className="mr-2" />
+                Withdraw
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button size="lg" onClick={() => setIsRegisterOpen(true)}>
+                <UserPlus className="mr-2" />
+                Register
+              </Button>
+              <Button size="lg" variant="outline">
+                <LogIn className="mr-2" />
+                Login
+              </Button>
+            </>
+          )}
         </div>
       </div>
 
       <CryptoDeposit 
         isOpen={isDepositOpen}
         onOpenChange={setIsDepositOpen}
+      />
+
+      <RegisterModal
+        isOpen={isRegisterOpen}
+        onOpenChange={setIsRegisterOpen}
       />
     </div>
   );
