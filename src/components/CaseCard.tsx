@@ -2,15 +2,27 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { Case } from "../types/case";
 import { CaseOpeningModal } from "./CaseOpeningModal";
+import { RegisterModal } from "./RegisterModal";
+import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 
 interface CaseCardProps extends Case {}
 
 export const CaseCard = ({ name, price, image, bestDrop, items = [], id, category }: CaseCardProps) => {
   const [isOpeningCase, setIsOpeningCase] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
+  const { user } = useBrowserAuth();
   
   const bestItem = items?.reduce((prev, current) => 
     current.multiplier > prev.multiplier ? current : prev
   , items[0]);
+
+  const handleOpenCase = () => {
+    if (!user) {
+      setShowRegister(true);
+    } else {
+      setIsOpeningCase(true);
+    }
+  };
 
   return (
     <>
@@ -39,7 +51,7 @@ export const CaseCard = ({ name, price, image, bestDrop, items = [], id, categor
         <div className="mt-auto">
           <button 
             className="w-full bg-primary hover:bg-accent text-white font-semibold py-2 rounded-lg transition-colors duration-300"
-            onClick={() => setIsOpeningCase(true)}
+            onClick={handleOpenCase}
           >
             Open Case
           </button>
@@ -50,6 +62,11 @@ export const CaseCard = ({ name, price, image, bestDrop, items = [], id, categor
         isOpen={isOpeningCase}
         onOpenChange={setIsOpeningCase}
         caseData={{ id, name, price, image, bestDrop, items, category }}
+      />
+
+      <RegisterModal
+        isOpen={showRegister}
+        onOpenChange={setShowRegister}
       />
     </>
   );

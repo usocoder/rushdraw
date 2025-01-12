@@ -4,7 +4,9 @@ import { useState, useEffect } from "react";
 import { Case, CaseItem } from "../types/case";
 import { useBalance } from "@/contexts/BalanceContext";
 import { useToast } from "./ui/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
+import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
+import { Button } from "./ui/button";
+import { Users } from "lucide-react";
 
 interface CaseOpeningModalProps {
   isOpen: boolean;
@@ -22,15 +24,17 @@ export const CaseOpeningModal = ({
   const [finalItem, setFinalItem] = useState<CaseItem | null>(null);
   const [spinSpeed, setSpinSpeed] = useState(20);
   const { balance, createTransaction } = useBalance();
-  const { user } = useAuth();
+  const { user } = useBrowserAuth();
   const { toast } = useToast();
+  const [isBattleMode, setIsBattleMode] = useState(false);
+  const [opponents, setOpponents] = useState<string[]>([]);
 
   useEffect(() => {
     if (isOpen) {
       if (!user) {
         toast({
-          title: "Authentication required",
-          description: "Please sign in to open cases",
+          title: "Registration required",
+          description: "Please register to open cases",
           variant: "destructive",
         });
         onOpenChange(false);
@@ -46,17 +50,16 @@ export const CaseOpeningModal = ({
         onOpenChange(false);
         return;
       }
-      
-      startSpinning();
     } else {
       setIsSpinning(false);
       setFinalItem(null);
       setSpinSpeed(20);
+      setIsBattleMode(false);
+      setOpponents([]);
     }
   }, [isOpen, balance, caseData.price, user]);
 
   const startSpinning = async () => {
-    // Create transaction first
     const success = await createTransaction('case_open', caseData.price);
     if (!success) {
       onOpenChange(false);
@@ -64,21 +67,22 @@ export const CaseOpeningModal = ({
     }
 
     setIsSpinning(true);
-    // Generate random items for the spinning animation
-    const spinningItems = Array(100)
+    
+    // Generate more items for longer anticipation
+    const spinningItems = Array(200)
       .fill(null)
       .map(() => caseData.items[Math.floor(Math.random() * caseData.items.length)]);
     setCurrentItems(spinningItems);
 
-    // Fast spin for 4 seconds
+    // Enhanced spinning animation sequence
     setTimeout(() => setSpinSpeed(15), 1000);
     setTimeout(() => setSpinSpeed(10), 2000);
     setTimeout(() => setSpinSpeed(5), 3000);
+    setTimeout(() => setSpinSpeed(3), 4000);
+    setTimeout(() => setSpinSpeed(2), 5000);
+    setTimeout(() => setSpinSpeed(1), 6000);
     
-    // Slow down over 3 seconds
-    setTimeout(() => setSpinSpeed(8), 4000);
-    setTimeout(() => setSpinSpeed(12), 5000);
-    setTimeout(() => setSpinSpeed(15), 6000);
+    // Final slowdown for maximum anticipation
     setTimeout(() => {
       setIsSpinning(false);
       const random = Math.random();
@@ -88,7 +92,41 @@ export const CaseOpeningModal = ({
         return random <= cumulative;
       }) || caseData.items[0];
       setFinalItem(winner);
+
+      // Battle mode results
+      if (isBattleMode) {
+        const opponentResults = opponents.map(() => {
+          const opponentRandom = Math.random();
+          let opponentCumulative = 0;
+          return caseData.items.find((item) => {
+            opponentCumulative += item.odds;
+            return opponentRandom <= opponentCumulative;
+          }) || caseData.items[0];
+        });
+
+        // Compare results
+        const results = [
+          { player: user.username, value: winner.value },
+          ...opponents.map((opponent, index) => ({
+            player: opponent,
+            value: opponentResults[index].value
+          }))
+        ].sort((a, b) => b.value - a.value);
+
+        toast({
+          title: "Battle Results",
+          description: `Winner: ${results[0].player} with $${results[0].value.toFixed(2)}!`,
+        });
+      }
     }, 7000);
+  };
+
+  const startBattle = (numOpponents: number) => {
+    // Generate bot opponents
+    const botNames = ["Bot_Alpha", "Bot_Beta", "Bot_Gamma", "Bot_Delta"];
+    setOpponents(botNames.slice(0, numOpponents));
+    setIsBattleMode(true);
+    startSpinning();
   };
 
   return (
@@ -96,9 +134,21 @@ export const CaseOpeningModal = ({
       <DialogContent className="sm:max-w-[600px] bg-card border-accent">
         <DialogTitle className="text-2xl font-bold text-center">{caseData.name}</DialogTitle>
         <DialogDescription className="text-center text-muted-foreground">
-          Opening your case...
+          {isBattleMode ? "Battle Mode" : "Opening your case..."}
         </DialogDescription>
         
+        {!isSpinning && !finalItem && (
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <Button onClick={() => startSpinning()}>
+              Solo Open
+            </Button>
+            <Button onClick={() => startBattle(1)}>
+              <Users className="mr-2 h-4 w-4" />
+              1v1 Battle
+            </Button>
+          </div>
+        )}
+
         <div className="p-6">
           <div className="relative h-48 overflow-hidden rounded-lg bg-muted">
             {/* Center marker */}
@@ -111,7 +161,7 @@ export const CaseOpeningModal = ({
             <motion.div
               className="flex items-center absolute top-1/2 -translate-y-1/2"
               animate={{
-                x: isSpinning ? [0, -4000] : -240,
+                x: isSpinning ? [0, -8000] : -240,
               }}
               transition={{
                 duration: isSpinning ? spinSpeed : 0.5,
@@ -134,7 +184,7 @@ export const CaseOpeningModal = ({
                   <div className="flex flex-col items-center justify-center h-full">
                     <div className="relative w-full h-32 mb-2">
                       <img 
-                        src={item.image || "https://images.unsplash.com/photo-1579621970795-87facc2f976d"}
+                        src={item.image}
                         alt={item.name}
                         className="w-full h-full object-cover rounded-lg"
                       />
@@ -161,7 +211,7 @@ export const CaseOpeningModal = ({
             >
               <div className="flex items-center justify-center mb-4">
                 <img 
-                  src={finalItem.image || "https://images.unsplash.com/photo-1579621970795-87facc2f976d"}
+                  src={finalItem.image}
                   alt={finalItem.name}
                   className="w-48 h-48 object-cover rounded-lg"
                 />
