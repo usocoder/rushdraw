@@ -12,12 +12,14 @@ interface CaseOpeningModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   caseData: Case;
+  isFreePlay?: boolean;
 }
 
 export const CaseOpeningModal = ({
   isOpen,
   onOpenChange,
   caseData,
+  isFreePlay = false,
 }: CaseOpeningModalProps) => {
   const [isSpinning, setIsSpinning] = useState(false);
   const [currentItems, setCurrentItems] = useState<CaseItem[]>([]);
@@ -30,7 +32,7 @@ export const CaseOpeningModal = ({
   const [opponents, setOpponents] = useState<string[]>([]);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && !isFreePlay) {
       if (!user) {
         toast({
           title: "Registration required",
@@ -50,20 +52,22 @@ export const CaseOpeningModal = ({
         onOpenChange(false);
         return;
       }
-    } else {
+    } else if (!isOpen) {
       setIsSpinning(false);
       setFinalItem(null);
       setSpinSpeed(20);
       setIsBattleMode(false);
       setOpponents([]);
     }
-  }, [isOpen, balance, caseData.price, user]);
+  }, [isOpen, balance, caseData.price, user, isFreePlay]);
 
   const startSpinning = async () => {
-    const success = await createTransaction('case_open', caseData.price);
-    if (!success) {
-      onOpenChange(false);
-      return;
+    if (!isFreePlay) {
+      const success = await createTransaction('case_open', caseData.price);
+      if (!success) {
+        onOpenChange(false);
+        return;
+      }
     }
 
     setIsSpinning(true);
@@ -130,16 +134,29 @@ export const CaseOpeningModal = ({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[600px] bg-card border-accent">
-        <DialogTitle className="text-2xl font-bold text-center">{caseData.name}</DialogTitle>
+        <DialogTitle className="text-2xl font-bold text-center">
+          {isFreePlay ? "Free Play - " : ""}{caseData.name}
+        </DialogTitle>
         <DialogDescription className="text-center text-muted-foreground">
-          {isBattleMode ? "Battle Mode" : "Opening your case..."}
+          {isBattleMode ? "Battle Mode" : isFreePlay ? "See what you could win!" : "Opening your case..."}
         </DialogDescription>
         
-        {!isSpinning && !finalItem && (
+        {!isSpinning && !finalItem && !isFreePlay && (
           <BattleControls 
             onSoloOpen={startSpinning}
             onBattleStart={startBattle}
           />
+        )}
+
+        {!isSpinning && !finalItem && isFreePlay && (
+          <div className="flex justify-center p-4">
+            <button
+              onClick={startSpinning}
+              className="bg-primary hover:bg-accent text-white font-semibold py-2 px-8 rounded-lg transition-colors duration-300"
+            >
+              Try Your Luck
+            </button>
+          </div>
         )}
 
         <div className="p-6">
@@ -161,6 +178,7 @@ export const CaseOpeningModal = ({
             <WinningResult 
               item={finalItem}
               casePrice={caseData.price}
+              isFreePlay={isFreePlay}
             />
           )}
         </div>
