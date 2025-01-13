@@ -33,29 +33,32 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem }: Spinn
       {(isSpinning ? items : finalItem ? [finalItem] : []).map((item, index) => (
         <motion.div
           key={index}
-          className={`flex-shrink-0 w-48 h-48 p-4 mx-2 rounded-lg ${
+          className={`flex-shrink-0 w-48 h-48 p-2 mx-1 rounded-lg ${
             !isSpinning && finalItem?.id === item.id
               ? "bg-accent"
               : "bg-card"
-          } backdrop-blur-sm`}
+          } backdrop-blur-sm border border-accent/20`}
           initial={!isSpinning && { scale: 0.8, opacity: 0 }}
           animate={!isSpinning && { scale: 1, opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="flex flex-col items-center justify-center h-full relative overflow-hidden rounded-lg">
-            <div className="w-32 h-32 mb-2">
+          <div className="flex flex-col items-center justify-between h-full relative overflow-hidden rounded-lg p-2">
+            <div className="w-32 h-32 flex items-center justify-center">
               <img 
                 src={item.image}
                 alt={item.name}
-                className="w-full h-full object-contain rounded-lg"
+                className="w-full h-full object-contain"
+                style={{ imageRendering: 'crisp-edges' }}
               />
             </div>
-            <h3 className="text-lg font-semibold text-center mb-1 truncate w-full">
-              {item.name}
-            </h3>
-            <p className="text-2xl font-bold text-primary">
-              {item.multiplier}x
-            </p>
+            <div className="w-full text-center">
+              <h3 className="text-sm font-semibold truncate w-full mb-1">
+                {item.name}
+              </h3>
+              <p className="text-xl font-bold text-primary">
+                {item.multiplier}x
+              </p>
+            </div>
           </div>
         </motion.div>
       ))}
