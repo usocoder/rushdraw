@@ -13,7 +13,7 @@ export const premiumCases: Case[] = [
         id: 1,
         name: "Basic Tech Bundle",
         value: 1200,
-        odds: 0.45,
+        odds: 0.75, // Increased from 0.45
         multiplier: 0.1,
         rarity: "common",
         image: "https://images.unsplash.com/photo-1580519542036-c47de6196ba5"
@@ -22,7 +22,7 @@ export const premiumCases: Case[] = [
         id: 2,
         name: "Premium Tech Package",
         value: 18000,
-        odds: 0.35,
+        odds: 0.2, // Decreased from 0.35
         multiplier: 1.5,
         rarity: "uncommon",
         image: "https://images.unsplash.com/photo-1579621970563-ebec7560ff3e"
@@ -31,7 +31,7 @@ export const premiumCases: Case[] = [
         id: 3,
         name: "Ultimate Tech Setup",
         value: 36000,
-        odds: 0.195,
+        odds: 0.049, // Decreased from 0.195
         multiplier: 3,
         rarity: "rare",
         image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
@@ -40,7 +40,7 @@ export const premiumCases: Case[] = [
         id: 4,
         name: "Legendary Tech Collection",
         value: 240000,
-        odds: 0.005,
+        odds: 0.001, // Decreased from 0.005
         multiplier: 20,
         rarity: "legendary",
         image: "https://images.unsplash.com/photo-1579621970795-87facc2f976d"
