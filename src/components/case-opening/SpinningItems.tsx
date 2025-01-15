@@ -33,7 +33,7 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem }: Spinn
       {(isSpinning ? items : finalItem ? [finalItem] : []).map((item, index) => (
         <motion.div
           key={index}
-          className={`flex-shrink-0 w-40 h-40 mx-1 rounded-lg ${
+          className={`flex-shrink-0 w-48 h-48 mx-1 rounded-lg ${
             !isSpinning && finalItem?.id === item.id
               ? "bg-accent"
               : "bg-card"
@@ -42,12 +42,12 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem }: Spinn
           animate={!isSpinning && { scale: 1, opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="flex flex-col h-full relative rounded-lg p-2">
+          <div className="flex flex-col h-full relative rounded-lg p-4">
             <div className="flex-1 flex items-center justify-center">
               <img 
                 src={item.image}
                 alt={item.name}
-                className="max-w-full max-h-[80px] object-contain"
+                className="w-auto h-32 object-contain"
                 style={{ imageRendering: 'crisp-edges' }}
               />
             </div>

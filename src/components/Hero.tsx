@@ -1,23 +1,29 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { CryptoDeposit } from "./CryptoDeposit";
-import { ArrowDown, ArrowUp, LogIn, LogOut, UserPlus } from "lucide-react";
+import { ArrowDown, ArrowUp, LogIn, LogOut, UserPlus, Wallet } from "lucide-react";
 import { RegisterModal } from "./RegisterModal";
 import { LoginModal } from "./LoginModal";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
+import { useBalance } from "@/contexts/BalanceContext";
 
 export const Hero = () => {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const { user, logout } = useBrowserAuth();
+  const { balance } = useBalance();
 
   return (
     <div className="relative overflow-hidden bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 py-16">
-        <div className="absolute top-4 right-4 flex gap-2">
+        <div className="absolute top-4 right-4 flex gap-2 items-center">
           {user ? (
             <>
+              <div className="flex items-center gap-4 mr-4">
+                <Wallet className="h-4 w-4 text-primary" />
+                <span className="text-lg font-semibold">${balance.toFixed(2)}</span>
+              </div>
               <span className="text-muted-foreground self-center mr-2">
                 Welcome, {user.username}!
               </span>
