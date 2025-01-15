@@ -37,7 +37,7 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem }: Spinn
             !isSpinning && finalItem?.id === item.id
               ? "bg-accent"
               : "bg-card"
-          } backdrop-blur-sm border border-accent/20`}
+          } backdrop-blur-sm border border-accent/20 overflow-hidden`}
           initial={!isSpinning && { scale: 0.8, opacity: 0 }}
           animate={!isSpinning && { scale: 1, opacity: 1 }}
           transition={{ duration: 0.5 }}
@@ -47,8 +47,12 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem }: Spinn
               <img 
                 src={item.image}
                 alt={item.name}
-                className="w-auto h-32 object-contain"
-                style={{ imageRendering: 'crisp-edges' }}
+                className="w-full h-full object-contain"
+                style={{ 
+                  imageRendering: 'crisp-edges',
+                  maxHeight: '100%',
+                  maxWidth: '100%'
+                }}
               />
             </div>
             <div className="mt-2 text-center">

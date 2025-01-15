@@ -7,7 +7,7 @@ interface BalanceContextType {
   balance: number;
   loading: boolean;
   refreshBalance: () => Promise<void>;
-  createTransaction: (type: 'deposit' | 'case_open', amount: number) => Promise<boolean>;
+  createTransaction: (type: 'deposit' | 'case_open' | 'case_win', amount: number) => Promise<boolean>;
 }
 
 const BalanceContext = createContext<BalanceContextType>({
@@ -46,7 +46,7 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
     }
   };
 
-  const createTransaction = async (type: 'deposit' | 'case_open', amount: number): Promise<boolean> => {
+  const createTransaction = async (type: 'deposit' | 'case_open' | 'case_win', amount: number): Promise<boolean> => {
     if (!user) return false;
     try {
       const { error } = await supabase.from('transactions').insert({
