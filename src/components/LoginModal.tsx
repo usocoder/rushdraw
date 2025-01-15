@@ -6,51 +6,23 @@ import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { useToast } from "./ui/use-toast";
 import { Alert, AlertDescription } from "./ui/alert";
 
-interface RegisterModalProps {
+interface LoginModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
-export const RegisterModal = ({ isOpen, onOpenChange }: RegisterModalProps) => {
-  const [username, setUsername] = useState("");
+export const LoginModal = ({ isOpen, onOpenChange }: LoginModalProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { register, error } = useBrowserAuth();
+  const { login, error } = useBrowserAuth();
   const { toast } = useToast();
 
-  const handleRegister = () => {
-    if (username.length < 3) {
-      toast({
-        title: "Invalid username",
-        description: "Username must be at least 3 characters long",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!email.includes('@')) {
-      toast({
-        title: "Invalid email",
-        description: "Please enter a valid email address",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (password.length < 6) {
-      toast({
-        title: "Invalid password",
-        description: "Password must be at least 6 characters long",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (register(username, email, password)) {
+  const handleLogin = () => {
+    if (login(email, password)) {
       onOpenChange(false);
       toast({
-        title: "Welcome!",
-        description: `You're now registered as ${username}`,
+        title: "Welcome back!",
+        description: "Successfully logged in",
       });
     }
   };
@@ -59,9 +31,9 @@ export const RegisterModal = ({ isOpen, onOpenChange }: RegisterModalProps) => {
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Create Your Account</DialogTitle>
+          <DialogTitle>Welcome Back</DialogTitle>
           <DialogDescription>
-            Enter your details to start opening cases
+            Login to continue opening cases
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-4 py-4">
@@ -70,11 +42,6 @@ export const RegisterModal = ({ isOpen, onOpenChange }: RegisterModalProps) => {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <Input
-            placeholder="Enter username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
           <Input
             type="email"
             placeholder="Enter email"
@@ -87,8 +54,8 @@ export const RegisterModal = ({ isOpen, onOpenChange }: RegisterModalProps) => {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
           />
-          <Button onClick={handleRegister} className="w-full">
-            Create Account
+          <Button onClick={handleLogin} className="w-full">
+            Login
           </Button>
         </div>
       </DialogContent>

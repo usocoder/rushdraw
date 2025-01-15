@@ -3,11 +3,13 @@ import { Button } from "./ui/button";
 import { CryptoDeposit } from "./CryptoDeposit";
 import { ArrowDown, ArrowUp, LogIn, LogOut, UserPlus } from "lucide-react";
 import { RegisterModal } from "./RegisterModal";
+import { LoginModal } from "./LoginModal";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 
 export const Hero = () => {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const { user, logout } = useBrowserAuth();
 
   return (
@@ -30,7 +32,7 @@ export const Hero = () => {
                 <UserPlus className="mr-2 h-4 w-4" />
                 Register
               </Button>
-              <Button size="sm" variant="ghost">
+              <Button size="sm" variant="ghost" onClick={() => setIsLoginOpen(true)}>
                 <LogIn className="mr-2 h-4 w-4" />
                 Login
               </Button>
@@ -40,7 +42,7 @@ export const Hero = () => {
 
         <div className="text-center">
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-pink-600">
-            Open Cases, Win Big
+            Rushdraw
           </h1>
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
             Experience the thrill of opening cases and winning incredible rewards. Start your journey now!
@@ -75,6 +77,11 @@ export const Hero = () => {
       <RegisterModal
         isOpen={isRegisterOpen}
         onOpenChange={setIsRegisterOpen}
+      />
+
+      <LoginModal
+        isOpen={isLoginOpen}
+        onOpenChange={setIsLoginOpen}
       />
     </div>
   );
