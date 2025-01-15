@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { CryptoDeposit } from "./CryptoDeposit";
+import { WithdrawModal } from "./WithdrawModal";
 import { ArrowDown, ArrowUp, LogIn, LogOut, UserPlus, Wallet } from "lucide-react";
 import { RegisterModal } from "./RegisterModal";
 import { LoginModal } from "./LoginModal";
@@ -9,6 +10,7 @@ import { useBalance } from "@/contexts/BalanceContext";
 
 export const Hero = () => {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
+  const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const { user, logout } = useBrowserAuth();
@@ -60,7 +62,7 @@ export const Hero = () => {
                   <ArrowUp className="mr-2" />
                   Deposit
                 </Button>
-                <Button size="lg" variant="outline">
+                <Button size="lg" variant="outline" onClick={() => setIsWithdrawOpen(true)}>
                   <ArrowDown className="mr-2" />
                   Withdraw
                 </Button>
@@ -78,6 +80,11 @@ export const Hero = () => {
       <CryptoDeposit 
         isOpen={isDepositOpen}
         onOpenChange={setIsDepositOpen}
+      />
+
+      <WithdrawModal
+        isOpen={isWithdrawOpen}
+        onOpenChange={setIsWithdrawOpen}
       />
 
       <RegisterModal

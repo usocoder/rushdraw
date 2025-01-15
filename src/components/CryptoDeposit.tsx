@@ -3,6 +3,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Button } from "./ui/button";
 import { Check, Copy, Loader2 } from "lucide-react";
 import { useToast } from "./ui/use-toast";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CryptoAddress {
   currency: string;
@@ -40,8 +44,10 @@ interface Props {
 
 export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
   const { toast } = useToast();
+  const { user } = useBrowserAuth();
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [amount, setAmount] = useState("");
 
   const handleCopy = async (address: string) => {
     await navigator.clipboard.writeText(address);
@@ -54,22 +60,70 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
     });
   };
 
-  const simulateDeposit = () => {
-    setIsProcessing(true);
-    toast({
-      title: "Processing deposit",
-      description: "Please wait while we confirm your transaction (up to 5 minutes).",
-    });
-
-    // Simulate blockchain confirmations
-    setTimeout(() => {
-      setIsProcessing(false);
+  const simulateDeposit = async () => {
+    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
       toast({
-        title: "Deposit confirmed!",
-        description: "Your deposit has been confirmed and credited to your account.",
+        title: "Invalid amount",
+        description: "Please enter a valid deposit amount.",
+        variant: "destructive",
       });
-      onOpenChange(false);
-    }, 5 * 60 * 1000); // 5 minutes
+      return;
+    }
+
+    setIsProcessing(true);
+    
+    try {
+      // Create a pending deposit transaction
+      const { error } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: user?.id,
+          type: 'deposit',
+          amount: Number(amount),
+          status: 'pending',
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Processing deposit",
+        description: "Please wait while we confirm your transaction (up to 10 minutes).",
+      });
+
+      // Simulate blockchain confirmations
+      setTimeout(async () => {
+        const { error: updateError } = await supabase
+          .from('transactions')
+          .update({ status: 'completed' })
+          .eq('user_id', user?.id)
+          .eq('type', 'deposit')
+          .eq('status', 'pending');
+
+        if (updateError) {
+          console.error('Error updating transaction:', updateError);
+          toast({
+            title: "Error processing deposit",
+            description: "Please contact support if the issue persists.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Deposit confirmed!",
+            description: "Your deposit has been confirmed and credited to your account.",
+          });
+          onOpenChange(false);
+        }
+        setIsProcessing(false);
+      }, 10 * 60 * 1000); // 10 minutes
+    } catch (error) {
+      console.error('Error creating transaction:', error);
+      toast({
+        title: "Error processing deposit",
+        description: "Please try again later.",
+        variant: "destructive",
+      });
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -78,11 +132,24 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
         <DialogHeader>
           <DialogTitle>Deposit Crypto</DialogTitle>
           <DialogDescription>
-            Choose your preferred cryptocurrency to make a deposit. Confirmations may take up to 5 minutes.
+            Enter the amount you want to deposit and choose your preferred cryptocurrency.
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
+          <div className="grid gap-2">
+            <Label htmlFor="amount">Deposit Amount (USD)</Label>
+            <Input
+              id="amount"
+              type="number"
+              min="0"
+              step="0.01"
+              value={amount}
+              onChange={(e) => setAmount(e.target.value)}
+              placeholder="Enter amount..."
+            />
+          </div>
+
           {CRYPTO_ADDRESSES.map((crypto) => (
             <div key={crypto.currency} className="flex items-center gap-4 p-4 rounded-lg bg-card">
               <div className="text-2xl font-mono">{crypto.icon}</div>
@@ -111,7 +178,7 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
         <div className="flex justify-end">
           <Button 
             onClick={simulateDeposit} 
-            disabled={isProcessing}
+            disabled={isProcessing || !amount}
           >
             {isProcessing ? (
               <>

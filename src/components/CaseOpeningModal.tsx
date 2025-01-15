@@ -84,7 +84,7 @@ export const CaseOpeningModal = ({
     setTimeout(() => setSpinSpeed(2), 5000);
     setTimeout(() => setSpinSpeed(1), 6000);
     
-    setTimeout(() => {
+    setTimeout(async () => {
       setIsSpinning(false);
       const random = Math.random();
       let cumulative = 0;
@@ -93,6 +93,12 @@ export const CaseOpeningModal = ({
         return random <= cumulative;
       }) || caseData.items[0];
       setFinalItem(winner);
+
+      if (!isFreePlay) {
+        // Add winnings to balance
+        const winAmount = caseData.price * winner.multiplier;
+        await createTransaction('case_win', winAmount);
+      }
 
       if (isBattleMode) {
         handleBattleResults(winner);

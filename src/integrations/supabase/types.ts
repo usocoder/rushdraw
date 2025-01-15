@@ -59,6 +59,7 @@ export type Database = {
           amount: number
           created_at: string
           id: string
+          pending_amount: number | null
           status: string
           type: string
           updated_at: string
@@ -68,6 +69,7 @@ export type Database = {
           amount: number
           created_at?: string
           id?: string
+          pending_amount?: number | null
           status?: string
           type: string
           updated_at?: string
@@ -77,6 +79,7 @@ export type Database = {
           amount?: number
           created_at?: string
           id?: string
+          pending_amount?: number | null
           status?: string
           type?: string
           updated_at?: string
