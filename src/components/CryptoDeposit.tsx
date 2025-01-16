@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Button } from "./ui/button";
-import { Check, Copy, Loader2 } from "lucide-react";
+import { Check, Copy, Loader2, AlertCircle } from "lucide-react";
 import { useToast } from "./ui/use-toast";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
@@ -87,10 +87,9 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
 
       toast({
         title: "Processing deposit",
-        description: "Please wait while we confirm your transaction (up to 10 minutes).",
+        description: "Your deposit is being processed. Please allow up to 10 minutes for the funds to reflect in your account.",
       });
 
-      // Simulate blockchain confirmations (10 minutes)
       setTimeout(async () => {
         const { error: updateError } = await supabase
           .from('transactions')
@@ -117,7 +116,7 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
           onOpenChange(false);
         }
         setIsProcessing(false);
-      }, 600000); // 10 minutes in milliseconds
+      }, 600000); // 10 minutes
     } catch (error) {
       console.error('Error creating transaction:', error);
       toast({
@@ -135,7 +134,7 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
         <DialogHeader>
           <DialogTitle>Deposit Crypto</DialogTitle>
           <DialogDescription>
-            Enter the amount you want to deposit and choose your preferred cryptocurrency.
+            Send crypto to one of the addresses below, then click "I've sent the crypto" to initiate the deposit process.
           </DialogDescription>
         </DialogHeader>
 
@@ -154,7 +153,7 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
           </div>
 
           {CRYPTO_ADDRESSES.map((crypto) => (
-            <div key={crypto.currency} className="flex items-center gap-4 p-4 rounded-lg bg-card">
+            <div key={crypto.currency} className="flex items-center gap-4 p-4 rounded-lg bg-card hover:bg-accent/5 transition-colors">
               <div className="text-2xl font-mono">{crypto.icon}</div>
               <div className="flex-1">
                 <h3 className="font-semibold">{crypto.currency}</h3>
@@ -178,20 +177,28 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
           ))}
         </div>
 
-        <div className="flex justify-end">
-          <Button 
-            onClick={simulateDeposit} 
-            disabled={isProcessing || !amount}
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing
-              </>
-            ) : (
-              "I've sent the crypto"
-            )}
-          </Button>
+        <div className="space-y-4">
+          <div className="flex items-start gap-2 text-sm text-muted-foreground">
+            <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+            <p>Only click "I've sent the crypto" after you have completed the transfer. Once clicked, please allow up to 10 minutes for the deposit to reflect in your account.</p>
+          </div>
+
+          <div className="flex justify-end">
+            <Button 
+              onClick={simulateDeposit} 
+              disabled={isProcessing || !amount}
+              className="w-full sm:w-auto"
+            >
+              {isProcessing ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing Deposit
+                </>
+              ) : (
+                "I've sent the crypto"
+              )}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>
