@@ -42,6 +42,9 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
+// UUID validation regex
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
 export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
   const { toast } = useToast();
   const { user } = useBrowserAuth();
@@ -61,7 +64,7 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
   };
 
   const simulateDeposit = async () => {
-    if (!user?.id) {
+    if (!user?.id || !UUID_REGEX.test(user.id)) {
       toast({
         title: "Authentication required",
         description: "Please log in to make a deposit.",
@@ -126,7 +129,7 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
           onOpenChange(false);
         }
         setIsProcessing(false);
-      }, 10000); // Changed to 10 seconds for testing
+      }, 10000);
     } catch (error) {
       console.error('Error creating transaction:', error);
       toast({
