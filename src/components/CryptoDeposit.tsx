@@ -73,7 +73,6 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
     setIsProcessing(true);
     
     try {
-      // Create a pending deposit transaction
       const { error } = await supabase
         .from('transactions')
         .insert({
@@ -81,6 +80,7 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
           type: 'deposit',
           amount: Number(amount),
           status: 'pending',
+          pending_amount: Number(amount)
         });
 
       if (error) throw error;
@@ -94,7 +94,10 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
       setTimeout(async () => {
         const { error: updateError } = await supabase
           .from('transactions')
-          .update({ status: 'completed' })
+          .update({ 
+            status: 'completed',
+            pending_amount: 0
+          })
           .eq('user_id', user?.id)
           .eq('type', 'deposit')
           .eq('status', 'pending');
@@ -114,7 +117,7 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
           onOpenChange(false);
         }
         setIsProcessing(false);
-      }, 10 * 60 * 1000); // 10 minutes
+      }, 10000); // Changed to 10 seconds for testing
     } catch (error) {
       console.error('Error creating transaction:', error);
       toast({

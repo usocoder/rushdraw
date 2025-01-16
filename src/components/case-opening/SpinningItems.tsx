@@ -29,6 +29,9 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem }: Spinn
         ease: isSpinning ? "linear" : "easeOut",
         repeat: isSpinning ? Infinity : 0,
       }}
+      style={{
+        willChange: 'transform',
+      }}
     >
       {(isSpinning ? items : finalItem ? [finalItem] : []).map((item, index) => (
         <motion.div
@@ -37,7 +40,7 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem }: Spinn
             !isSpinning && finalItem?.id === item.id
               ? "bg-accent"
               : "bg-card"
-          } backdrop-blur-sm border border-accent/20 overflow-hidden`}
+          } backdrop-blur-sm border border-accent/20`}
           initial={!isSpinning && { scale: 0.8, opacity: 0 }}
           animate={!isSpinning && { scale: 1, opacity: 1 }}
           transition={{ duration: 0.5 }}
@@ -47,11 +50,10 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem }: Spinn
               <img 
                 src={item.image}
                 alt={item.name}
-                className="w-full h-full object-contain"
+                className="w-auto h-auto max-w-full max-h-full object-contain"
+                loading="eager"
                 style={{ 
                   imageRendering: 'crisp-edges',
-                  maxHeight: '100%',
-                  maxWidth: '100%'
                 }}
               />
             </div>
