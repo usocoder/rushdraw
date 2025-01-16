@@ -61,6 +61,15 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
   };
 
   const simulateDeposit = async () => {
+    if (!user?.id) {
+      toast({
+        title: "Authentication required",
+        description: "Please log in to make a deposit.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
       toast({
         title: "Invalid amount",
@@ -76,7 +85,7 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
       const { error } = await supabase
         .from('transactions')
         .insert({
-          user_id: user?.id,
+          user_id: user.id,
           type: 'deposit',
           amount: Number(amount),
           status: 'pending',
@@ -98,7 +107,7 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
             status: 'completed',
             pending_amount: 0
           })
-          .eq('user_id', user?.id)
+          .eq('user_id', user.id)
           .eq('type', 'deposit')
           .eq('status', 'pending');
 
