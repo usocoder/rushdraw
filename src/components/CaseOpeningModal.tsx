@@ -77,11 +77,17 @@ export const CaseOpeningModal = ({
       .map(() => caseData.items[Math.floor(Math.random() * caseData.items.length)]);
     setCurrentItems(spinningItems);
 
-    setTimeout(() => setSpinSpeed(15), 1000);
-    setTimeout(() => setSpinSpeed(10), 2000);
-    setTimeout(() => setSpinSpeed(5), 3000);
-    setTimeout(() => setSpinSpeed(3), 4000);
-    setTimeout(() => setSpinSpeed(2), 5000);
+    // Fast spin for 4 seconds
+    setSpinSpeed(25);
+    setTimeout(() => setSpinSpeed(20), 1000);
+    setTimeout(() => setSpinSpeed(15), 2000);
+    setTimeout(() => setSpinSpeed(10), 3000);
+    setTimeout(() => setSpinSpeed(8), 4000);
+
+    // Slow down for 3 seconds
+    setTimeout(() => setSpinSpeed(6), 4500);
+    setTimeout(() => setSpinSpeed(4), 5000);
+    setTimeout(() => setSpinSpeed(2), 5500);
     setTimeout(() => setSpinSpeed(1), 6000);
     
     setTimeout(async () => {

@@ -42,9 +42,6 @@ interface Props {
   onOpenChange: (open: boolean) => void;
 }
 
-// UUID validation regex
-const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-
 export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
   const { toast } = useToast();
   const { user } = useBrowserAuth();
@@ -64,15 +61,6 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
   };
 
   const simulateDeposit = async () => {
-    if (!user?.id || !UUID_REGEX.test(user.id)) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to make a deposit.",
-        variant: "destructive",
-      });
-      return;
-    }
-
     if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
       toast({
         title: "Invalid amount",
@@ -88,7 +76,7 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
       const { error } = await supabase
         .from('transactions')
         .insert({
-          user_id: user.id,
+          user_id: user?.id,
           type: 'deposit',
           amount: Number(amount),
           status: 'pending',
@@ -102,7 +90,7 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
         description: "Please wait while we confirm your transaction (up to 10 minutes).",
       });
 
-      // Simulate blockchain confirmations
+      // Simulate blockchain confirmations (10 minutes)
       setTimeout(async () => {
         const { error: updateError } = await supabase
           .from('transactions')
@@ -110,7 +98,7 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
             status: 'completed',
             pending_amount: 0
           })
-          .eq('user_id', user.id)
+          .eq('user_id', user?.id)
           .eq('type', 'deposit')
           .eq('status', 'pending');
 
@@ -129,7 +117,7 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
           onOpenChange(false);
         }
         setIsProcessing(false);
-      }, 10000);
+      }, 600000); // 10 minutes in milliseconds
     } catch (error) {
       console.error('Error creating transaction:', error);
       toast({
