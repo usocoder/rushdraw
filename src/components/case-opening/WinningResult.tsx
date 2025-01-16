@@ -1,14 +1,15 @@
 import { motion } from "framer-motion";
 import { CaseItem } from "@/types/case";
-import { Trophy } from "lucide-react";
+import { Trophy, Sparkles } from "lucide-react";
 
 interface WinningResultProps {
   item: CaseItem;
   casePrice: number;
   isFreePlay?: boolean;
+  hasRushDraw?: boolean;
 }
 
-export const WinningResult = ({ item, casePrice, isFreePlay = false }: WinningResultProps) => {
+export const WinningResult = ({ item, casePrice, isFreePlay = false, hasRushDraw = false }: WinningResultProps) => {
   return (
     <motion.div
       className="mt-6 text-center"
@@ -30,7 +31,11 @@ export const WinningResult = ({ item, casePrice, isFreePlay = false }: WinningRe
           <img 
             src={item.image}
             alt={item.name}
-            className="w-48 h-48 object-contain rounded-lg"
+            className={`w-48 h-48 object-contain rounded-lg ${
+              hasRushDraw && item.rarity === 'legendary' 
+                ? 'ring-4 ring-yellow-500 ring-opacity-50' 
+                : ''
+            }`}
           />
           {!isFreePlay && (
             <motion.div
@@ -39,7 +44,11 @@ export const WinningResult = ({ item, casePrice, isFreePlay = false }: WinningRe
               transition={{ delay: 1 }}
               className="absolute -top-2 -right-2"
             >
-              <Trophy className="w-8 h-8 text-yellow-500" />
+              {hasRushDraw && item.rarity === 'legendary' ? (
+                <Sparkles className="w-8 h-8 text-yellow-500 animate-pulse" />
+              ) : (
+                <Trophy className="w-8 h-8 text-yellow-500" />
+              )}
             </motion.div>
           )}
         </div>
@@ -51,6 +60,11 @@ export const WinningResult = ({ item, casePrice, isFreePlay = false }: WinningRe
       >
         <h3 className="text-xl font-bold mb-2">
           {isFreePlay ? "You could have won: " : "You won: "}{item.name}!
+          {hasRushDraw && item.rarity === 'legendary' && (
+            <span className="ml-2 text-yellow-500">
+              (Rush Draw!)
+            </span>
+          )}
         </h3>
         <p className="text-lg text-primary">
           Value: ${(casePrice * item.multiplier).toFixed(2)}

@@ -1,15 +1,16 @@
 import { motion } from "framer-motion";
 import { CaseItem } from "@/types/case";
-import { Loader } from "lucide-react";
+import { Loader, Sparkles } from "lucide-react";
 
 interface SpinningItemsProps {
   items: CaseItem[];
   isSpinning: boolean;
   spinSpeed: number;
   finalItem: CaseItem | null;
+  hasRushDraw?: boolean;
 }
 
-export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem }: SpinningItemsProps) => {
+export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRushDraw }: SpinningItemsProps) => {
   if (!items.length && !finalItem) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -40,12 +41,19 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem }: Spinn
             !isSpinning && finalItem?.id === item.id
               ? "bg-accent"
               : "bg-card"
-          } backdrop-blur-sm border border-accent/20`}
+          } backdrop-blur-sm border ${
+            hasRushDraw && item.rarity === 'legendary' 
+              ? 'border-yellow-500 shadow-lg shadow-yellow-500/50' 
+              : 'border-accent/20'
+          }`}
           initial={!isSpinning && { scale: 0.8, opacity: 0 }}
           animate={!isSpinning && { scale: 1, opacity: 1 }}
           transition={{ duration: 0.5 }}
         >
           <div className="flex flex-col h-full relative rounded-lg p-4">
+            {hasRushDraw && item.rarity === 'legendary' && (
+              <Sparkles className="absolute top-2 right-2 w-6 h-6 text-yellow-500 animate-pulse" />
+            )}
             <div className="flex-1 flex items-center justify-center">
               <img 
                 src={item.image}

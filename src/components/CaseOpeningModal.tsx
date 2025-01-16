@@ -7,6 +7,7 @@ import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { SpinningItems } from "./case-opening/SpinningItems";
 import { BattleControls } from "./case-opening/BattleControls";
 import { WinningResult } from "./case-opening/WinningResult";
+import { Sparkles } from "lucide-react";
 
 interface CaseOpeningModalProps {
   isOpen: boolean;
@@ -30,6 +31,7 @@ export const CaseOpeningModal = ({
   const { toast } = useToast();
   const [isBattleMode, setIsBattleMode] = useState(false);
   const [opponents, setOpponents] = useState<string[]>([]);
+  const [hasRushDraw, setHasRushDraw] = useState(false);
 
   useEffect(() => {
     if (isOpen && !isFreePlay) {
@@ -72,43 +74,80 @@ export const CaseOpeningModal = ({
 
     setIsSpinning(true);
     
+    // Generate spinning items with rush draw chance
     const spinningItems = Array(200)
       .fill(null)
-      .map(() => caseData.items[Math.floor(Math.random() * caseData.items.length)]);
+      .map(() => {
+        const rushDrawChance = Math.random() < 0.05; // 5% chance for rush draw
+        if (rushDrawChance) {
+          setHasRushDraw(true);
+          // Find legendary items
+          const legendaryItems = caseData.items.filter(item => item.rarity === 'legendary');
+          return legendaryItems[Math.floor(Math.random() * legendaryItems.length)] || caseData.items[0];
+        }
+        return caseData.items[Math.floor(Math.random() * caseData.items.length)];
+      });
     setCurrentItems(spinningItems);
 
-    // Fast spin for 4 seconds
-    setSpinSpeed(25);
-    setTimeout(() => setSpinSpeed(20), 1000);
-    setTimeout(() => setSpinSpeed(15), 2000);
-    setTimeout(() => setSpinSpeed(10), 3000);
-    setTimeout(() => setSpinSpeed(8), 4000);
+    // Dynamic speed pattern for anticipation
+    const speedPattern = [
+      { speed: 30, time: 0 },    // Start very fast
+      { speed: 25, time: 1000 }, // Still fast
+      { speed: 20, time: 2000 }, // Moderate speed
+      { speed: 15, time: 3000 }, // Slowing down
+      { speed: 12, time: 3500 }, // Even slower
+      { speed: 8, time: 4000 },  // Almost there
+      { speed: 5, time: 5000 },  // Very slow
+      { speed: 3, time: 6000 },  // Super slow
+      { speed: 1, time: 6500 }   // Final crawl
+    ];
 
-    // Slow down for 3 seconds
-    setTimeout(() => setSpinSpeed(6), 4500);
-    setTimeout(() => setSpinSpeed(4), 5000);
-    setTimeout(() => setSpinSpeed(2), 5500);
-    setTimeout(() => setSpinSpeed(1), 6000);
+    // Apply speed pattern
+    speedPattern.forEach(({ speed, time }) => {
+      setTimeout(() => setSpinSpeed(speed), time);
+    });
     
     setTimeout(async () => {
       setIsSpinning(false);
       const random = Math.random();
       let cumulative = 0;
-      const winner = caseData.items.find((item) => {
+      
+      // Increase legendary odds if rush draw is active
+      const adjustedItems = hasRushDraw 
+        ? caseData.items.map(item => ({
+            ...item,
+            odds: item.rarity === 'legendary' ? item.odds * 3 : item.odds
+          }))
+        : caseData.items;
+
+      const winner = adjustedItems.find((item) => {
         cumulative += item.odds;
         return random <= cumulative;
-      }) || caseData.items[0];
+      }) || adjustedItems[0];
+      
       setFinalItem(winner);
 
       if (!isFreePlay) {
         // Add winnings to balance
         const winAmount = caseData.price * winner.multiplier;
         await createTransaction('case_win', winAmount);
+
+        // Show special toast for rush draw wins
+        if (hasRushDraw && winner.rarity === 'legendary') {
+          toast({
+            title: "🌟 RUSH DRAW WIN! 🌟",
+            description: "The rush draw brought you incredible luck!",
+            duration: 5000,
+          });
+        }
       }
 
       if (isBattleMode) {
         handleBattleResults(winner);
       }
+
+      // Reset rush draw state
+      setHasRushDraw(false);
     }, 7000);
   };
 
@@ -148,6 +187,12 @@ export const CaseOpeningModal = ({
       <DialogContent className="sm:max-w-[600px] bg-card border-accent">
         <DialogTitle className="text-2xl font-bold text-center">
           {isFreePlay ? "Free Play - " : ""}{caseData.name}
+          {hasRushDraw && (
+            <span className="ml-2 inline-flex items-center text-yellow-500">
+              <Sparkles className="w-6 h-6 animate-pulse" />
+              Rush Draw Active!
+            </span>
+          )}
         </DialogTitle>
         <DialogDescription className="text-center text-muted-foreground">
           {isBattleMode ? "Battle Mode" : isFreePlay ? "See what you could win!" : "Opening your case..."}
@@ -183,6 +228,7 @@ export const CaseOpeningModal = ({
               isSpinning={isSpinning}
               spinSpeed={spinSpeed}
               finalItem={finalItem}
+              hasRushDraw={hasRushDraw}
             />
           </div>
 
@@ -191,6 +237,7 @@ export const CaseOpeningModal = ({
               item={finalItem}
               casePrice={caseData.price}
               isFreePlay={isFreePlay}
+              hasRushDraw={hasRushDraw}
             />
           )}
         </div>
