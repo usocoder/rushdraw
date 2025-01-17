@@ -33,6 +33,86 @@ export type Database = {
         }
         Relationships: []
       }
+      case_items: {
+        Row: {
+          case_id: string | null
+          created_at: string
+          id: string
+          image_url: string
+          multiplier: number
+          name: string
+          odds: number
+          rarity: string
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          case_id?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          multiplier: number
+          name: string
+          odds: number
+          rarity: string
+          updated_at?: string
+          value: number
+        }
+        Update: {
+          case_id?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          multiplier?: number
+          name?: string
+          odds?: number
+          rarity?: string
+          updated_at?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_items_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cases: {
+        Row: {
+          best_drop: string
+          category: string
+          created_at: string
+          id: string
+          image_url: string
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          best_drop: string
+          category: string
+          created_at?: string
+          id?: string
+          image_url: string
+          name: string
+          price: number
+          updated_at?: string
+        }
+        Update: {
+          best_drop?: string
+          category?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+          name?: string
+          price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -87,6 +167,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"] | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"] | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"] | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -95,7 +196,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
