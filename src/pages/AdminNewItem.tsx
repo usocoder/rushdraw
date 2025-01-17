@@ -1,0 +1,246 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ArrowLeft } from "lucide-react";
+import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
+import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
+import { useToast } from "@/components/ui/use-toast";
+import { useForm, Controller } from "react-hook-form";
+
+interface FormData {
+  name: string;
+  value: number;
+  odds: number;
+  multiplier: number;
+  rarity: string;
+  image_url: string;
+  case_id: string;
+}
+
+const AdminNewItem = () => {
+  const navigate = useNavigate();
+  const { user } = useBrowserAuth();
+  const { toast } = useToast();
+  const { register, handleSubmit, control, formState: { errors } } = useForm<FormData>();
+
+  // Check if user is admin
+  const { data: userRole, isLoading: isCheckingRole } = useQuery({
+    queryKey: ['userRole', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user?.id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
+  // Fetch all cases for the select input
+  const { data: cases, isLoading: isLoadingCases } = useQuery({
+    queryKey: ['cases-select'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('cases')
+        .select('id, name')
+        .order('name');
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Redirect non-admin users
+  useEffect(() => {
+    if (!isCheckingRole && (!user || userRole?.role !== 'admin')) {
+      navigate('/');
+    }
+  }, [user, userRole, isCheckingRole, navigate]);
+
+  const onSubmit = async (data: FormData) => {
+    const { error } = await supabase
+      .from('case_items')
+      .insert([{
+        ...data,
+        odds: parseFloat(data.odds.toString()) / 100, // Convert percentage to decimal
+      }]);
+
+    if (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to create item",
+      });
+      return;
+    }
+
+    toast({
+      title: "Success",
+      description: "Item created successfully",
+    });
+    navigate('/admin/items');
+  };
+
+  if (isCheckingRole || isLoadingCases) {
+    return <div>Loading...</div>;
+  }
+
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <Button variant="outline" onClick={() => navigate('/admin/items')} className="mb-8">
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Back to Items
+      </Button>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Create New Item</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+            <div>
+              <Label htmlFor="name">Name</Label>
+              <Input 
+                id="name"
+                {...register("name", { required: "Name is required" })}
+              />
+              {errors.name && (
+                <p className="text-sm text-red-500">{errors.name.message}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="value">Value</Label>
+              <Input 
+                id="value"
+                type="number"
+                {...register("value", { 
+                  required: "Value is required",
+                  min: { value: 0, message: "Value must be positive" }
+                })}
+              />
+              {errors.value && (
+                <p className="text-sm text-red-500">{errors.value.message}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="odds">Odds (%)</Label>
+              <Input 
+                id="odds"
+                type="number"
+                step="0.01"
+                {...register("odds", { 
+                  required: "Odds are required",
+                  min: { value: 0, message: "Odds must be positive" },
+                  max: { value: 100, message: "Odds cannot exceed 100%" }
+                })}
+              />
+              {errors.odds && (
+                <p className="text-sm text-red-500">{errors.odds.message}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="multiplier">Multiplier</Label>
+              <Input 
+                id="multiplier"
+                type="number"
+                step="0.1"
+                {...register("multiplier", { 
+                  required: "Multiplier is required",
+                  min: { value: 0, message: "Multiplier must be positive" }
+                })}
+              />
+              {errors.multiplier && (
+                <p className="text-sm text-red-500">{errors.multiplier.message}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="rarity">Rarity</Label>
+              <Controller
+                name="rarity"
+                control={control}
+                rules={{ required: "Rarity is required" }}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select rarity" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="common">Common</SelectItem>
+                      <SelectItem value="uncommon">Uncommon</SelectItem>
+                      <SelectItem value="rare">Rare</SelectItem>
+                      <SelectItem value="legendary">Legendary</SelectItem>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.rarity && (
+                <p className="text-sm text-red-500">{errors.rarity.message}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="image_url">Image URL</Label>
+              <Input 
+                id="image_url"
+                {...register("image_url", { required: "Image URL is required" })}
+              />
+              {errors.image_url && (
+                <p className="text-sm text-red-500">{errors.image_url.message}</p>
+              )}
+            </div>
+
+            <div>
+              <Label htmlFor="case_id">Case</Label>
+              <Controller
+                name="case_id"
+                control={control}
+                rules={{ required: "Case is required" }}
+                render={({ field }) => (
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select case" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {cases?.map((case_) => (
+                        <SelectItem key={case_.id} value={case_.id}>
+                          {case_.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              {errors.case_id && (
+                <p className="text-sm text-red-500">{errors.case_id.message}</p>
+              )}
+            </div>
+
+            <Button type="submit" className="w-full">
+              Create Item
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default AdminNewItem;
