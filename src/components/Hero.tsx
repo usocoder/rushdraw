@@ -2,11 +2,14 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { CryptoDeposit } from "./CryptoDeposit";
 import { WithdrawModal } from "./WithdrawModal";
-import { ArrowDown, ArrowUp, LogIn, LogOut, UserPlus, Wallet } from "lucide-react";
+import { ArrowDown, ArrowUp, LogIn, LogOut, UserPlus, Wallet, Settings } from "lucide-react";
 import { RegisterModal } from "./RegisterModal";
 import { LoginModal } from "./LoginModal";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { useBalance } from "@/contexts/BalanceContext";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useNavigate } from "react-router-dom";
 
 export const Hero = () => {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
@@ -15,6 +18,23 @@ export const Hero = () => {
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const { user, logout } = useBrowserAuth();
   const { balance } = useBalance();
+  const navigate = useNavigate();
+
+  // Check if user is admin
+  const { data: userRole } = useQuery({
+    queryKey: ['userRole', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user?.id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
 
   return (
     <div className="relative overflow-hidden bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -29,6 +49,17 @@ export const Hero = () => {
               <span className="text-muted-foreground self-center mr-2">
                 Welcome, {user.username}!
               </span>
+              {userRole?.role === 'admin' && (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={() => navigate('/admin')}
+                  className="mr-2"
+                >
+                  <Settings className="mr-2 h-4 w-4" />
+                  Admin
+                </Button>
+              )}
               <Button variant="outline" size="sm" onClick={logout}>
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout
