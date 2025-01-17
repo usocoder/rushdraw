@@ -5,6 +5,7 @@ import { Input } from "./ui/input";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { useToast } from "./ui/use-toast";
 import { Alert, AlertDescription } from "./ui/alert";
+import { Loader2 } from "lucide-react";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -14,16 +15,45 @@ interface LoginModalProps {
 export const LoginModal = ({ isOpen, onOpenChange }: LoginModalProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { login, error } = useBrowserAuth();
   const { toast } = useToast();
 
-  const handleLogin = () => {
-    if (login(email, password)) {
-      onOpenChange(false);
+  const handleLogin = async () => {
+    if (!email || !password) {
       toast({
-        title: "Welcome back!",
-        description: "Successfully logged in",
+        title: "Missing fields",
+        description: "Please fill in all fields",
+        variant: "destructive",
       });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const success = await login(email, password);
+      if (success) {
+        onOpenChange(false);
+        toast({
+          title: "Welcome back!",
+          description: "Successfully logged in",
+        });
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      toast({
+        title: "Login failed",
+        description: "Please check your credentials and try again",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleLogin();
     }
   };
 
@@ -47,15 +77,30 @@ export const LoginModal = ({ isOpen, onOpenChange }: LoginModalProps) => {
             placeholder="Enter email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            onKeyPress={handleKeyPress}
+            disabled={isLoading}
           />
           <Input
             type="password"
             placeholder="Enter password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            onKeyPress={handleKeyPress}
+            disabled={isLoading}
           />
-          <Button onClick={handleLogin} className="w-full">
-            Login
+          <Button 
+            onClick={handleLogin} 
+            className="w-full"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Logging in...
+              </>
+            ) : (
+              'Login'
+            )}
           </Button>
         </div>
       </DialogContent>
