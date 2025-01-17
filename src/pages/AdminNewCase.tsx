@@ -10,6 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { useForm } from "react-hook-form";
+import { ImageUpload } from "@/components/ImageUpload";
 
 interface FormData {
   name: string;
@@ -23,7 +24,7 @@ const AdminNewCase = () => {
   const navigate = useNavigate();
   const { user } = useBrowserAuth();
   const { toast } = useToast();
-  const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
+  const { register, handleSubmit, setValue, formState: { errors } } = useForm<FormData>();
 
   // Check if user is admin
   const { data: userRole, isLoading } = useQuery({
@@ -69,6 +70,10 @@ const AdminNewCase = () => {
     navigate('/admin/cases');
   };
 
+  const handleImageUpload = (url: string) => {
+    setValue('image_url', url);
+  };
+
   if (isLoading) {
     return <div>Loading...</div>;
   }
@@ -112,16 +117,14 @@ const AdminNewCase = () => {
               )}
             </div>
 
-            <div>
-              <Label htmlFor="image_url">Image URL</Label>
-              <Input 
-                id="image_url"
-                {...register("image_url", { required: "Image URL is required" })}
-              />
-              {errors.image_url && (
-                <p className="text-sm text-red-500">{errors.image_url.message}</p>
-              )}
-            </div>
+            <ImageUpload onUploadComplete={handleImageUpload} />
+            <Input 
+              type="hidden"
+              {...register("image_url", { required: "Image URL is required" })}
+            />
+            {errors.image_url && (
+              <p className="text-sm text-red-500">{errors.image_url.message}</p>
+            )}
 
             <div>
               <Label htmlFor="best_drop">Best Drop</Label>
