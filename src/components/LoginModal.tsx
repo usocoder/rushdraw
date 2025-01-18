@@ -34,6 +34,8 @@ export const LoginModal = ({ isOpen, onOpenChange }: LoginModalProps) => {
       const success = await login(email, password);
       if (success) {
         onOpenChange(false);
+        setEmail("");
+        setPassword("");
         toast({
           title: "Welcome back!",
           description: "Successfully logged in",
@@ -41,18 +43,13 @@ export const LoginModal = ({ isOpen, onOpenChange }: LoginModalProps) => {
       }
     } catch (err) {
       console.error("Login error:", err);
-      toast({
-        title: "Login failed",
-        description: "Please check your credentials and try again",
-        variant: "destructive",
-      });
     } finally {
       setIsLoading(false);
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
+    if (e.key === "Enter" && !isLoading) {
       handleLogin();
     }
   };

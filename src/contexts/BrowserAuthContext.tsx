@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { AuthError } from '@supabase/supabase-js';
 
 interface User {
   id: string;
@@ -43,12 +44,14 @@ export const BrowserAuthProvider = ({ children }: { children: React.ReactNode })
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state changed:", event, session);
       if (session?.user) {
         setUser({
           id: session.user.id,
           email: session.user.email!,
           username: session.user.user_metadata.username || session.user.email!,
         });
+        setError(null);
       } else {
         setUser(null);
       }
@@ -61,6 +64,7 @@ export const BrowserAuthProvider = ({ children }: { children: React.ReactNode })
 
   const register = async (username: string, email: string, password: string) => {
     try {
+      setError(null);
       const { data, error: signUpError } = await supabase.auth.signUp({
         email,
         password,
@@ -79,7 +83,7 @@ export const BrowserAuthProvider = ({ children }: { children: React.ReactNode })
       if (data.user) {
         toast({
           title: "Registration successful",
-          description: "Please check your email to verify your account",
+          description: "You can now log in with your credentials",
         });
         return true;
       }
@@ -94,12 +98,14 @@ export const BrowserAuthProvider = ({ children }: { children: React.ReactNode })
 
   const login = async (email: string, password: string) => {
     try {
+      setError(null);
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email,
         password,
       });
 
       if (signInError) {
+        console.error("Sign in error:", signInError);
         setError(signInError.message);
         return false;
       }
@@ -111,8 +117,9 @@ export const BrowserAuthProvider = ({ children }: { children: React.ReactNode })
 
       return false;
     } catch (err) {
-      console.error('Login error:', err);
-      setError('An unexpected error occurred during login');
+      const authError = err as AuthError;
+      console.error('Login error:', authError);
+      setError(authError.message);
       return false;
     }
   };
