@@ -19,6 +19,12 @@ export const LoginModal = ({ isOpen, onOpenChange }: LoginModalProps) => {
   const { login, error } = useBrowserAuth();
   const { toast } = useToast();
 
+  const resetForm = () => {
+    setEmail("");
+    setPassword("");
+    setIsLoading(false);
+  };
+
   const handleLogin = async () => {
     if (!email || !password) {
       toast({
@@ -34,15 +40,27 @@ export const LoginModal = ({ isOpen, onOpenChange }: LoginModalProps) => {
       const success = await login(email, password);
       if (success) {
         onOpenChange(false);
-        setEmail("");
-        setPassword("");
+        resetForm();
         toast({
           title: "Welcome back!",
           description: "Successfully logged in",
         });
+      } else {
+        // If login returns false but no error was thrown
+        toast({
+          title: "Login failed",
+          description: "Please check your credentials and try again",
+          variant: "destructive",
+        });
       }
     } catch (err) {
       console.error("Login error:", err);
+      // Show a more user-friendly error message
+      toast({
+        title: "Login failed",
+        description: "Invalid email or password. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -55,7 +73,10 @@ export const LoginModal = ({ isOpen, onOpenChange }: LoginModalProps) => {
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+      if (!open) resetForm();
+      onOpenChange(open);
+    }}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Welcome Back</DialogTitle>
@@ -76,6 +97,7 @@ export const LoginModal = ({ isOpen, onOpenChange }: LoginModalProps) => {
             onChange={(e) => setEmail(e.target.value)}
             onKeyPress={handleKeyPress}
             disabled={isLoading}
+            className="w-full"
           />
           <Input
             type="password"
@@ -84,6 +106,7 @@ export const LoginModal = ({ isOpen, onOpenChange }: LoginModalProps) => {
             onChange={(e) => setPassword(e.target.value)}
             onKeyPress={handleKeyPress}
             disabled={isLoading}
+            className="w-full"
           />
           <Button 
             onClick={handleLogin} 

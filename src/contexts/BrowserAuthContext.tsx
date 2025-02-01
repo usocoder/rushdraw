@@ -76,6 +76,7 @@ export const BrowserAuthProvider = ({ children }: { children: React.ReactNode })
       });
 
       if (signUpError) {
+        console.error("Registration error:", signUpError);
         setError(signUpError.message);
         return false;
       }
@@ -106,7 +107,11 @@ export const BrowserAuthProvider = ({ children }: { children: React.ReactNode })
 
       if (signInError) {
         console.error("Sign in error:", signInError);
-        setError(signInError.message);
+        if (signInError.message === "Invalid login credentials") {
+          setError("Invalid email or password");
+        } else {
+          setError(signInError.message);
+        }
         return false;
       }
 
