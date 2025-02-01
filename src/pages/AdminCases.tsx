@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Plus, ArrowLeft, Pencil, Trash, Save, X } from "lucide-react";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { ImageUpload } from "@/components/ImageUpload";
 
@@ -23,6 +23,7 @@ const AdminCases = () => {
   const navigate = useNavigate();
   const { user } = useBrowserAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [editingCase, setEditingCase] = useState<EditingCase | null>(null);
 
   // Check if user is admin
@@ -35,24 +36,34 @@ const AdminCases = () => {
         .eq('user_id', user?.id)
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching user role:', error);
+        throw error;
+      }
       return data;
     },
     enabled: !!user,
   });
 
-  // Fetch all cases
-  const { data: cases, isLoading: isLoadingCases, refetch } = useQuery({
+  // Fetch all cases with better error handling
+  const { data: cases, isLoading: isLoadingCases, error: casesError } = useQuery({
     queryKey: ['admin-cases'],
     queryFn: async () => {
+      console.log('Fetching cases...');
       const { data, error } = await supabase
         .from('cases')
         .select('*')
         .order('created_at', { ascending: false });
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching cases:', error);
+        throw error;
+      }
+      
+      console.log('Cases fetched:', data);
       return data;
     },
+    refetchOnWindowFocus: false,
   });
 
   // Redirect non-admin users
@@ -63,25 +74,27 @@ const AdminCases = () => {
   }, [user, userRole, isCheckingRole, navigate]);
 
   const handleDelete = async (id: string) => {
-    const { error } = await supabase
-      .from('cases')
-      .delete()
-      .eq('id', id);
+    try {
+      const { error } = await supabase
+        .from('cases')
+        .delete()
+        .eq('id', id);
 
-    if (error) {
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Case deleted successfully",
+      });
+      queryClient.invalidateQueries({ queryKey: ['admin-cases'] });
+    } catch (error) {
+      console.error('Error deleting case:', error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to delete case",
       });
-      return;
     }
-
-    toast({
-      title: "Success",
-      description: "Case deleted successfully",
-    });
-    refetch();
   };
 
   const handleEdit = (case_: any) => {
@@ -102,32 +115,34 @@ const AdminCases = () => {
   const handleSaveEdit = async () => {
     if (!editingCase) return;
 
-    const { error } = await supabase
-      .from('cases')
-      .update({
-        name: editingCase.name,
-        price: editingCase.price,
-        best_drop: editingCase.best_drop,
-        category: editingCase.category,
-        image_url: editingCase.image_url,
-      })
-      .eq('id', editingCase.id);
+    try {
+      const { error } = await supabase
+        .from('cases')
+        .update({
+          name: editingCase.name,
+          price: editingCase.price,
+          best_drop: editingCase.best_drop,
+          category: editingCase.category,
+          image_url: editingCase.image_url,
+        })
+        .eq('id', editingCase.id);
 
-    if (error) {
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Case updated successfully",
+      });
+      setEditingCase(null);
+      queryClient.invalidateQueries({ queryKey: ['admin-cases'] });
+    } catch (error) {
+      console.error('Error updating case:', error);
       toast({
         variant: "destructive",
         title: "Error",
         description: "Failed to update case",
       });
-      return;
     }
-
-    toast({
-      title: "Success",
-      description: "Case updated successfully",
-    });
-    setEditingCase(null);
-    refetch();
   };
 
   const handleImageUpload = (url: string) => {
@@ -137,7 +152,19 @@ const AdminCases = () => {
   };
 
   if (isCheckingRole || isLoadingCases) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg">Loading...</div>
+      </div>
+    );
+  }
+
+  if (casesError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-lg text-red-500">Error loading cases. Please try again.</div>
+      </div>
+    );
   }
 
   return (
@@ -155,7 +182,7 @@ const AdminCases = () => {
 
       <div className="grid gap-6">
         {cases?.map((case_) => (
-          <Card key={case_.id}>
+          <Card key={case_.id} className="transition-all duration-200 hover:shadow-lg">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               {editingCase?.id === case_.id ? (
                 <Input
@@ -205,52 +232,64 @@ const AdminCases = () => {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {editingCase?.id === case_.id ? (
                   <>
                     <div>
-                      <p className="text-sm font-medium">Price</p>
+                      <p className="text-sm font-medium mb-1">Price</p>
                       <Input
                         type="number"
                         value={editingCase.price}
                         onChange={(e) => setEditingCase({ ...editingCase, price: parseFloat(e.target.value) })}
-                        className="text-2xl font-bold"
                       />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">Best Drop</p>
+                      <p className="text-sm font-medium mb-1">Best Drop</p>
                       <Input
                         value={editingCase.best_drop}
                         onChange={(e) => setEditingCase({ ...editingCase, best_drop: e.target.value })}
-                        className="text-2xl font-bold"
                       />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">Category</p>
+                      <p className="text-sm font-medium mb-1">Category</p>
                       <Input
                         value={editingCase.category}
                         onChange={(e) => setEditingCase({ ...editingCase, category: e.target.value })}
-                        className="text-lg"
                       />
                     </div>
                     <div>
-                      <p className="text-sm font-medium">Image</p>
+                      <p className="text-sm font-medium mb-1">Image</p>
                       <ImageUpload onUploadComplete={handleImageUpload} />
+                      {editingCase.image_url && (
+                        <img 
+                          src={editingCase.image_url} 
+                          alt="Preview" 
+                          className="mt-2 w-32 h-32 object-cover rounded-lg"
+                        />
+                      )}
                     </div>
                   </>
                 ) : (
                   <>
                     <div>
-                      <p className="text-sm font-medium">Price</p>
+                      <p className="text-sm font-medium mb-1">Price</p>
                       <p className="text-2xl font-bold">${case_.price}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium">Best Drop</p>
+                      <p className="text-sm font-medium mb-1">Best Drop</p>
                       <p className="text-2xl font-bold">{case_.best_drop}</p>
                     </div>
                     <div>
-                      <p className="text-sm font-medium">Category</p>
+                      <p className="text-sm font-medium mb-1">Category</p>
                       <p className="text-lg">{case_.category}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium mb-1">Image</p>
+                      <img 
+                        src={case_.image_url} 
+                        alt={case_.name}
+                        className="w-32 h-32 object-cover rounded-lg"
+                      />
                     </div>
                   </>
                 )}
