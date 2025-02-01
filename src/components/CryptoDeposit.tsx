@@ -86,37 +86,10 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
       if (error) throw error;
 
       toast({
-        title: "Processing deposit",
-        description: "Your deposit is being processed. Please allow up to 10 minutes for the funds to reflect in your account.",
+        title: "Deposit submitted",
+        description: "Your deposit is pending approval. Please wait for admin confirmation.",
       });
-
-      setTimeout(async () => {
-        const { error: updateError } = await supabase
-          .from('transactions')
-          .update({ 
-            status: 'completed',
-            pending_amount: 0
-          })
-          .eq('user_id', user?.id)
-          .eq('type', 'deposit')
-          .eq('status', 'pending');
-
-        if (updateError) {
-          console.error('Error updating transaction:', updateError);
-          toast({
-            title: "Error processing deposit",
-            description: "Please contact support if the issue persists.",
-            variant: "destructive",
-          });
-        } else {
-          toast({
-            title: "Deposit confirmed!",
-            description: "Your deposit has been confirmed and credited to your account.",
-          });
-          onOpenChange(false);
-        }
-        setIsProcessing(false);
-      }, 600000); // 10 minutes
+      onOpenChange(false);
     } catch (error) {
       console.error('Error creating transaction:', error);
       toast({

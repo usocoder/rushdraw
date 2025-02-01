@@ -60,14 +60,15 @@ export const WithdrawModal = ({ isOpen, onOpenChange }: Props) => {
           user_id: user?.id,
           type: 'withdraw',
           amount: withdrawAmount,
-          status: 'completed',
+          status: 'pending',
+          pending_amount: withdrawAmount
         });
 
       if (error) throw error;
 
       toast({
-        title: "Withdrawal successful",
-        description: "Your funds have been sent to the provided address.",
+        title: "Withdrawal submitted",
+        description: "Your withdrawal request is pending approval. Please wait for admin confirmation.",
       });
       onOpenChange(false);
     } catch (error) {

@@ -53,6 +53,7 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
         } : undefined}
         style={{
           willChange: 'transform',
+          translateY: '-50%', // Center vertically
         }}
       >
         {(isSpinning ? items : finalItem ? [finalItem] : []).map((item, index) => (
