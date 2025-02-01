@@ -71,7 +71,7 @@ export const CaseGrid = () => {
                 value: item.value,
                 odds: item.odds,
                 multiplier: item.multiplier,
-                rarity: item.rarity,
+                rarity: item.rarity as 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary',
                 image: item.image_url
               })) || []}
             />

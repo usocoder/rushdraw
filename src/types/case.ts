@@ -1,5 +1,5 @@
 export interface CaseItem {
-  id: number;
+  id: string;
   name: string;
   value: number;
   odds: number;
@@ -9,7 +9,7 @@ export interface CaseItem {
 }
 
 export interface Case {
-  id: number;
+  id: string;
   name: string;
   price: number;
   image: string;
