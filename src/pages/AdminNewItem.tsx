@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -50,13 +50,12 @@ const AdminNewItem = () => {
     enabled: !!user,
   });
 
-  // Fetch all cases for the select input
-  const { data: cases, isLoading: isLoadingCases } = useQuery({
-    queryKey: ['cases-select'],
+  const { data: cases } = useQuery({
+    queryKey: ['cases'],
     queryFn: async () => {
       const { data, error } = await supabase
         .from('cases')
-        .select('id, name')
+        .select('*')
         .order('name');
       
       if (error) throw error;
@@ -64,19 +63,27 @@ const AdminNewItem = () => {
     },
   });
 
+  useEffect(() => {
+    if (!isCheckingRole && (!user || userRole?.role !== 'admin')) {
+      navigate('/');
+    }
+  }, [user, userRole, isCheckingRole, navigate]);
+
   const onSubmit = async (data: FormData) => {
     const { error } = await supabase
       .from('case_items')
-      .insert([{
+      .insert({
         ...data,
-        odds: parseFloat(data.odds.toString()) / 100, // Convert percentage to decimal
-      }]);
+        value: Number(data.value),
+        odds: Number(data.odds),
+        multiplier: Number(data.multiplier),
+      });
 
     if (error) {
       toast({
-        variant: "destructive",
         title: "Error",
         description: "Failed to create item",
+        variant: "destructive",
       });
       return;
     }
@@ -88,7 +95,7 @@ const AdminNewItem = () => {
     navigate('/admin/items');
   };
 
-  if (isCheckingRole || isLoadingCases) {
+  if (isCheckingRole) {
     return <div>Loading...</div>;
   }
 
@@ -109,7 +116,7 @@ const AdminNewItem = () => {
           <CardTitle>Create New Item</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             <div>
               <Label htmlFor="name">Name</Label>
               <Input 
@@ -126,6 +133,7 @@ const AdminNewItem = () => {
               <Input 
                 id="value"
                 type="number"
+                step="0.01"
                 {...register("value", { 
                   required: "Value is required",
                   min: { value: 0, message: "Value must be positive" }
@@ -158,7 +166,7 @@ const AdminNewItem = () => {
               <Input 
                 id="multiplier"
                 type="number"
-                step="0.1"
+                step="0.01"
                 {...register("multiplier", { 
                   required: "Multiplier is required",
                   min: { value: 0, message: "Multiplier must be positive" }
@@ -176,7 +184,7 @@ const AdminNewItem = () => {
                 control={control}
                 rules={{ required: "Rarity is required" }}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select rarity" />
                     </SelectTrigger>
@@ -184,6 +192,7 @@ const AdminNewItem = () => {
                       <SelectItem value="common">Common</SelectItem>
                       <SelectItem value="uncommon">Uncommon</SelectItem>
                       <SelectItem value="rare">Rare</SelectItem>
+                      <SelectItem value="epic">Epic</SelectItem>
                       <SelectItem value="legendary">Legendary</SelectItem>
                     </SelectContent>
                   </Select>
@@ -208,14 +217,14 @@ const AdminNewItem = () => {
                 control={control}
                 rules={{ required: "Case is required" }}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select case" />
                     </SelectTrigger>
                     <SelectContent>
-                      {cases?.map((case_) => (
-                        <SelectItem key={case_.id} value={case_.id}>
-                          {case_.name}
+                      {cases?.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>
+                          {c.name}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -227,9 +236,7 @@ const AdminNewItem = () => {
               )}
             </div>
 
-            <Button type="submit" className="w-full">
-              Create Item
-            </Button>
+            <Button type="submit">Create Item</Button>
           </form>
         </CardContent>
       </Card>

@@ -74,27 +74,44 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
     if (user) {
       fetchBalance();
 
-      // Subscribe to real-time changes on the transactions table
-      const channel = supabase
-        .channel('balance-updates')
+      // Subscribe to real-time changes on both transactions and balances tables
+      const transactionsChannel = supabase
+        .channel('transaction-updates')
         .on(
           'postgres_changes',
           {
-            event: 'UPDATE',
+            event: '*',
             schema: 'public',
             table: 'transactions',
             filter: `user_id=eq.${user.id}`,
           },
-          (payload) => {
-            console.log('Transaction updated:', payload);
-            // Refresh balance when a transaction is updated (e.g., approved)
+          () => {
+            console.log('Transaction updated, refreshing balance');
+            fetchBalance();
+          }
+        )
+        .subscribe();
+
+      const balancesChannel = supabase
+        .channel('balance-updates')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'balances',
+            filter: `user_id=eq.${user.id}`,
+          },
+          () => {
+            console.log('Balance updated, refreshing');
             fetchBalance();
           }
         )
         .subscribe();
 
       return () => {
-        supabase.removeChannel(channel);
+        supabase.removeChannel(transactionsChannel);
+        supabase.removeChannel(balancesChannel);
       };
     }
   }, [user]);
