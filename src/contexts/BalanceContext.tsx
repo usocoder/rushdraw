@@ -53,7 +53,7 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
         user_id: user.id,
         type,
         amount,
-        status: 'completed',
+        status: 'completed'
       });
 
       if (error) throw error;
@@ -73,6 +73,29 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
   useEffect(() => {
     if (user) {
       fetchBalance();
+
+      // Subscribe to real-time changes on the transactions table
+      const channel = supabase
+        .channel('balance-updates')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'transactions',
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            console.log('Transaction updated:', payload);
+            // Refresh balance when a transaction is updated (e.g., approved)
+            fetchBalance();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [user]);
 

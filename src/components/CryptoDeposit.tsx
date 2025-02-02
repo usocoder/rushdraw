@@ -97,6 +97,7 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
         description: "Please try again later.",
         variant: "destructive",
       });
+    } finally {
       setIsProcessing(false);
     }
   };
