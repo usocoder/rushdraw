@@ -5,6 +5,7 @@ import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { TransactionApprovals } from "@/components/admin/TransactionApprovals";
+import { X } from "lucide-react";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -39,7 +40,7 @@ const Admin = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col gap-8">
+      <div className="flex justify-between items-center mb-8">
         <div className="flex flex-wrap gap-4">
           <Button onClick={() => navigate('/admin/cases')}>
             Manage Cases
@@ -48,9 +49,12 @@ const Admin = () => {
             Manage Items
           </Button>
         </div>
-
-        <TransactionApprovals />
+        <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
+          <X className="h-4 w-4" />
+        </Button>
       </div>
+
+      <TransactionApprovals />
     </div>
   );
 };

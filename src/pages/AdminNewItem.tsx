@@ -11,12 +11,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { useForm, Controller } from "react-hook-form";
+import { ImageUpload } from "@/components/ImageUpload";
 
 interface FormData {
   name: string;
@@ -32,9 +33,8 @@ const AdminNewItem = () => {
   const navigate = useNavigate();
   const { user } = useBrowserAuth();
   const { toast } = useToast();
-  const { register, handleSubmit, control, formState: { errors } } = useForm<FormData>();
+  const { register, handleSubmit, control, setValue, formState: { errors } } = useForm<FormData>();
 
-  // Check if user is admin
   const { data: userRole, isLoading: isCheckingRole } = useQuery({
     queryKey: ['userRole', user?.id],
     queryFn: async () => {
@@ -63,13 +63,6 @@ const AdminNewItem = () => {
       return data;
     },
   });
-
-  // Redirect non-admin users
-  useEffect(() => {
-    if (!isCheckingRole && (!user || userRole?.role !== 'admin')) {
-      navigate('/');
-    }
-  }, [user, userRole, isCheckingRole, navigate]);
 
   const onSubmit = async (data: FormData) => {
     const { error } = await supabase
@@ -101,10 +94,15 @@ const AdminNewItem = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <Button variant="outline" onClick={() => navigate('/admin/items')} className="mb-8">
-        <ArrowLeft className="mr-2 h-4 w-4" />
-        Back to Items
-      </Button>
+      <div className="flex justify-between items-center mb-8">
+        <Button variant="outline" onClick={() => navigate('/admin/items')}>
+          <ArrowLeft className="mr-2 h-4 w-4" />
+          Back to Items
+        </Button>
+        <Button variant="ghost" size="icon" onClick={() => navigate('/admin')}>
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
 
       <Card>
         <CardHeader>
@@ -197,11 +195,7 @@ const AdminNewItem = () => {
             </div>
 
             <div>
-              <Label htmlFor="image_url">Image URL</Label>
-              <Input 
-                id="image_url"
-                {...register("image_url", { required: "Image URL is required" })}
-              />
+              <ImageUpload onUploadComplete={(url) => setValue('image_url', url)} />
               {errors.image_url && (
                 <p className="text-sm text-red-500">{errors.image_url.message}</p>
               )}
