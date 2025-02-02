@@ -6,6 +6,7 @@ import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { useToast } from "./ui/use-toast";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Loader2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export const LoginModal = ({ isOpen, onOpenChange }: LoginModalProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { login, error } = useBrowserAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const resetForm = () => {
     setEmail("");
@@ -39,6 +41,10 @@ export const LoginModal = ({ isOpen, onOpenChange }: LoginModalProps) => {
     try {
       const success = await login(email, password);
       if (success) {
+        // Invalidate and refetch queries that depend on auth state
+        await queryClient.invalidateQueries({ queryKey: ['userRole'] });
+        await queryClient.invalidateQueries({ queryKey: ['balance'] });
+        
         onOpenChange(false);
         resetForm();
         toast({
@@ -55,7 +61,6 @@ export const LoginModal = ({ isOpen, onOpenChange }: LoginModalProps) => {
       }
     } catch (err) {
       console.error("Login error:", err);
-      // Show a more user-friendly error message
       toast({
         title: "Login failed",
         description: "Invalid email or password. Please try again.",
