@@ -4,10 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
+import { useBalance } from "@/contexts/BalanceContext";
 
 export const TransactionApprovals = () => {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
+  const { refreshBalance } = useBalance();
 
   const { data: pendingTransactions, isLoading, refetch } = useQuery({
     queryKey: ['pending-transactions'],
@@ -52,6 +54,12 @@ export const TransactionApprovals = () => {
 
       console.log('Transaction updated successfully:', data);
 
+      // If approved, explicitly refresh the balance
+      if (approved) {
+        console.log('Refreshing balance after approval');
+        await refreshBalance();
+      }
+
       toast({
         title: approved ? "Transaction approved" : "Transaction rejected",
         description: `The transaction has been ${approved ? 'approved' : 'rejected'} successfully.`,
@@ -86,6 +94,8 @@ export const TransactionApprovals = () => {
         (payload) => {
           console.log('Transaction change detected:', payload);
           refetch();
+          // Also refresh balance when transaction status changes
+          refreshBalance();
         }
       )
       .subscribe();
@@ -94,7 +104,7 @@ export const TransactionApprovals = () => {
       console.log('Cleaning up real-time listeners');
       supabase.removeChannel(channel);
     };
-  }, [refetch]);
+  }, [refetch, refreshBalance]);
 
   if (isLoading) {
     return (
