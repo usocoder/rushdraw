@@ -4,81 +4,97 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
-import { useBalance } from "@/contexts/BalanceContext";
+import { useBalance } from "@/contexts/BalanceContext";  // Assuming you have a BalanceContext to manage the balance state.
 
 export const TransactionApprovals = () => {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
-  const { refreshBalance } = useBalance();
+  const { refreshBalance } = useBalance(); // Assuming this is to refresh the balance.
 
   const { data: pendingTransactions, isLoading, refetch } = useQuery({
-    queryKey: ["pending-transactions"],
+    queryKey: ['pending-transactions'],
     queryFn: async () => {
-      console.log("🔄 Fetching pending transactions...");
+      console.log('Fetching pending transactions...');
       const { data, error } = await supabase
-        .from("transactions")
-        .select("*")
-        .eq("status", "pending")
-        .order("created_at", { ascending: false });
+        .from('transactions')
+        .select('*')
+        .eq('status', 'pending')
+        .order('created_at', { ascending: false });
 
       if (error) {
-        console.error("❌ Error fetching transactions:", error);
+        console.error('Error fetching transactions:', error);
         throw error;
       }
+      console.log('Fetched pending transactions:', data);
       return data;
     },
   });
 
-  const handleApproval = async (transactionId: string, userId: string, amount: number, approved: boolean) => {
+  // Function to update the balance using Supabase RPC
+  const handleBalanceUpdate = async (userId: string, amount: number) => {
+    const { error } = await supabase.rpc("increment_balance", {
+      user_id: userId,
+      amount: amount,
+    });
+
+    if (error) {
+      console.error("Error updating balance:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update balance",
+        variant: "destructive",
+      });
+    } else {
+      console.log("Balance updated successfully");
+      toast({
+        title: "Balance updated",
+        description: `The user's balance has been updated by ${amount}.`,
+      });
+    }
+  };
+
+  const handleApproval = async (transactionId: string, approved: boolean, userId: string) => {
     setIsProcessing(true);
     try {
-      console.log("🔄 Processing transaction:", { transactionId, approved });
+      console.log('Processing transaction:', { transactionId, approved });
 
-      // Step 1: Update the transaction status
-      const { data: updatedTransaction, error: transactionError } = await supabase
-        .from("transactions")
-        .update({
-          status: approved ? "completed" : "rejected",
+      // First update the transaction status
+      const { data, error: transactionError } = await supabase
+        .from('transactions')
+        .update({ 
+          status: approved ? 'completed' : 'rejected',
           pending_amount: 0,
-          updated_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         })
-        .eq("id", transactionId)
+        .eq('id', transactionId)
         .select()
         .single();
 
       if (transactionError) {
-        console.error("❌ Error updating transaction:", transactionError);
-        throw new Error("Transaction update failed: " + transactionError.message);
+        console.error('Error updating transaction:', transactionError);
+        throw transactionError;
       }
 
-      console.log("✅ Transaction updated successfully:", updatedTransaction);
+      console.log('Transaction updated successfully:', data);
 
-      // Step 2: If approved, update user balance using an RPC function
+      // If approved, update the balance
       if (approved) {
-        console.log("🔄 Updating user balance for user:", userId, " Amount:", amount);
-
-        const { error: balanceError } = await supabase.rpc("increment_balance", { user_id: userId, amount });
-
-        if (balanceError) {
-          console.error("❌ Error updating balance:", balanceError);
-          throw new Error("Balance update failed: " + balanceError.message);
-        }
-
-        console.log("✅ User balance updated successfully.");
+        console.log('Updating balance after approval');
+        await handleBalanceUpdate(userId, data.amount);  // Assuming the `amount` field exists in the transaction
         await refreshBalance();
       }
 
       toast({
         title: approved ? "Transaction approved" : "Transaction rejected",
-        description: `The transaction has been ${approved ? "approved" : "rejected"} successfully.`,
+        description: `The transaction has been ${approved ? 'approved' : 'rejected'} successfully.`,
       });
 
-      refetch(); // Refresh transactions list
+      refetch();
     } catch (error) {
-      console.error("❌ Error processing transaction:", error);
+      console.error('Error processing transaction:', error);
       toast({
         title: "Error",
-        description: error.message || "Failed to process the transaction",
+        description: "Failed to process the transaction",
         variant: "destructive",
       });
     } finally {
@@ -86,27 +102,30 @@ export const TransactionApprovals = () => {
     }
   };
 
+  // Subscribe to real-time changes
   useEffect(() => {
-    console.log("🔄 Setting up real-time listeners for transactions");
+    console.log('Setting up real-time listeners for transactions');
     const channel = supabase
-      .channel("transaction-updates")
+      .channel('transaction-updates')
       .on(
-        "postgres_changes",
+        'postgres_changes',
         {
-          event: "*",
-          schema: "public",
-          table: "transactions",
+          event: '*',
+          schema: 'public',
+          table: 'transactions',
+          filter: `status=eq.pending`,
         },
-        async (payload) => {
-          console.log("🔔 Transaction change detected:", payload);
+        (payload) => {
+          console.log('Transaction change detected:', payload);
           refetch();
-          await refreshBalance();
+          // Also refresh balance when transaction status changes
+          refreshBalance();
         }
       )
       .subscribe();
 
     return () => {
-      console.log("🧹 Cleaning up real-time listeners");
+      console.log('Cleaning up real-time listeners');
       supabase.removeChannel(channel);
     };
   }, [refetch, refreshBalance]);
@@ -133,8 +152,7 @@ export const TransactionApprovals = () => {
             >
               <div>
                 <p className="font-semibold">
-                  {transaction.type.charAt(0).toUpperCase() +
-                    transaction.type.slice(1)}
+                  {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Amount: ${transaction.amount}
@@ -148,9 +166,7 @@ export const TransactionApprovals = () => {
                   variant="destructive"
                   size="sm"
                   disabled={isProcessing}
-                  onClick={() =>
-                    handleApproval(transaction.id, transaction.user_id, transaction.amount, false)
-                  }
+                  onClick={() => handleApproval(transaction.id, false, transaction.user_id)}  // Assuming `user_id` exists in the transaction
                 >
                   Reject
                 </Button>
@@ -158,9 +174,7 @@ export const TransactionApprovals = () => {
                   variant="default"
                   size="sm"
                   disabled={isProcessing}
-                  onClick={() =>
-                    handleApproval(transaction.id, transaction.user_id, transaction.amount, true)
-                  }
+                  onClick={() => handleApproval(transaction.id, true, transaction.user_id)}  // Same here
                 >
                   Approve
                 </Button>
