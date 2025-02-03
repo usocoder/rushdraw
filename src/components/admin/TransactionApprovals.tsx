@@ -30,7 +30,7 @@ export const TransactionApprovals = () => {
     },
   });
 
-  const handleApproval = async (transactionId: string, approved: boolean) => {
+  const handleApproval = async (transactionId: string, userId: string, amount: number, approved: boolean) => {
     setIsProcessing(true);
     try {
       console.log("Processing transaction:", { transactionId, approved });
@@ -54,8 +54,23 @@ export const TransactionApprovals = () => {
 
       console.log("Transaction updated successfully:", data);
 
-      // Explicitly refresh balance AFTER transaction update
-      await refreshBalance();
+      if (approved) {
+        console.log("Updating user balance...");
+        const { error: balanceError } = await supabase
+          .from("users") // Change to the correct table storing balance
+          .update({
+            balance: supabase.raw("balance + ?", [amount]), // Atomic update
+          })
+          .eq("id", userId);
+
+        if (balanceError) {
+          console.error("Error updating balance:", balanceError);
+          throw balanceError;
+        }
+
+        console.log("User balance updated successfully.");
+        await refreshBalance();
+      }
 
       toast({
         title: approved ? "Transaction approved" : "Transaction rejected",
@@ -75,7 +90,7 @@ export const TransactionApprovals = () => {
     }
   };
 
-  // Subscribe to real-time changes (fixing listener)
+  // Subscribe to real-time changes
   useEffect(() => {
     console.log("Setting up real-time listeners for transactions");
     const channel = supabase
@@ -83,14 +98,14 @@ export const TransactionApprovals = () => {
       .on(
         "postgres_changes",
         {
-          event: "*", // Listen to all updates
+          event: "*",
           schema: "public",
           table: "transactions",
         },
-        (payload) => {
+        async (payload) => {
           console.log("Transaction change detected:", payload);
           refetch();
-          refreshBalance(); // Ensure balance updates on any transaction change
+          await refreshBalance();
         }
       )
       .subscribe();
@@ -138,7 +153,9 @@ export const TransactionApprovals = () => {
                   variant="destructive"
                   size="sm"
                   disabled={isProcessing}
-                  onClick={() => handleApproval(transaction.id, false)}
+                  onClick={() =>
+                    handleApproval(transaction.id, transaction.user_id, transaction.amount, false)
+                  }
                 >
                   Reject
                 </Button>
@@ -146,7 +163,9 @@ export const TransactionApprovals = () => {
                   variant="default"
                   size="sm"
                   disabled={isProcessing}
-                  onClick={() => handleApproval(transaction.id, true)}
+                  onClick={() =>
+                    handleApproval(transaction.id, transaction.user_id, transaction.amount, true)
+                  }
                 >
                   Approve
                 </Button>
