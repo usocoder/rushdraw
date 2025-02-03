@@ -25,7 +25,6 @@ export const TransactionApprovals = () => {
         console.error("❌ Error fetching transactions:", error);
         throw error;
       }
-      console.log("✅ Fetched pending transactions:", data);
       return data;
     },
   });
@@ -54,16 +53,11 @@ export const TransactionApprovals = () => {
 
       console.log("✅ Transaction updated successfully:", updatedTransaction);
 
-      // Step 2: If approved, update user balance
+      // Step 2: If approved, update user balance using an RPC function
       if (approved) {
         console.log("🔄 Updating user balance for user:", userId, " Amount:", amount);
 
-        const { error: balanceError } = await supabase
-          .from("users") // Change this if balance is stored in another table
-          .update({
-            balance: supabase.raw("balance + ?", [amount]), // Atomic update
-          })
-          .eq("id", userId);
+        const { error: balanceError } = await supabase.rpc("increment_balance", { user_id: userId, amount });
 
         if (balanceError) {
           console.error("❌ Error updating balance:", balanceError);
@@ -92,7 +86,6 @@ export const TransactionApprovals = () => {
     }
   };
 
-  // Subscribe to real-time changes
   useEffect(() => {
     console.log("🔄 Setting up real-time listeners for transactions");
     const channel = supabase
