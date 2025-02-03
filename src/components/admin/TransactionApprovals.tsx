@@ -4,12 +4,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
-import { useBalance } from "@/contexts/BalanceContext";  // Assuming you have a BalanceContext to manage the balance state.
+import { useBalance } from "@/contexts/BalanceContext";
 
 export const TransactionApprovals = () => {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
-  const { refreshBalance } = useBalance(); // Assuming this is to refresh the balance.
+  const { refreshBalance } = useBalance();
 
   const { data: pendingTransactions, isLoading, refetch } = useQuery({
     queryKey: ['pending-transactions'],
@@ -30,34 +30,11 @@ export const TransactionApprovals = () => {
     },
   });
 
-  // Function to update the balance using Supabase RPC
-  const handleBalanceUpdate = async (userId: string, amount: number) => {
-    const { error } = await supabase.rpc("increment_balance", {
-      user_id: userId,
-      amount: amount,
-    });
-
-    if (error) {
-      console.error("Error updating balance:", error);
-      toast({
-        title: "Error",
-        description: "Failed to update balance",
-        variant: "destructive",
-      });
-    } else {
-      console.log("Balance updated successfully");
-      toast({
-        title: "Balance updated",
-        description: `The user's balance has been updated by ${amount}.`,
-      });
-    }
-  };
-
-  const handleApproval = async (transactionId: string, approved: boolean, userId: string) => {
+  const handleApproval = async (transactionId: string, approved: boolean) => {
     setIsProcessing(true);
     try {
       console.log('Processing transaction:', { transactionId, approved });
-
+      
       // First update the transaction status
       const { data, error: transactionError } = await supabase
         .from('transactions')
@@ -77,10 +54,9 @@ export const TransactionApprovals = () => {
 
       console.log('Transaction updated successfully:', data);
 
-      // If approved, update the balance
+      // If approved, explicitly refresh the balance
       if (approved) {
-        console.log('Updating balance after approval');
-        await handleBalanceUpdate(userId, data.amount);  // Assuming the `amount` field exists in the transaction
+        console.log('Refreshing balance after approval');
         await refreshBalance();
       }
 
@@ -166,7 +142,7 @@ export const TransactionApprovals = () => {
                   variant="destructive"
                   size="sm"
                   disabled={isProcessing}
-                  onClick={() => handleApproval(transaction.id, false, transaction.user_id)}  // Assuming `user_id` exists in the transaction
+                  onClick={() => handleApproval(transaction.id, false)}
                 >
                   Reject
                 </Button>
@@ -174,7 +150,7 @@ export const TransactionApprovals = () => {
                   variant="default"
                   size="sm"
                   disabled={isProcessing}
-                  onClick={() => handleApproval(transaction.id, true, transaction.user_id)}  // Same here
+                  onClick={() => handleApproval(transaction.id, true)}
                 >
                   Approve
                 </Button>
