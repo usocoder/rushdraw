@@ -26,6 +26,7 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
   const fetchBalance = async () => {
     if (!user) return;
     try {
+      console.log('Fetching balance for user:', user.id);
       const { data, error } = await supabase
         .from('balances')
         .select('amount')
@@ -33,6 +34,7 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
         .single();
 
       if (error) throw error;
+      console.log('Fetched balance:', data.amount);
       setBalance(data.amount);
     } catch (error) {
       console.error('Error fetching balance:', error);
@@ -49,15 +51,21 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
   const createTransaction = async (type: 'deposit' | 'case_open' | 'case_win', amount: number): Promise<boolean> => {
     if (!user) return false;
     try {
+      console.log('Creating transaction:', { type, amount, user_id: user.id });
       const { error } = await supabase.from('transactions').insert({
         user_id: user.id,
         type,
         amount,
-        status: 'completed'
+        status: type === 'deposit' ? 'pending' : 'completed',
+        pending_amount: type === 'deposit' ? amount : 0
       });
 
       if (error) throw error;
-      await fetchBalance();
+      
+      // Only fetch balance immediately for non-deposit transactions
+      if (type !== 'deposit') {
+        await fetchBalance();
+      }
       return true;
     } catch (error) {
       console.error('Error creating transaction:', error);
@@ -72,6 +80,7 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
 
   useEffect(() => {
     if (user) {
+      console.log('Setting up real-time listeners for user:', user.id);
       fetchBalance();
 
       // Subscribe to real-time changes on transactions table
@@ -111,6 +120,7 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
         .subscribe();
 
       return () => {
+        console.log('Cleaning up real-time listeners');
         supabase.removeChannel(transactionsChannel);
         supabase.removeChannel(balancesChannel);
       };

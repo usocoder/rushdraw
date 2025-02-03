@@ -26,15 +26,17 @@ export const TransactionApprovals = () => {
   const handleApproval = async (transactionId: string, approved: boolean) => {
     setIsProcessing(true);
     try {
-      const { error } = await supabase
+      // First update the transaction status
+      const { error: transactionError } = await supabase
         .from('transactions')
         .update({ 
           status: approved ? 'completed' : 'rejected',
-          pending_amount: 0
+          pending_amount: 0,
+          updated_at: new Date().toISOString()
         })
         .eq('id', transactionId);
 
-      if (error) throw error;
+      if (transactionError) throw transactionError;
 
       toast({
         title: approved ? "Transaction approved" : "Transaction rejected",
@@ -53,6 +55,30 @@ export const TransactionApprovals = () => {
       setIsProcessing(false);
     }
   };
+
+  // Subscribe to real-time changes
+  useEffect(() => {
+    const channel = supabase
+      .channel('transaction-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions',
+          filter: `status=eq.pending`,
+        },
+        () => {
+          console.log('Transaction updated, refreshing...');
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetch]);
 
   if (isLoading) {
     return (
