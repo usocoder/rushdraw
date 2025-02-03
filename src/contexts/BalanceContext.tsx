@@ -74,7 +74,7 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
     if (user) {
       fetchBalance();
 
-      // Subscribe to real-time changes on both transactions and balances tables
+      // Subscribe to real-time changes on transactions table
       const transactionsChannel = supabase
         .channel('transaction-updates')
         .on(
@@ -85,13 +85,14 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
             table: 'transactions',
             filter: `user_id=eq.${user.id}`,
           },
-          () => {
-            console.log('Transaction updated, refreshing balance');
+          (payload) => {
+            console.log('Transaction updated:', payload);
             fetchBalance();
           }
         )
         .subscribe();
 
+      // Subscribe to real-time changes on balances table
       const balancesChannel = supabase
         .channel('balance-updates')
         .on(
@@ -102,8 +103,8 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
             table: 'balances',
             filter: `user_id=eq.${user.id}`,
           },
-          () => {
-            console.log('Balance updated, refreshing');
+          (payload) => {
+            console.log('Balance updated:', payload);
             fetchBalance();
           }
         )
