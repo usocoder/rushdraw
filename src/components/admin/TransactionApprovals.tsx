@@ -12,20 +12,20 @@ export const TransactionApprovals = () => {
   const { refreshBalance } = useBalance();
 
   const { data: pendingTransactions, isLoading, refetch } = useQuery({
-    queryKey: ['pending-transactions'],
+    queryKey: ["pending-transactions"],
     queryFn: async () => {
-      console.log('Fetching pending transactions...');
+      console.log("Fetching pending transactions...");
       const { data, error } = await supabase
-        .from('transactions')
-        .select('*')
-        .eq('status', 'pending')
-        .order('created_at', { ascending: false });
+        .from("transactions")
+        .select("*")
+        .eq("status", "pending")
+        .order("created_at", { ascending: false });
 
       if (error) {
-        console.error('Error fetching transactions:', error);
+        console.error("Error fetching transactions:", error);
         throw error;
       }
-      console.log('Fetched pending transactions:', data);
+      console.log("Fetched pending transactions:", data);
       return data;
     },
   });
@@ -33,41 +33,38 @@ export const TransactionApprovals = () => {
   const handleApproval = async (transactionId: string, approved: boolean) => {
     setIsProcessing(true);
     try {
-      console.log('Processing transaction:', { transactionId, approved });
-      
-      // First update the transaction status
+      console.log("Processing transaction:", { transactionId, approved });
+
+      // Update the transaction status
       const { data, error: transactionError } = await supabase
-        .from('transactions')
-        .update({ 
-          status: approved ? 'completed' : 'rejected',
+        .from("transactions")
+        .update({
+          status: approved ? "completed" : "rejected",
           pending_amount: 0,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', transactionId)
+        .eq("id", transactionId)
         .select()
         .single();
 
       if (transactionError) {
-        console.error('Error updating transaction:', transactionError);
+        console.error("Error updating transaction:", transactionError);
         throw transactionError;
       }
 
-      console.log('Transaction updated successfully:', data);
+      console.log("Transaction updated successfully:", data);
 
-      // If approved, explicitly refresh the balance
-      if (approved) {
-        console.log('Refreshing balance after approval');
-        await refreshBalance();
-      }
+      // Explicitly refresh balance AFTER transaction update
+      await refreshBalance();
 
       toast({
         title: approved ? "Transaction approved" : "Transaction rejected",
-        description: `The transaction has been ${approved ? 'approved' : 'rejected'} successfully.`,
+        description: `The transaction has been ${approved ? "approved" : "rejected"} successfully.`,
       });
 
-      refetch();
+      refetch(); // Refresh transactions list
     } catch (error) {
-      console.error('Error processing transaction:', error);
+      console.error("Error processing transaction:", error);
       toast({
         title: "Error",
         description: "Failed to process the transaction",
@@ -78,30 +75,28 @@ export const TransactionApprovals = () => {
     }
   };
 
-  // Subscribe to real-time changes
+  // Subscribe to real-time changes (fixing listener)
   useEffect(() => {
-    console.log('Setting up real-time listeners for transactions');
+    console.log("Setting up real-time listeners for transactions");
     const channel = supabase
-      .channel('transaction-updates')
+      .channel("transaction-updates")
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: '*',
-          schema: 'public',
-          table: 'transactions',
-          filter: `status=eq.pending`,
+          event: "*", // Listen to all updates
+          schema: "public",
+          table: "transactions",
         },
         (payload) => {
-          console.log('Transaction change detected:', payload);
+          console.log("Transaction change detected:", payload);
           refetch();
-          // Also refresh balance when transaction status changes
-          refreshBalance();
+          refreshBalance(); // Ensure balance updates on any transaction change
         }
       )
       .subscribe();
 
     return () => {
-      console.log('Cleaning up real-time listeners');
+      console.log("Cleaning up real-time listeners");
       supabase.removeChannel(channel);
     };
   }, [refetch, refreshBalance]);
@@ -128,7 +123,8 @@ export const TransactionApprovals = () => {
             >
               <div>
                 <p className="font-semibold">
-                  {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
+                  {transaction.type.charAt(0).toUpperCase() +
+                    transaction.type.slice(1)}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   Amount: ${transaction.amount}
