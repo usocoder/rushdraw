@@ -14,7 +14,7 @@ export const TransactionApprovals = () => {
   const { data: pendingTransactions, isLoading, refetch } = useQuery({
     queryKey: ["pending-transactions"],
     queryFn: async () => {
-      console.log("Fetching pending transactions...");
+      console.log("🔄 Fetching pending transactions...");
       const { data, error } = await supabase
         .from("transactions")
         .select("*")
@@ -22,10 +22,10 @@ export const TransactionApprovals = () => {
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.error("Error fetching transactions:", error);
+        console.error("❌ Error fetching transactions:", error);
         throw error;
       }
-      console.log("Fetched pending transactions:", data);
+      console.log("✅ Fetched pending transactions:", data);
       return data;
     },
   });
@@ -33,10 +33,10 @@ export const TransactionApprovals = () => {
   const handleApproval = async (transactionId: string, userId: string, amount: number, approved: boolean) => {
     setIsProcessing(true);
     try {
-      console.log("Processing transaction:", { transactionId, approved });
+      console.log("🔄 Processing transaction:", { transactionId, approved });
 
-      // Update the transaction status
-      const { data, error: transactionError } = await supabase
+      // Step 1: Update the transaction status
+      const { data: updatedTransaction, error: transactionError } = await supabase
         .from("transactions")
         .update({
           status: approved ? "completed" : "rejected",
@@ -48,27 +48,29 @@ export const TransactionApprovals = () => {
         .single();
 
       if (transactionError) {
-        console.error("Error updating transaction:", transactionError);
-        throw transactionError;
+        console.error("❌ Error updating transaction:", transactionError);
+        throw new Error("Transaction update failed: " + transactionError.message);
       }
 
-      console.log("Transaction updated successfully:", data);
+      console.log("✅ Transaction updated successfully:", updatedTransaction);
 
+      // Step 2: If approved, update user balance
       if (approved) {
-        console.log("Updating user balance...");
+        console.log("🔄 Updating user balance for user:", userId, " Amount:", amount);
+
         const { error: balanceError } = await supabase
-          .from("users") // Change to the correct table storing balance
+          .from("users") // Change this if balance is stored in another table
           .update({
             balance: supabase.raw("balance + ?", [amount]), // Atomic update
           })
           .eq("id", userId);
 
         if (balanceError) {
-          console.error("Error updating balance:", balanceError);
-          throw balanceError;
+          console.error("❌ Error updating balance:", balanceError);
+          throw new Error("Balance update failed: " + balanceError.message);
         }
 
-        console.log("User balance updated successfully.");
+        console.log("✅ User balance updated successfully.");
         await refreshBalance();
       }
 
@@ -79,10 +81,10 @@ export const TransactionApprovals = () => {
 
       refetch(); // Refresh transactions list
     } catch (error) {
-      console.error("Error processing transaction:", error);
+      console.error("❌ Error processing transaction:", error);
       toast({
         title: "Error",
-        description: "Failed to process the transaction",
+        description: error.message || "Failed to process the transaction",
         variant: "destructive",
       });
     } finally {
@@ -92,7 +94,7 @@ export const TransactionApprovals = () => {
 
   // Subscribe to real-time changes
   useEffect(() => {
-    console.log("Setting up real-time listeners for transactions");
+    console.log("🔄 Setting up real-time listeners for transactions");
     const channel = supabase
       .channel("transaction-updates")
       .on(
@@ -103,7 +105,7 @@ export const TransactionApprovals = () => {
           table: "transactions",
         },
         async (payload) => {
-          console.log("Transaction change detected:", payload);
+          console.log("🔔 Transaction change detected:", payload);
           refetch();
           await refreshBalance();
         }
@@ -111,7 +113,7 @@ export const TransactionApprovals = () => {
       .subscribe();
 
     return () => {
-      console.log("Cleaning up real-time listeners");
+      console.log("🧹 Cleaning up real-time listeners");
       supabase.removeChannel(channel);
     };
   }, [refetch, refreshBalance]);
