@@ -33,7 +33,11 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
         .eq('user_id', user.id)
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching balance:', error);
+        throw error;
+      }
+      
       console.log('Fetched balance:', data.amount);
       setBalance(data.amount);
     } catch (error) {
@@ -52,15 +56,20 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
     if (!user) return false;
     try {
       console.log('Creating transaction:', { type, amount, user_id: user.id });
-      const { error } = await supabase.from('transactions').insert({
+      const { data, error } = await supabase.from('transactions').insert({
         user_id: user.id,
         type,
         amount,
         status: type === 'deposit' ? 'pending' : 'completed',
         pending_amount: type === 'deposit' ? amount : 0
-      });
+      }).select();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating transaction:', error);
+        throw error;
+      }
+      
+      console.log('Transaction created successfully:', data);
       
       // Only fetch balance immediately for non-deposit transactions
       if (type !== 'deposit') {

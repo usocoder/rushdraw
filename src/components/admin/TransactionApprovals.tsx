@@ -12,13 +12,18 @@ export const TransactionApprovals = () => {
   const { data: pendingTransactions, isLoading, refetch } = useQuery({
     queryKey: ['pending-transactions'],
     queryFn: async () => {
+      console.log('Fetching pending transactions...');
       const { data, error } = await supabase
         .from('transactions')
         .select('*')
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching transactions:', error);
+        throw error;
+      }
+      console.log('Fetched pending transactions:', data);
       return data;
     },
   });
@@ -26,17 +31,26 @@ export const TransactionApprovals = () => {
   const handleApproval = async (transactionId: string, approved: boolean) => {
     setIsProcessing(true);
     try {
+      console.log('Processing transaction:', { transactionId, approved });
+      
       // First update the transaction status
-      const { error: transactionError } = await supabase
+      const { data, error: transactionError } = await supabase
         .from('transactions')
         .update({ 
           status: approved ? 'completed' : 'rejected',
           pending_amount: 0,
           updated_at: new Date().toISOString()
         })
-        .eq('id', transactionId);
+        .eq('id', transactionId)
+        .select()
+        .single();
 
-      if (transactionError) throw transactionError;
+      if (transactionError) {
+        console.error('Error updating transaction:', transactionError);
+        throw transactionError;
+      }
+
+      console.log('Transaction updated successfully:', data);
 
       toast({
         title: approved ? "Transaction approved" : "Transaction rejected",
@@ -58,6 +72,7 @@ export const TransactionApprovals = () => {
 
   // Subscribe to real-time changes
   useEffect(() => {
+    console.log('Setting up real-time listeners for transactions');
     const channel = supabase
       .channel('transaction-updates')
       .on(
@@ -68,14 +83,15 @@ export const TransactionApprovals = () => {
           table: 'transactions',
           filter: `status=eq.pending`,
         },
-        () => {
-          console.log('Transaction updated, refreshing...');
+        (payload) => {
+          console.log('Transaction change detected:', payload);
           refetch();
         }
       )
       .subscribe();
 
     return () => {
+      console.log('Cleaning up real-time listeners');
       supabase.removeChannel(channel);
     };
   }, [refetch]);
