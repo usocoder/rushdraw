@@ -35,10 +35,19 @@ export const TransactionApprovals = () => {
       const { data, error } = await supabase
         .from('transactions')
         .select(`
-          *,
-          user:profiles!inner(
+          id,
+          user_id,
+          type,
+          amount,
+          status,
+          pending_amount,
+          created_at,
+          crypto_address,
+          profiles!inner (
             username,
-            email:auth.users!inner(email)
+            auth!inner (
+              email
+            )
           )
         `)
         .eq('status', 'pending')
@@ -48,8 +57,20 @@ export const TransactionApprovals = () => {
         console.error('Error fetching transactions:', error);
         throw error;
       }
-      console.log('Fetched pending transactions:', data);
-      return data as TransactionWithProfile[];
+
+      // Transform the data to match TransactionWithProfile interface
+      const transformedData = data.map(transaction => ({
+        ...transaction,
+        user: {
+          email: transaction.profiles.auth.email,
+          profile: {
+            username: transaction.profiles.username
+          }
+        }
+      }));
+
+      console.log('Fetched pending transactions:', transformedData);
+      return transformedData as TransactionWithProfile[];
     },
   });
 
