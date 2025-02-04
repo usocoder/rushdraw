@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, Mail, User, Wallet } from "lucide-react";
-import { useBalance } from "@/contexts/BalanceContext";
 
 interface TransactionWithProfile {
   id: string;
@@ -26,7 +25,6 @@ interface TransactionWithProfile {
 export const TransactionApprovals = () => {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
-  const { refreshBalance } = useBalance();
 
   // Fetch pending transactions
   const { data: pendingTransactions, isLoading, refetch } = useQuery({
@@ -44,9 +42,9 @@ export const TransactionApprovals = () => {
           pending_amount,
           created_at,
           crypto_address,
-          profiles (
+          profiles!transactions_user_id_fkey (
             username,
-            auth (
+            auth!profiles_id_fkey (
               email
             )
           )
@@ -99,7 +97,6 @@ export const TransactionApprovals = () => {
       });
 
       refetch();
-      refreshBalance();
     } catch (error) {
       console.error("Error updating transaction:", error);
       toast({
@@ -123,11 +120,11 @@ export const TransactionApprovals = () => {
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold">Pending Transactions</h2>
-      {pendingTransactions?.length === 0 ? (
+      {!pendingTransactions || pendingTransactions.length === 0 ? (
         <p className="text-muted-foreground">No pending transactions</p>
       ) : (
         <div className="grid gap-4">
-          {pendingTransactions?.map((transaction) => (
+          {pendingTransactions.map((transaction) => (
             <div
               key={transaction.id}
               className="p-4 rounded-lg border bg-card"
