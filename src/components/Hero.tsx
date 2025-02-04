@@ -28,7 +28,7 @@ export const Hero = () => {
         .from('user_roles')
         .select('role')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
       return data;
@@ -44,10 +44,10 @@ export const Hero = () => {
         .from('user_progress')
         .select('current_level, current_xp')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
-      return data;
+      return data || { current_level: 1, current_xp: 0 };
     },
     enabled: !!user,
   });

@@ -36,13 +36,33 @@ export const RewardsSection = () => {
   const { data: userProgress, refetch: refetchProgress } = useQuery({
     queryKey: ['userProgress', user?.id],
     queryFn: async () => {
+      // First try to get existing progress
       const { data, error } = await supabase
         .from('user_progress')
         .select('*')
         .eq('user_id', user?.id)
-        .single();
+        .maybeSingle();
       
       if (error) throw error;
+      
+      // If no progress exists, initialize it
+      if (!data && user) {
+        const { data: newProgress, error: insertError } = await supabase
+          .from('user_progress')
+          .insert([
+            { 
+              user_id: user.id,
+              current_level: 1,
+              current_xp: 0
+            }
+          ])
+          .select()
+          .single();
+          
+        if (insertError) throw insertError;
+        return newProgress as UserProgress;
+      }
+      
       return data as UserProgress;
     },
     enabled: !!user,
