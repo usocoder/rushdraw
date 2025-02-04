@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from './AuthContext';
+import { useBrowserAuth } from './BrowserAuthContext';
 import { useToast } from '@/components/ui/use-toast';
 
 interface BalanceContextType {
@@ -18,7 +18,7 @@ const BalanceContext = createContext<BalanceContextType>({
 });
 
 export const BalanceProvider = ({ children }: { children: React.ReactNode }) => {
-  const { user } = useAuth();
+  const { user } = useBrowserAuth();
   const [balance, setBalance] = useState(0);
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
@@ -56,13 +56,16 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
     if (!user) return false;
     try {
       console.log('Creating transaction:', { type, amount, user_id: user.id });
-      const { data, error } = await supabase.from('transactions').insert({
-        user_id: user.id,
-        type,
-        amount,
-        status: type === 'deposit' ? 'pending' : 'completed',
-        pending_amount: type === 'deposit' ? amount : 0
-      }).select();
+      const { data, error } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: user.id,
+          type,
+          amount,
+          status: type === 'deposit' ? 'pending' : 'completed',
+          pending_amount: type === 'deposit' ? amount : 0
+        })
+        .select();
 
       if (error) {
         console.error('Error creating transaction:', error);

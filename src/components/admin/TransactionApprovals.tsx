@@ -36,7 +36,7 @@ export const TransactionApprovals = () => {
       console.log('Processing transaction:', { transactionId, approved });
       
       // First update the transaction status
-      const { data, error: transactionError } = await supabase
+      const { data: updatedTransaction, error: transactionError } = await supabase
         .from('transactions')
         .update({ 
           status: approved ? 'completed' : 'rejected',
@@ -52,7 +52,7 @@ export const TransactionApprovals = () => {
         throw transactionError;
       }
 
-      console.log('Transaction updated successfully:', data);
+      console.log('Transaction updated successfully:', updatedTransaction);
 
       // If approved, explicitly refresh the balance
       if (approved) {
@@ -94,8 +94,6 @@ export const TransactionApprovals = () => {
         (payload) => {
           console.log('Transaction change detected:', payload);
           refetch();
-          // Also refresh balance when transaction status changes
-          refreshBalance();
         }
       )
       .subscribe();
@@ -104,7 +102,7 @@ export const TransactionApprovals = () => {
       console.log('Cleaning up real-time listeners');
       supabase.removeChannel(channel);
     };
-  }, [refetch, refreshBalance]);
+  }, [refetch]);
 
   if (isLoading) {
     return (
