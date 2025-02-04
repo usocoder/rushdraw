@@ -7,6 +7,7 @@ import AdminNewCase from "@/pages/AdminNewCase";
 import AdminItems from "@/pages/AdminItems";
 import AdminNewItem from "@/pages/AdminNewItem";
 import AdminEditItem from "@/pages/AdminEditItem";
+import AdminRewards from "@/pages/AdminRewards";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
         <Route path="/admin/items" element={<AdminItems />} />
         <Route path="/admin/items/new" element={<AdminNewItem />} />
         <Route path="/admin/items/:id/edit" element={<AdminEditItem />} />
+        <Route path="/admin/rewards" element={<AdminRewards />} />
       </Routes>
       <Toaster />
     </BrowserRouter>

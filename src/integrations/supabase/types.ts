@@ -113,6 +113,62 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_rewards: {
+        Row: {
+          case_id: string | null
+          created_at: string
+          id: string
+          level_required: number
+          updated_at: string
+        }
+        Insert: {
+          case_id?: string | null
+          created_at?: string
+          id?: string
+          level_required: number
+          updated_at?: string
+        }
+        Update: {
+          case_id?: string | null
+          created_at?: string
+          id?: string
+          level_required?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_rewards_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      levels: {
+        Row: {
+          created_at: string
+          id: number
+          level_number: number
+          updated_at: string
+          xp_required: number
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          level_number: number
+          updated_at?: string
+          xp_required: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          level_number?: number
+          updated_at?: string
+          xp_required?: number
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           balance: number | null
@@ -170,6 +226,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_progress: {
+        Row: {
+          created_at: string
+          current_level: number
+          current_xp: number
+          id: string
+          last_reward_claim: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_level?: number
+          current_xp?: number
+          id?: string
+          last_reward_claim?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_level?: number
+          current_xp?: number
+          id?: string
+          last_reward_claim?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -196,10 +282,28 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      claim_daily_reward: {
+        Args: {
+          user_id: string
+        }
+        Returns: {
+          case_id: string
+          case_name: string
+          success: boolean
+          message: string
+        }[]
+      }
       increment_balance: {
         Args: {
           user_id: string
           amount: number
+        }
+        Returns: undefined
+      }
+      update_user_xp: {
+        Args: {
+          user_id: string
+          xp_gained: number
         }
         Returns: undefined
       }

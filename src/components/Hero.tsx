@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { CryptoDeposit } from "./CryptoDeposit";
 import { WithdrawModal } from "./WithdrawModal";
-import { ArrowDown, ArrowUp, LogIn, LogOut, UserPlus, Wallet, Settings } from "lucide-react";
+import { ArrowDown, ArrowUp, LogIn, LogOut, UserPlus, Wallet, Settings, Trophy } from "lucide-react";
 import { RegisterModal } from "./RegisterModal";
 import { LoginModal } from "./LoginModal";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
@@ -36,6 +36,22 @@ export const Hero = () => {
     enabled: !!user,
   });
 
+  // Get user level
+  const { data: userProgress } = useQuery({
+    queryKey: ['userProgress', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('user_progress')
+        .select('current_level, current_xp')
+        .eq('user_id', user?.id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user,
+  });
+
   return (
     <div className="relative overflow-hidden bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 py-16">
@@ -46,6 +62,12 @@ export const Hero = () => {
                 <Wallet className="h-4 w-4 text-primary" />
                 <span className="text-lg font-semibold">${balance.toFixed(2)}</span>
               </div>
+              {userProgress && (
+                <div className="flex items-center gap-2 mr-4">
+                  <Trophy className="h-4 w-4 text-primary" />
+                  <span className="text-sm">Level {userProgress.current_level}</span>
+                </div>
+              )}
               <span className="text-muted-foreground self-center mr-2">
                 Welcome, {user.username}!
               </span>
@@ -106,27 +128,27 @@ export const Hero = () => {
             )}
           </div>
         </div>
+
+        <CryptoDeposit 
+          isOpen={isDepositOpen}
+          onOpenChange={setIsDepositOpen}
+        />
+
+        <WithdrawModal
+          isOpen={isWithdrawOpen}
+          onOpenChange={setIsWithdrawOpen}
+        />
+
+        <RegisterModal
+          isOpen={isRegisterOpen}
+          onOpenChange={setIsRegisterOpen}
+        />
+
+        <LoginModal
+          isOpen={isLoginOpen}
+          onOpenChange={setIsLoginOpen}
+        />
       </div>
-
-      <CryptoDeposit 
-        isOpen={isDepositOpen}
-        onOpenChange={setIsDepositOpen}
-      />
-
-      <WithdrawModal
-        isOpen={isWithdrawOpen}
-        onOpenChange={setIsWithdrawOpen}
-      />
-
-      <RegisterModal
-        isOpen={isRegisterOpen}
-        onOpenChange={setIsRegisterOpen}
-      />
-
-      <LoginModal
-        isOpen={isLoginOpen}
-        onOpenChange={setIsLoginOpen}
-      />
     </div>
   );
 };
