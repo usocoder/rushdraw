@@ -92,21 +92,22 @@ export const CaseOpeningModal = ({
     setIsSpinning(true);
     setCurrentItems(generateSpinningItems());
 
+    // Adjust speed with a smooth curve pattern
     const speedPattern = [
       { speed: 50, time: 0 },     // Start very fast
-      { speed: 45, time: 300 },   // Quick acceleration
-      { speed: 40, time: 600 },
-      { speed: 35, time: 900 },
-      { speed: 30, time: 1200 },
-      { speed: 25, time: 1800 },
-      { speed: 20, time: 2400 },
-      { speed: 15, time: 3000 },
-      { speed: 10, time: 4000 },  // Start slowing down
-      { speed: 8, time: 4500 },
-      { speed: 6, time: 5000 },
-      { speed: 4, time: 5500 },
-      { speed: 2, time: 6000 },   // Very slow
-      { speed: 1, time: 6500 }    // Final approach
+      { speed: 45, time: 500 },   // Quick acceleration
+      { speed: 40, time: 1000 },
+      { speed: 35, time: 1500 },
+      { speed: 30, time: 2000 },
+      { speed: 25, time: 2500 },
+      { speed: 20, time: 3000 },
+      { speed: 15, time: 4000 },  // Start slowing down
+      { speed: 10, time: 5000 },
+      { speed: 8, time: 6000 },
+      { speed: 6, time: 7000 },
+      { speed: 4, time: 8000 },   // Very slow
+      { speed: 2, time: 9000 },   // Final approach
+      { speed: 1, time: 10000 }   // Final stop
     ];
 
     speedPattern.forEach(({ speed, time }) => {
@@ -148,7 +149,7 @@ export const CaseOpeningModal = ({
         
         setHasRushDraw(false);
         resolve(winner);
-      }, 7000);
+      }, 10000); // Keep the final result timing to match the last speed setting
     });
   };
 
@@ -166,7 +167,7 @@ export const CaseOpeningModal = ({
     
     setOpponentResults(results);
 
-    await Promise.all([
+    await Promise.all([ 
       startSpinning(true),
       ...selectedOpponents.map(async (_, index) => {
         const opponentResult = await startSpinning(false);
