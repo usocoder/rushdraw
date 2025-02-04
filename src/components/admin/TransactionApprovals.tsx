@@ -43,7 +43,7 @@ export const TransactionApprovals = () => {
           pending_amount,
           created_at,
           crypto_address,
-          user:auth.users!transactions_user_id_fkey (
+          user:auth.users (
             email,
             profile:profiles (
               username
