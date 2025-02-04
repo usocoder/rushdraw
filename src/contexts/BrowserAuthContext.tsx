@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { AuthError } from '@supabase/supabase-js';
 
 interface User {
@@ -17,15 +17,9 @@ interface AuthContextType {
   error: string | null;
 }
 
-const AuthContext = createContext<AuthContextType>({
-  user: null,
-  login: async () => false,
-  register: async () => false,
-  logout: async () => {},
-  error: null,
-});
+const AuthContext = createContext<AuthContextType | null>(null);
 
-export const BrowserAuthProvider = ({ children }: { children: React.ReactNode }) => {
+export const BrowserAuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -144,8 +138,16 @@ export const BrowserAuthProvider = ({ children }: { children: React.ReactNode })
     }
   };
 
+  const value = {
+    user,
+    login,
+    register,
+    logout,
+    error,
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, register, logout, error }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
