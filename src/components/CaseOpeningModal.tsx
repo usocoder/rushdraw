@@ -93,16 +93,20 @@ export const CaseOpeningModal = ({
     setCurrentItems(generateSpinningItems());
 
     const speedPattern = [
-      { speed: 40, time: 0 },     // Start faster
-      { speed: 35, time: 500 },   // Quick acceleration
-      { speed: 30, time: 1000 },
-      { speed: 25, time: 2000 },
-      { speed: 20, time: 3000 },
-      { speed: 15, time: 4000 },
-      { speed: 10, time: 5000 },
-      { speed: 5, time: 5500 },   // Start slowing down more gradually
-      { speed: 3, time: 6000 },
-      { speed: 1, time: 6500 }    // Final slow approach
+      { speed: 50, time: 0 },     // Start very fast
+      { speed: 45, time: 300 },   // Quick acceleration
+      { speed: 40, time: 600 },
+      { speed: 35, time: 900 },
+      { speed: 30, time: 1200 },
+      { speed: 25, time: 1800 },
+      { speed: 20, time: 2400 },
+      { speed: 15, time: 3000 },
+      { speed: 10, time: 4000 },  // Start slowing down
+      { speed: 8, time: 4500 },
+      { speed: 6, time: 5000 },
+      { speed: 4, time: 5500 },
+      { speed: 2, time: 6000 },   // Very slow
+      { speed: 1, time: 6500 }    // Final approach
     ];
 
     speedPattern.forEach(({ speed, time }) => {

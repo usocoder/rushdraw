@@ -20,7 +20,7 @@ export const TransactionApprovals = () => {
         .select(`
           *,
           profiles:user_id (
-            email:id(email),
+            email:auth_users!auth_users_id_fkey(email),
             username
           )
         `)
@@ -41,7 +41,6 @@ export const TransactionApprovals = () => {
     try {
       console.log('Processing transaction:', { transactionId, approved });
       
-      // First update the transaction status
       const { data: updatedTransaction, error: transactionError } = await supabase
         .from('transactions')
         .update({ 
@@ -60,7 +59,6 @@ export const TransactionApprovals = () => {
 
       console.log('Transaction updated successfully:', updatedTransaction);
 
-      // If approved, explicitly refresh the balance
       if (approved) {
         console.log('Refreshing balance after approval');
         await refreshBalance();
@@ -84,7 +82,6 @@ export const TransactionApprovals = () => {
     }
   };
 
-  // Subscribe to real-time changes
   useEffect(() => {
     console.log('Setting up real-time listeners for transactions');
     const channel = supabase
@@ -174,14 +171,14 @@ export const TransactionApprovals = () => {
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Mail className="w-4 h-4" />
                     <span>
-                      {transaction.profiles?.email || 'No email'}
+                      {transaction.profiles?.email?.email || 'No email'}
                     </span>
                   </div>
-                  {transaction.type === 'withdraw' && (
+                  {transaction.type === 'withdraw' && transaction.crypto_address && (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Wallet className="w-4 h-4" />
-                      <span className="font-mono">
-                        Withdrawal Address: {transaction.crypto_address || 'Not provided'}
+                      <span className="font-mono break-all">
+                        {transaction.crypto_address}
                       </span>
                     </div>
                   )}
