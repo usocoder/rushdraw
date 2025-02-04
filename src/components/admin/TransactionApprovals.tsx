@@ -14,11 +14,11 @@ interface TransactionWithProfile {
   pending_amount: number;
   created_at: string;
   crypto_address: string | null;
-  user: {
-    email: string;
-    profile: {
-      username: string;
-    };
+  profiles: {
+    username: string | null;
+    auth: {
+      email: string;
+    } | null;
   } | null;
 }
 
@@ -42,9 +42,9 @@ export const TransactionApprovals = () => {
           pending_amount,
           created_at,
           crypto_address,
-          profiles!transactions_user_id_fkey (
+          profiles (
             username,
-            auth!profiles_id_fkey (
+            auth (
               email
             )
           )
@@ -60,14 +60,7 @@ export const TransactionApprovals = () => {
       // Transform data to match TransactionWithProfile interface
       const transformedData = data.map(transaction => ({
         ...transaction,
-        user: transaction.profiles
-          ? {
-              email: transaction.profiles.auth?.email ?? "No email",
-              profile: {
-                username: transaction.profiles.username ?? "No username",
-              },
-            }
-          : null,
+        profiles: transaction.profiles || null
       }));
 
       console.log('Fetched pending transactions:', transformedData);
@@ -167,13 +160,13 @@ export const TransactionApprovals = () => {
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <User className="w-4 h-4" />
                     <span>
-                      {transaction.user?.profile?.username || 'No username'}
+                      {transaction.profiles?.username || 'No username'}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Mail className="w-4 h-4" />
                     <span>
-                      {transaction.user?.email || 'No email'}
+                      {transaction.profiles?.auth?.email || 'No email'}
                     </span>
                   </div>
                   {transaction.type === 'withdraw' && transaction.crypto_address && (
