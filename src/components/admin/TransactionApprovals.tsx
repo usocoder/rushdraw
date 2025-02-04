@@ -6,6 +6,23 @@ import { useToast } from "@/components/ui/use-toast";
 import { Loader2, Mail, User, Wallet } from "lucide-react";
 import { useBalance } from "@/contexts/BalanceContext";
 
+interface TransactionWithProfile {
+  id: string;
+  user_id: string;
+  type: string;
+  amount: number;
+  status: string;
+  pending_amount: number;
+  created_at: string;
+  crypto_address: string | null;
+  profiles: {
+    username: string | null;
+    email: {
+      email: string;
+    } | null;
+  } | null;
+}
+
 export const TransactionApprovals = () => {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
@@ -20,8 +37,8 @@ export const TransactionApprovals = () => {
         .select(`
           *,
           profiles:user_id (
-            email:auth_users!auth_users_id_fkey(email),
-            username
+            username,
+            email:auth_users!auth_users_id_fkey(email)
           )
         `)
         .eq('status', 'pending')
@@ -32,7 +49,7 @@ export const TransactionApprovals = () => {
         throw error;
       }
       console.log('Fetched pending transactions:', data);
-      return data;
+      return data as TransactionWithProfile[];
     },
   });
 
