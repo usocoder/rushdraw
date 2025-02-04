@@ -35,7 +35,14 @@ export const TransactionApprovals = () => {
       const { data, error } = await supabase
         .from('transactions')
         .select(`
-          *,
+          id,
+          user_id,
+          type,
+          amount,
+          status,
+          pending_amount,
+          created_at,
+          crypto_address,
           user:auth.users!transactions_user_id_fkey (
             email,
             profile:profiles (
