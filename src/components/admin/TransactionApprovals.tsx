@@ -36,11 +36,9 @@ export const TransactionApprovals = () => {
         .from('transactions')
         .select(`
           *,
-          user:user_id (
-            email,
-            profile:profiles (
-              username
-            )
+          user:profiles!transactions_user_id_fkey (
+            email:auth.users!profiles_id_fkey(email),
+            username
           )
         `)
         .eq('status', 'pending')
