@@ -18,8 +18,8 @@ interface TransactionWithProfile {
   user: {
     email: string;
     profile: {
-      username: string | null;
-    } | null;
+      username: string;
+    };
   } | null;
 }
 
@@ -28,6 +28,7 @@ export const TransactionApprovals = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const { refreshBalance } = useBalance();
 
+  // Fetch pending transactions
   const { data: pendingTransactions, isLoading, refetch } = useQuery({
     queryKey: ['pending-transactions'],
     queryFn: async () => {
@@ -43,9 +44,9 @@ export const TransactionApprovals = () => {
           pending_amount,
           created_at,
           crypto_address,
-          profiles!inner (
+          profiles (
             username,
-            auth!inner (
+            auth (
               email
             )
           )
@@ -58,15 +59,17 @@ export const TransactionApprovals = () => {
         throw error;
       }
 
-      // Transform the data to match TransactionWithProfile interface
+      // Transform data to match TransactionWithProfile interface
       const transformedData = data.map(transaction => ({
         ...transaction,
-        user: {
-          email: transaction.profiles.auth.email,
-          profile: {
-            username: transaction.profiles.username
-          }
-        }
+        user: transaction.profiles
+          ? {
+              email: transaction.profiles.auth?.email ?? "No email",
+              profile: {
+                username: transaction.profiles.username ?? "No username",
+              },
+            }
+          : null,
       }));
 
       console.log('Fetched pending transactions:', transformedData);
@@ -74,76 +77,40 @@ export const TransactionApprovals = () => {
     },
   });
 
-  const handleApproval = async (transactionId: string, approved: boolean) => {
+  // Handle transaction approval or rejection
+  const handleApproval = async (transactionId: string, approve: boolean) => {
+    if (isProcessing) return;
     setIsProcessing(true);
+
     try {
-      console.log('Processing transaction:', { transactionId, approved });
-      
-      const { data: updatedTransaction, error: transactionError } = await supabase
-        .from('transactions')
-        .update({ 
-          status: approved ? 'completed' : 'rejected',
-          pending_amount: 0,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', transactionId)
-        .select()
-        .single();
+      const status = approve ? "approved" : "rejected";
+      const { error } = await supabase
+        .from("transactions")
+        .update({ status })
+        .eq("id", transactionId);
 
-      if (transactionError) {
-        console.error('Error updating transaction:', transactionError);
-        throw transactionError;
-      }
-
-      console.log('Transaction updated successfully:', updatedTransaction);
-
-      if (approved) {
-        console.log('Refreshing balance after approval');
-        await refreshBalance();
+      if (error) {
+        throw error;
       }
 
       toast({
-        title: approved ? "Transaction approved" : "Transaction rejected",
-        description: `The transaction has been ${approved ? 'approved' : 'rejected'} successfully.`,
+        title: `Transaction ${approve ? "Approved" : "Rejected"}`,
+        description: `Transaction ${transactionId} has been ${status}.`,
       });
 
       refetch();
+      refreshBalance();
     } catch (error) {
-      console.error('Error processing transaction:', error);
+      console.error("Error updating transaction:", error);
       toast({
         title: "Error",
-        description: "Failed to process the transaction",
+        description: "Failed to update transaction status.",
         variant: "destructive",
       });
     } finally {
       setIsProcessing(false);
     }
   };
-
-  useEffect(() => {
-    console.log('Setting up real-time listeners for transactions');
-    const channel = supabase
-      .channel('transaction-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'transactions',
-          filter: `status=eq.pending`,
-        },
-        (payload) => {
-          console.log('Transaction change detected:', payload);
-          refetch();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      console.log('Cleaning up real-time listeners');
-      supabase.removeChannel(channel);
-    };
-  }, [refetch]);
 
   if (isLoading) {
     return (

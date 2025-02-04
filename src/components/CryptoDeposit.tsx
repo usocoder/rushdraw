@@ -167,7 +167,7 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
         <div className="space-y-4">
           <div className="flex items-start gap-2 text-sm text-muted-foreground">
             <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-            <p>Only click "I've sent the crypto" after you have completed the transfer. Once clicked, please allow up to 10 minutes for the deposit to reflect in your account.</p>
+            <p>Only Confirm after you have completed the transfer. Once clicked, please allow up to 10 minutes for the deposit to reflect in your account.</p>
           </div>
 
           <div className="flex justify-end">
@@ -182,7 +182,7 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
                   Processing Deposit
                 </>
               ) : (
-                "I've sent the crypto"
+                "Click Here To Confirm Deposit."
               )}
             </Button>
           </div>
