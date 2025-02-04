@@ -34,7 +34,7 @@ export const TransactionApprovals = () => {
         .from('transactions')
         .select(`
           *,
-          profiles:user_id (
+          profiles!transactions_user_id_fkey (
             username,
             email
           )
