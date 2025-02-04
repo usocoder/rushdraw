@@ -24,10 +24,21 @@ export const WithdrawModal = ({ isOpen, onOpenChange }: Props) => {
 
   const handleWithdraw = async () => {
     const withdrawAmount = Number(amount);
+    
     if (!amount || isNaN(withdrawAmount) || withdrawAmount <= 0) {
       toast({
         title: "Invalid amount",
         description: "Please enter a valid withdrawal amount.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Add validation for maximum amount
+    if (withdrawAmount >= 100000000) {
+      toast({
+        title: "Amount too large",
+        description: "Maximum withdrawal amount is $99,999,999.99",
         variant: "destructive",
       });
       return;
@@ -71,11 +82,11 @@ export const WithdrawModal = ({ isOpen, onOpenChange }: Props) => {
         description: "Your withdrawal request is pending approval. Please wait for admin confirmation.",
       });
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error processing withdrawal:', error);
       toast({
         title: "Error processing withdrawal",
-        description: "Please try again later.",
+        description: error.message || "Please try again later.",
         variant: "destructive",
       });
     } finally {
@@ -100,8 +111,8 @@ export const WithdrawModal = ({ isOpen, onOpenChange }: Props) => {
               id="amount"
               type="number"
               min="0"
+              max="99999999.99"
               step="0.01"
-              max={balance}
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
               placeholder="Enter amount..."

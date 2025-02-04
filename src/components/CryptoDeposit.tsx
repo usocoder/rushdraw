@@ -61,10 +61,22 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
   };
 
   const simulateDeposit = async () => {
-    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
+    const depositAmount = Number(amount);
+    
+    if (!amount || isNaN(depositAmount) || depositAmount <= 0) {
       toast({
         title: "Invalid amount",
         description: "Please enter a valid deposit amount.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Add validation for maximum amount
+    if (depositAmount >= 100000000) {
+      toast({
+        title: "Amount too large",
+        description: "Maximum deposit amount is $99,999,999.99",
         variant: "destructive",
       });
       return;
@@ -78,9 +90,9 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
         .insert({
           user_id: user?.id,
           type: 'deposit',
-          amount: Number(amount),
+          amount: depositAmount,
           status: 'pending',
-          pending_amount: Number(amount)
+          pending_amount: depositAmount
         });
 
       if (error) throw error;
@@ -90,11 +102,11 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
         description: "Your deposit is pending approval. Please wait for admin confirmation.",
       });
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating transaction:', error);
       toast({
         title: "Error processing deposit",
-        description: "Please try again later.",
+        description: error.message || "Please try again later.",
         variant: "destructive",
       });
     } finally {
@@ -119,6 +131,7 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
               id="amount"
               type="number"
               min="0"
+              max="99999999.99"
               step="0.01"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
