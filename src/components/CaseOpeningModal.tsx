@@ -80,12 +80,12 @@ export const CaseOpeningModal = ({
       });
   };
 
-  const startSpinning = async (isPlayerSpin = true) => {
+  const startSpinning = async (isPlayerSpin = true): Promise<CaseItem> => {
     if (!isFreePlay && isPlayerSpin) {
       const success = await createTransaction('case_open', caseData.price);
       if (!success) {
         onOpenChange(false);
-        return;
+        return caseData.items[0]; // Return default item if transaction fails
       }
     }
 
@@ -108,41 +108,43 @@ export const CaseOpeningModal = ({
       setTimeout(() => setSpinSpeed(speed), time);
     });
     
-    setTimeout(async () => {
-      setIsSpinning(false);
-      const random = Math.random();
-      let cumulative = 0;
-      
-      const adjustedItems = hasRushDraw 
-        ? caseData.items.map(item => ({
-            ...item,
-            odds: item.rarity === 'legendary' ? item.odds * 3 : item.odds
-          }))
-        : caseData.items;
+    return new Promise((resolve) => {
+      setTimeout(async () => {
+        setIsSpinning(false);
+        const random = Math.random();
+        let cumulative = 0;
+        
+        const adjustedItems = hasRushDraw 
+          ? caseData.items.map(item => ({
+              ...item,
+              odds: item.rarity === 'legendary' ? item.odds * 3 : item.odds
+            }))
+          : caseData.items;
 
-      const winner = adjustedItems.find((item) => {
-        cumulative += item.odds;
-        return random <= cumulative;
-      }) || adjustedItems[0];
-      
-      if (isPlayerSpin) {
-        setFinalItem(winner);
-        if (!isFreePlay) {
-          const winAmount = caseData.price * winner.multiplier;
-          await createTransaction('case_win', winAmount);
-          if (hasRushDraw && winner.rarity === 'legendary') {
-            toast({
-              title: "🌟 RUSH DRAW WIN! 🌟",
-              description: "The rush draw brought you incredible luck!",
-              duration: 5000,
-            });
+        const winner = adjustedItems.find((item) => {
+          cumulative += item.odds;
+          return random <= cumulative;
+        }) || adjustedItems[0];
+        
+        if (isPlayerSpin) {
+          setFinalItem(winner);
+          if (!isFreePlay) {
+            const winAmount = caseData.price * winner.multiplier;
+            await createTransaction('case_win', winAmount);
+            if (hasRushDraw && winner.rarity === 'legendary') {
+              toast({
+                title: "🌟 RUSH DRAW WIN! 🌟",
+                description: "The rush draw brought you incredible luck!",
+                duration: 5000,
+              });
+            }
           }
         }
-      }
-      
-      setHasRushDraw(false);
-      return winner;
-    }, 7000);
+        
+        setHasRushDraw(false);
+        resolve(winner);
+      }, 7000);
+    });
   };
 
   const startBattle = async (numOpponents: number) => {
@@ -151,7 +153,6 @@ export const CaseOpeningModal = ({
     setOpponents(selectedOpponents);
     setIsBattleMode(true);
 
-    // Generate results for all opponents simultaneously
     const results = selectedOpponents.map(opponent => ({
       player: opponent,
       items: generateSpinningItems(),
@@ -160,7 +161,6 @@ export const CaseOpeningModal = ({
     
     setOpponentResults(results);
 
-    // Start spinning for player and all opponents simultaneously
     await Promise.all([
       startSpinning(true),
       ...selectedOpponents.map(async (_, index) => {
@@ -212,6 +212,7 @@ export const CaseOpeningModal = ({
             {isBattleMode && (
               <BattleControls 
                 onBattleStart={startBattle}
+                onSoloOpen={() => startSpinning(true)}
               />
             )}
           </div>
