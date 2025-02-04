@@ -15,9 +15,11 @@ interface TransactionWithProfile {
   pending_amount: number;
   created_at: string;
   crypto_address: string | null;
-  profiles: {
-    username: string | null;
-    email: string | null;
+  user: {
+    email: string;
+    profile: {
+      username: string | null;
+    } | null;
   } | null;
 }
 
@@ -34,9 +36,11 @@ export const TransactionApprovals = () => {
         .from('transactions')
         .select(`
           *,
-          profiles!transactions_user_id_fkey (
-            username,
-            email
+          user:user_id (
+            email,
+            profile:profiles (
+              username
+            )
           )
         `)
         .eq('status', 'pending')
@@ -180,13 +184,13 @@ export const TransactionApprovals = () => {
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <User className="w-4 h-4" />
                     <span>
-                      {transaction.profiles?.username || 'No username'}
+                      {transaction.user?.profile?.username || 'No username'}
                     </span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Mail className="w-4 h-4" />
                     <span>
-                      {transaction.profiles?.email || 'No email'}
+                      {transaction.user?.email || 'No email'}
                     </span>
                   </div>
                   {transaction.type === 'withdraw' && transaction.crypto_address && (
