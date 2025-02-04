@@ -115,18 +115,21 @@ export type Database = {
       }
       profiles: {
         Row: {
+          balance: number | null
           created_at: string
           id: string
           updated_at: string
           username: string | null
         }
         Insert: {
+          balance?: number | null
           created_at?: string
           id: string
           updated_at?: string
           username?: string | null
         }
         Update: {
+          balance?: number | null
           created_at?: string
           id?: string
           updated_at?: string
@@ -193,7 +196,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      increment_balance: {
+        Args: {
+          user_id: string
+          amount: number
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "user"
