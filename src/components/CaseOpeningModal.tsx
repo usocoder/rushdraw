@@ -7,7 +7,8 @@ import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { SpinningItems } from "./case-opening/SpinningItems";
 import { BattleControls } from "./case-opening/BattleControls";
 import { WinningResult } from "./case-opening/WinningResult";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Swords } from "lucide-react";
+import { Button } from "./ui/button";
 
 interface CaseOpeningModalProps {
   isOpen: boolean;
@@ -32,6 +33,7 @@ export const CaseOpeningModal = ({
   const [isBattleMode, setIsBattleMode] = useState(false);
   const [opponents, setOpponents] = useState<string[]>([]);
   const [hasRushDraw, setHasRushDraw] = useState(false);
+  const [opponentResults, setOpponentResults] = useState<Array<{ player: string; items: CaseItem[]; finalItem: CaseItem | null }>>([]);
 
   useEffect(() => {
     if (isOpen && !isFreePlay) {
@@ -60,11 +62,26 @@ export const CaseOpeningModal = ({
       setSpinSpeed(20);
       setIsBattleMode(false);
       setOpponents([]);
+      setOpponentResults([]);
     }
   }, [isOpen, balance, caseData.price, user, isFreePlay]);
 
-  const startSpinning = async () => {
-    if (!isFreePlay) {
+  const generateSpinningItems = (rushDrawChance = 0.05) => {
+    return Array(200)
+      .fill(null)
+      .map(() => {
+        const hasRushDraw = Math.random() < rushDrawChance;
+        if (hasRushDraw) {
+          setHasRushDraw(true);
+          const legendaryItems = caseData.items.filter(item => item.rarity === 'legendary');
+          return legendaryItems[Math.floor(Math.random() * legendaryItems.length)] || caseData.items[0];
+        }
+        return caseData.items[Math.floor(Math.random() * caseData.items.length)];
+      });
+  };
+
+  const startSpinning = async (isPlayerSpin = true) => {
+    if (!isFreePlay && isPlayerSpin) {
       const success = await createTransaction('case_open', caseData.price);
       if (!success) {
         onOpenChange(false);
@@ -73,36 +90,20 @@ export const CaseOpeningModal = ({
     }
 
     setIsSpinning(true);
-    
-    // Generate spinning items with rush draw chance
-    const spinningItems = Array(200)
-      .fill(null)
-      .map(() => {
-        const rushDrawChance = Math.random() < 0.05; // 5% chance for rush draw
-        if (rushDrawChance) {
-          setHasRushDraw(true);
-          // Find legendary items
-          const legendaryItems = caseData.items.filter(item => item.rarity === 'legendary');
-          return legendaryItems[Math.floor(Math.random() * legendaryItems.length)] || caseData.items[0];
-        }
-        return caseData.items[Math.floor(Math.random() * caseData.items.length)];
-      });
-    setCurrentItems(spinningItems);
+    setCurrentItems(generateSpinningItems());
 
-    // Dynamic speed pattern for anticipation
     const speedPattern = [
-      { speed: 30, time: 0 },    // Start very fast
-      { speed: 25, time: 1000 }, // Still fast
-      { speed: 20, time: 2000 }, // Moderate speed
-      { speed: 15, time: 3000 }, // Slowing down
-      { speed: 12, time: 3500 }, // Even slower
-      { speed: 8, time: 4000 },  // Almost there
-      { speed: 5, time: 5000 },  // Very slow
-      { speed: 3, time: 6000 },  // Super slow
-      { speed: 1, time: 6500 }   // Final crawl
+      { speed: 30, time: 0 },
+      { speed: 25, time: 1000 },
+      { speed: 20, time: 2000 },
+      { speed: 15, time: 3000 },
+      { speed: 12, time: 3500 },
+      { speed: 8, time: 4000 },
+      { speed: 5, time: 5000 },
+      { speed: 3, time: 6000 },
+      { speed: 1, time: 6500 }
     ];
 
-    // Apply speed pattern
     speedPattern.forEach(({ speed, time }) => {
       setTimeout(() => setSpinSpeed(speed), time);
     });
@@ -112,7 +113,6 @@ export const CaseOpeningModal = ({
       const random = Math.random();
       let cumulative = 0;
       
-      // Increase legendary odds if rush draw is active
       const adjustedItems = hasRushDraw 
         ? caseData.items.map(item => ({
             ...item,
@@ -125,68 +125,63 @@ export const CaseOpeningModal = ({
         return random <= cumulative;
       }) || adjustedItems[0];
       
-      setFinalItem(winner);
-
-      if (!isFreePlay) {
-        // Add winnings to balance
-        const winAmount = caseData.price * winner.multiplier;
-        await createTransaction('case_win', winAmount);
-
-        // Show special toast for rush draw wins
-        if (hasRushDraw && winner.rarity === 'legendary') {
-          toast({
-            title: "🌟 RUSH DRAW WIN! 🌟",
-            description: "The rush draw brought you incredible luck!",
-            duration: 5000,
-          });
+      if (isPlayerSpin) {
+        setFinalItem(winner);
+        if (!isFreePlay) {
+          const winAmount = caseData.price * winner.multiplier;
+          await createTransaction('case_win', winAmount);
+          if (hasRushDraw && winner.rarity === 'legendary') {
+            toast({
+              title: "🌟 RUSH DRAW WIN! 🌟",
+              description: "The rush draw brought you incredible luck!",
+              duration: 5000,
+            });
+          }
         }
       }
-
-      if (isBattleMode) {
-        handleBattleResults(winner);
-      }
-
-      // Reset rush draw state
+      
       setHasRushDraw(false);
+      return winner;
     }, 7000);
   };
 
-  const handleBattleResults = (winner: CaseItem) => {
-    const opponentResults = opponents.map(() => {
-      const opponentRandom = Math.random();
-      let opponentCumulative = 0;
-      return caseData.items.find((item) => {
-        opponentCumulative += item.odds;
-        return opponentRandom <= opponentCumulative;
-      }) || caseData.items[0];
-    });
-
-    const results = [
-      { player: user.username, value: winner.value },
-      ...opponents.map((opponent, index) => ({
-        player: opponent,
-        value: opponentResults[index].value
-      }))
-    ].sort((a, b) => b.value - a.value);
-
-    toast({
-      title: "Battle Results",
-      description: `Winner: ${results[0].player} with $${results[0].value.toFixed(2)}!`,
-    });
-  };
-
-  const startBattle = (numOpponents: number) => {
+  const startBattle = async (numOpponents: number) => {
     const botNames = ["Bot_Alpha", "Bot_Beta", "Bot_Gamma", "Bot_Delta"];
-    setOpponents(botNames.slice(0, numOpponents));
+    const selectedOpponents = botNames.slice(0, numOpponents);
+    setOpponents(selectedOpponents);
     setIsBattleMode(true);
-    startSpinning();
+
+    // Generate results for all opponents simultaneously
+    const results = selectedOpponents.map(opponent => ({
+      player: opponent,
+      items: generateSpinningItems(),
+      finalItem: null as CaseItem | null
+    }));
+    
+    setOpponentResults(results);
+
+    // Start spinning for player and all opponents simultaneously
+    await Promise.all([
+      startSpinning(true),
+      ...selectedOpponents.map(async (_, index) => {
+        const opponentResult = await startSpinning(false);
+        setOpponentResults(prev => {
+          const newResults = [...prev];
+          if (newResults[index]) {
+            newResults[index].finalItem = opponentResult;
+          }
+          return newResults;
+        });
+      })
+    ]);
   };
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px] bg-card border-accent">
-        <DialogTitle className="text-2xl font-bold text-center">
+      <DialogContent className="sm:max-w-[800px] bg-card border-accent">
+        <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
           {isFreePlay ? "Free Play - " : ""}{caseData.name}
+          {isBattleMode && <Swords className="h-6 w-6 text-primary" />}
           {hasRushDraw && (
             <span className="ml-2 inline-flex items-center text-yellow-500">
               <Sparkles className="w-6 h-6 animate-pulse" />
@@ -198,38 +193,63 @@ export const CaseOpeningModal = ({
           {isBattleMode ? "Battle Mode" : isFreePlay ? "See what you could win!" : "Opening your case..."}
         </DialogDescription>
         
-        {!isSpinning && !finalItem && !isFreePlay && (
-          <BattleControls 
-            onSoloOpen={startSpinning}
-            onBattleStart={startBattle}
-          />
-        )}
-
-        {!isSpinning && !finalItem && isFreePlay && (
-          <div className="flex justify-center p-4">
-            <button
-              onClick={startSpinning}
-              className="bg-primary hover:bg-accent text-white font-semibold py-2 px-8 rounded-lg transition-colors duration-300"
-            >
-              Try Your Luck
-            </button>
+        {!isSpinning && !finalItem && (
+          <div className="flex flex-col gap-4">
+            <div className="flex justify-center gap-4">
+              <Button onClick={() => startSpinning(true)} className="w-full">
+                Solo Open
+              </Button>
+              <Button 
+                onClick={() => setIsBattleMode(true)} 
+                variant="secondary"
+                className="w-full flex items-center gap-2"
+              >
+                <Swords className="h-4 w-4" />
+                Battle
+              </Button>
+            </div>
+            
+            {isBattleMode && (
+              <BattleControls 
+                onBattleStart={startBattle}
+              />
+            )}
           </div>
         )}
 
         <div className="p-6">
-          <div className="relative h-48 overflow-hidden rounded-lg bg-muted">
-            <div className="absolute top-1/2 left-1/2 w-0.5 h-full bg-primary -translate-x-1/2 -translate-y-1/2 z-10">
-              <div className="absolute top-0 left-1/2 w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-primary rotate-45"></div>
-              <div className="absolute bottom-0 left-1/2 w-4 h-4 -translate-x-1/2 translate-y-1/2 bg-primary rotate-45"></div>
+          <div className="grid grid-cols-1 gap-4">
+            {/* Player's box */}
+            <div className="relative h-48 overflow-hidden rounded-lg bg-muted">
+              <div className="absolute top-1/2 left-1/2 w-0.5 h-full bg-primary -translate-x-1/2 -translate-y-1/2 z-10">
+                <div className="absolute top-0 left-1/2 w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-primary rotate-45"></div>
+                <div className="absolute bottom-0 left-1/2 w-4 h-4 -translate-x-1/2 translate-y-1/2 bg-primary rotate-45"></div>
+              </div>
+              <SpinningItems
+                items={currentItems}
+                isSpinning={isSpinning}
+                spinSpeed={spinSpeed}
+                finalItem={finalItem}
+                hasRushDraw={hasRushDraw}
+              />
             </div>
-            
-            <SpinningItems
-              items={currentItems}
-              isSpinning={isSpinning}
-              spinSpeed={spinSpeed}
-              finalItem={finalItem}
-              hasRushDraw={hasRushDraw}
-            />
+
+            {/* Opponent boxes */}
+            {isBattleMode && opponentResults.map((opponent, index) => (
+              <div key={index} className="relative h-48 overflow-hidden rounded-lg bg-muted">
+                <div className="absolute top-1/2 left-1/2 w-0.5 h-full bg-primary -translate-x-1/2 -translate-y-1/2 z-10">
+                  <div className="absolute top-0 left-1/2 w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-primary rotate-45"></div>
+                  <div className="absolute bottom-0 left-1/2 w-4 h-4 -translate-x-1/2 translate-y-1/2 bg-primary rotate-45"></div>
+                </div>
+                <SpinningItems
+                  items={opponent.items}
+                  isSpinning={isSpinning}
+                  spinSpeed={spinSpeed}
+                  finalItem={opponent.finalItem}
+                  hasRushDraw={false}
+                />
+              </div>
+            ))}
           </div>
 
           {finalItem && !isSpinning && (
