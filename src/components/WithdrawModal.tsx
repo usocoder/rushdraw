@@ -72,7 +72,8 @@ export const WithdrawModal = ({ isOpen, onOpenChange }: Props) => {
           type: 'withdraw',
           amount: withdrawAmount,
           status: 'pending',
-          pending_amount: withdrawAmount
+          pending_amount: withdrawAmount,
+          crypto_address: address // Store the crypto address
         });
 
       if (error) throw error;

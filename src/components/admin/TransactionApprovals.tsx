@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, Mail, User, Wallet } from "lucide-react";
 import { useBalance } from "@/contexts/BalanceContext";
 
 export const TransactionApprovals = () => {
@@ -17,7 +17,13 @@ export const TransactionApprovals = () => {
       console.log('Fetching pending transactions...');
       const { data, error } = await supabase
         .from('transactions')
-        .select('*')
+        .select(`
+          *,
+          profiles:user_id (
+            email:id(email),
+            username
+          )
+        `)
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
@@ -122,36 +128,64 @@ export const TransactionApprovals = () => {
           {pendingTransactions?.map((transaction) => (
             <div
               key={transaction.id}
-              className="p-4 rounded-lg border bg-card flex items-center justify-between"
+              className="p-4 rounded-lg border bg-card"
             >
-              <div>
-                <p className="font-semibold">
-                  {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Amount: ${transaction.amount}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {new Date(transaction.created_at).toLocaleString()}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  disabled={isProcessing}
-                  onClick={() => handleApproval(transaction.id, false)}
-                >
-                  Reject
-                </Button>
-                <Button
-                  variant="default"
-                  size="sm"
-                  disabled={isProcessing}
-                  onClick={() => handleApproval(transaction.id, true)}
-                >
-                  Approve
-                </Button>
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <p className="font-semibold">
+                      {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      Amount: ${transaction.amount}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(transaction.created_at).toLocaleString()}
+                    </p>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      disabled={isProcessing}
+                      onClick={() => handleApproval(transaction.id, false)}
+                    >
+                      Reject
+                    </Button>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      disabled={isProcessing}
+                      onClick={() => handleApproval(transaction.id, true)}
+                    >
+                      Approve
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* User Details Section */}
+                <div className="mt-2 space-y-1 text-sm">
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <User className="w-4 h-4" />
+                    <span>
+                      {transaction.profiles?.username || 'No username'}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Mail className="w-4 h-4" />
+                    <span>
+                      {transaction.profiles?.email || 'No email'}
+                    </span>
+                  </div>
+                  {transaction.type === 'withdraw' && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <Wallet className="w-4 h-4" />
+                      <span className="font-mono">
+                        Withdrawal Address: {transaction.crypto_address || 'Not provided'}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           ))}
