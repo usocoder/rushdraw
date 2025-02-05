@@ -4,11 +4,12 @@ import { Case, CaseItem } from "../types/case";
 import { useBalance } from "@/contexts/BalanceContext";
 import { useToast } from "./ui/use-toast";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
-import { SpinningItems } from "./case-opening/SpinningItems";
 import { BattleControls } from "./case-opening/BattleControls";
 import { WinningResult } from "./case-opening/WinningResult";
 import { Sparkles, Swords } from "lucide-react";
 import { Button } from "./ui/button";
+import { BattleSpinner } from "./case-opening/BattleSpinner";
+import { BattleResults } from "./case-opening/BattleResults";
 
 interface CaseOpeningModalProps {
   isOpen: boolean;
@@ -24,16 +25,14 @@ export const CaseOpeningModal = ({
   isFreePlay = false,
 }: CaseOpeningModalProps) => {
   const [isSpinning, setIsSpinning] = useState(false);
-  const [currentItems, setCurrentItems] = useState<CaseItem[]>([]);
   const [finalItem, setFinalItem] = useState<CaseItem | null>(null);
-  const [spinSpeed, setSpinSpeed] = useState(20);
-  const { balance, createTransaction } = useBalance();
-  const { user } = useBrowserAuth();
-  const { toast } = useToast();
   const [isBattleMode, setIsBattleMode] = useState(false);
   const [opponents, setOpponents] = useState<string[]>([]);
   const [hasRushDraw, setHasRushDraw] = useState(false);
-  const [opponentResults, setOpponentResults] = useState<Array<{ player: string; items: CaseItem[]; finalItem: CaseItem | null }>>([]);
+  const [battleWinner, setBattleWinner] = useState<{ player: string; item: CaseItem } | null>(null);
+  const { balance, createTransaction } = useBalance();
+  const { user } = useBrowserAuth();
+  const { toast } = useToast();
 
   useEffect(() => {
     if (isOpen && !isFreePlay) {
@@ -59,104 +58,35 @@ export const CaseOpeningModal = ({
     } else if (!isOpen) {
       setIsSpinning(false);
       setFinalItem(null);
-      setSpinSpeed(20);
       setIsBattleMode(false);
       setOpponents([]);
-      setOpponentResults([]);
+      setBattleWinner(null);
     }
   }, [isOpen, balance, caseData.price, user, isFreePlay]);
 
-  const generateSpinningItems = (rushDrawChance = 0.05) => {
-    return Array(200)
-      .fill(null)
-      .map(() => {
-        const hasRushDraw = Math.random() < rushDrawChance;
-        if (hasRushDraw) {
-          setHasRushDraw(true);
-          const legendaryItems = caseData.items.filter(item => item.rarity === 'legendary');
-          return legendaryItems[Math.floor(Math.random() * legendaryItems.length)] || caseData.items[0];
-        }
-        return caseData.items[Math.floor(Math.random() * caseData.items.length)];
-      });
+  const handleSpinComplete = async (item: CaseItem, player: string) => {
+    if (isBattleMode) {
+      if (!battleWinner || item.multiplier > battleWinner.item.multiplier) {
+        setBattleWinner({ player, item });
+      }
+    } else {
+      setFinalItem(item);
+      if (!isFreePlay) {
+        const winAmount = caseData.price * item.multiplier;
+        await createTransaction('case_win', winAmount);
+      }
+    }
   };
 
-  const startSpinning = async (isPlayerSpin = true): Promise<CaseItem> => {
-    if (!isFreePlay && isPlayerSpin) {
+  const startSpinning = async () => {
+    if (!isFreePlay) {
       const success = await createTransaction('case_open', caseData.price);
       if (!success) {
         onOpenChange(false);
-        return caseData.items[0]; // Return default item if transaction fails
+        return;
       }
     }
-
     setIsSpinning(true);
-    const items = generateSpinningItems();
-    if (isPlayerSpin) {
-      setCurrentItems(items);
-    }
-
-    const speedPattern = [
-      { speed: 100, time: 0 },
-      { speed: 80, time: 500 },
-      { speed: 70, time: 1000 },
-      { speed: 60, time: 1500 },
-      { speed: 50, time: 2000 },
-      { speed: 40, time: 2500 },
-      { speed: 30, time: 3000 },
-      { speed: 25, time: 3500 },
-      { speed: 20, time: 4000 },
-      { speed: 15, time: 5000 },
-      { speed: 10, time: 6000 },
-      { speed: 7, time: 7000 },
-      { speed: 4, time: 8000 },
-      { speed: 2, time: 9000 },
-      { speed: 1, time: 10000 }
-    ];
-
-    speedPattern.forEach(({ speed, time }) => {
-      setTimeout(() => setSpinSpeed(speed), time);
-    });
-    
-    return new Promise((resolve) => {
-      setTimeout(async () => {
-        if (isPlayerSpin) {
-          setIsSpinning(false);
-        }
-        
-        const random = Math.random();
-        let cumulative = 0;
-        
-        const adjustedItems = hasRushDraw 
-          ? caseData.items.map(item => ({
-              ...item,
-              odds: item.rarity === 'legendary' ? item.odds * 3 : item.odds
-            }))
-          : caseData.items;
-
-        const winner = adjustedItems.find((item) => {
-          cumulative += item.odds;
-          return random <= cumulative;
-        }) || adjustedItems[0];
-        
-        if (isPlayerSpin) {
-          setFinalItem(winner);
-          if (!isFreePlay) {
-            const winAmount = caseData.price * winner.multiplier;
-            await createTransaction('case_win', winAmount);
-            if (hasRushDraw && winner.rarity === 'legendary') {
-              toast({
-                title: "🌟 RUSH DRAW WIN! 🌟",
-                description: "The rush draw brought you incredible luck!",
-                duration: 5000,
-              });
-            }
-          }
-        }
-        
-        setHasRushDraw(false);
-        resolve(winner);
-      }, 10000);
-    });
   };
 
   const startBattle = async (numOpponents: number) => {
@@ -164,59 +94,13 @@ export const CaseOpeningModal = ({
     const selectedOpponents = botNames.slice(0, numOpponents);
     setOpponents(selectedOpponents);
     setIsBattleMode(true);
+    await startSpinning();
+  };
 
-    const results = selectedOpponents.map(opponent => ({
-      player: opponent,
-      items: generateSpinningItems(),
-      finalItem: null as CaseItem | null
-    }));
-    
-    setOpponentResults(results);
-    setIsSpinning(true);
-
-    // Start all spins simultaneously
-    const [playerResult, ...opponentResults] = await Promise.all([ 
-      startSpinning(true),
-      ...selectedOpponents.map(async () => startSpinning(false))
-    ]);
-
-    // Determine winner based on multiplier
-    const allResults = [
-      { player: "You", item: playerResult },
-      ...opponentResults.map((result, index) => ({
-        player: selectedOpponents[index],
-        item: result
-      }))
-    ];
-
-    const winner = allResults.reduce((highest, current) => {
-      return (current.item.multiplier > highest.item.multiplier) ? current : highest;
-    }, allResults[0]);
-
-    // Update all results
-    if (winner.player === "You") {
-      setFinalItem(playerResult);
-      if (!isFreePlay) {
-        const winAmount = caseData.price * playerResult.multiplier;
-        await createTransaction('case_win', winAmount);
-      }
-    } else {
-      setFinalItem(null);
-      toast({
-        title: `${winner.player} won the battle!`,
-        description: `With ${winner.item.name} (${winner.item.multiplier}x)`,
-        variant: "destructive",
-      });
+  const handleWin = async (amount: number) => {
+    if (!isFreePlay) {
+      await createTransaction('case_win', amount);
     }
-
-    // Update opponent results and stop their spinning
-    setOpponentResults(prev => 
-      prev.map((result, index) => ({
-        ...result,
-        finalItem: opponentResults[index]
-      }))
-    );
-    setIsSpinning(false);
   };
 
   return (
@@ -236,10 +120,10 @@ export const CaseOpeningModal = ({
           {isBattleMode ? "Battle Mode" : isFreePlay ? "See what you could win!" : "Opening your case..."}
         </DialogDescription>
         
-        {!isSpinning && !finalItem && (
+        {!isSpinning && !finalItem && !battleWinner && (
           <div className="flex flex-col gap-4">
             <div className="flex justify-center gap-4">
-              <Button onClick={() => startSpinning(true)} className="w-full">
+              <Button onClick={() => startSpinning()} className="w-full">
                 Solo Open
               </Button>
               <Button 
@@ -255,7 +139,7 @@ export const CaseOpeningModal = ({
             {isBattleMode && (
               <BattleControls 
                 onBattleStart={startBattle}
-                onSoloOpen={() => startSpinning(true)}
+                onSoloOpen={() => startSpinning()}
               />
             )}
           </div>
@@ -263,35 +147,26 @@ export const CaseOpeningModal = ({
 
         <div className="p-6">
           <div className="grid grid-cols-1 gap-4">
-            {/* Player's box */}
-            <div className="relative h-48 overflow-hidden rounded-lg bg-muted">
-              <SpinningItems
-                items={currentItems}
-                isSpinning={isSpinning}
-                spinSpeed={spinSpeed}
-                finalItem={finalItem}
-                hasRushDraw={hasRushDraw}
-                playerName="You"
-              />
-            </div>
+            <BattleSpinner
+              caseData={caseData}
+              isSpinning={isSpinning}
+              onSpinComplete={(item) => handleSpinComplete(item, "You")}
+              playerName="You"
+            />
 
-            {/* Opponent boxes */}
-            {isBattleMode && opponentResults.map((opponent, index) => (
-              <div key={index} className="relative h-48 overflow-hidden rounded-lg bg-muted">
-                <SpinningItems
-                  items={opponent.items}
-                  isSpinning={isSpinning}
-                  spinSpeed={spinSpeed}
-                  finalItem={opponent.finalItem}
-                  hasRushDraw={false}
-                  isOpponent={true}
-                  playerName={opponent.player}
-                />
-              </div>
+            {isBattleMode && opponents.map((opponent, index) => (
+              <BattleSpinner
+                key={index}
+                caseData={caseData}
+                isSpinning={isSpinning}
+                onSpinComplete={(item) => handleSpinComplete(item, opponent)}
+                playerName={opponent}
+                isOpponent
+              />
             ))}
           </div>
 
-          {finalItem && !isSpinning && (
+          {!isBattleMode && finalItem && !isSpinning && (
             <WinningResult 
               item={finalItem}
               casePrice={caseData.price}
@@ -299,6 +174,13 @@ export const CaseOpeningModal = ({
               hasRushDraw={hasRushDraw}
             />
           )}
+
+          <BattleResults
+            winner={battleWinner}
+            isFreePlay={isFreePlay}
+            casePrice={caseData.price}
+            onWin={handleWin}
+          />
         </div>
       </DialogContent>
     </Dialog>
