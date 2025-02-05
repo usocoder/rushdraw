@@ -9,6 +9,14 @@ interface LeaderboardEntry {
   total_openings: number;
 }
 
+interface CaseOpeningResponse {
+  user_id: string;
+  value_won: number;
+  profiles: {
+    username: string | null;
+  } | null;
+}
+
 export const LeaderboardModal = ({ isOpen, onOpenChange }: { isOpen: boolean; onOpenChange: (open: boolean) => void }) => {
   const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
 
@@ -50,7 +58,7 @@ export const LeaderboardModal = ({ isOpen, onOpenChange }: { isOpen: boolean; on
 
     const leaderboardMap = new Map<string, LeaderboardEntry>();
 
-    data.forEach((entry) => {
+    (data as CaseOpeningResponse[]).forEach((entry) => {
       const username = entry.profiles?.username || 'Unknown';
       const current = leaderboardMap.get(username) || {
         username,

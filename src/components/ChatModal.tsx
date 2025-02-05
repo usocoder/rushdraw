@@ -16,6 +16,15 @@ interface ChatMessage {
   };
 }
 
+interface ChatMessageResponse {
+  id: string;
+  message: string;
+  created_at: string;
+  profiles: {
+    username: string | null;
+  } | null;
+}
+
 export const ChatModal = ({ isOpen, onOpenChange }: { isOpen: boolean; onOpenChange: (open: boolean) => void }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState("");
@@ -71,7 +80,7 @@ export const ChatModal = ({ isOpen, onOpenChange }: { isOpen: boolean; onOpenCha
     }
 
     // Transform the data to match the ChatMessage interface
-    const formattedMessages = data.map(msg => ({
+    const formattedMessages = (data as ChatMessageResponse[]).map(msg => ({
       id: msg.id,
       message: msg.message,
       created_at: msg.created_at,
