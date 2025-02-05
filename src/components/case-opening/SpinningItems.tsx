@@ -11,14 +11,6 @@ interface SpinningItemsProps {
 }
 
 export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRushDraw }: SpinningItemsProps) => {
-  if (!items.length && !finalItem) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Loader className="w-8 h-8 animate-spin text-primary" />
-      </div>
-    );
-  }
-
   const getSpinningAnimation = () => {
     if (!isSpinning) return {};
 
