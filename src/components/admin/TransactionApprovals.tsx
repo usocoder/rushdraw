@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, Mail, User, Wallet } from "lucide-react";
+import { User as AuthUser } from '@supabase/supabase-js';
 
 interface TransactionWithProfile {
   id: string;
@@ -54,17 +55,19 @@ export const TransactionApprovals = () => {
       }
 
       // Get user emails from auth.users
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
+      const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
 
       if (authError) {
         console.error('Error fetching auth users:', authError);
         throw authError;
       }
 
+      const authUsers = authData?.users as AuthUser[] || [];
+
       // Combine transactions with profile data and emails
       const transformedData: TransactionWithProfile[] = transactions.map(transaction => {
         const userProfile = profiles?.find(p => p.id === transaction.user_id);
-        const authUser = authUsers?.users?.find(u => u.id === transaction.user_id);
+        const authUser = authUsers.find(u => u.id === transaction.user_id);
         
         return {
           ...transaction,
