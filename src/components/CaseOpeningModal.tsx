@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogTitle, DialogDescription } from "./ui/dialog";
+import { Dialog, DialogContent } from "./ui/dialog";
 import { useState, useEffect } from "react";
 import { Case, CaseItem } from "../types/case";
 import { useBalance } from "@/contexts/BalanceContext";
@@ -6,10 +6,10 @@ import { useToast } from "./ui/use-toast";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { BattleControls } from "./case-opening/BattleControls";
 import { WinningResult } from "./case-opening/WinningResult";
-import { Sparkles, Swords } from "lucide-react";
-import { Button } from "./ui/button";
 import { BattleSpinner } from "./case-opening/BattleSpinner";
 import { BattleResults } from "./case-opening/BattleResults";
+import { OpeningControls } from "./case-opening/OpeningControls";
+import { OpeningHeader } from "./case-opening/OpeningHeader";
 
 interface CaseOpeningModalProps {
   isOpen: boolean;
@@ -106,35 +106,19 @@ export const CaseOpeningModal = ({
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[800px] bg-card border-accent">
-        <DialogTitle className="text-2xl font-bold text-center flex items-center justify-center gap-2">
-          {isFreePlay ? "Free Play - " : ""}{caseData.name}
-          {isBattleMode && <Swords className="h-6 w-6 text-primary" />}
-          {hasRushDraw && (
-            <span className="ml-2 inline-flex items-center text-yellow-500">
-              <Sparkles className="w-6 h-6 animate-pulse" />
-              Rush Draw Active!
-            </span>
-          )}
-        </DialogTitle>
-        <DialogDescription className="text-center text-muted-foreground">
-          {isBattleMode ? "Battle Mode" : isFreePlay ? "See what you could win!" : "Opening your case..."}
-        </DialogDescription>
+        <OpeningHeader
+          name={caseData.name}
+          isFreePlay={isFreePlay}
+          isBattleMode={isBattleMode}
+          hasRushDraw={hasRushDraw}
+        />
         
         {!isSpinning && !finalItem && !battleWinner && (
           <div className="flex flex-col gap-4">
-            <div className="flex justify-center gap-4">
-              <Button onClick={() => startSpinning()} className="w-full">
-                Solo Open
-              </Button>
-              <Button 
-                onClick={() => setIsBattleMode(true)} 
-                variant="secondary"
-                className="w-full flex items-center gap-2"
-              >
-                <Swords className="h-4 w-4" />
-                Battle
-              </Button>
-            </div>
+            <OpeningControls
+              onSoloOpen={startSpinning}
+              onBattleMode={() => setIsBattleMode(true)}
+            />
             
             {isBattleMode && (
               <BattleControls 
