@@ -59,19 +59,21 @@ export const SpinningItems = ({
         <div className="absolute -left-1 bottom-0 w-2 h-2 bg-primary rotate-45" />
       </div>
 
-      <AnimatePresence>
+      <AnimatePresence mode="wait">
         {(isSpinning || !finalItem) && (
           <motion.div
             className="flex items-center absolute top-1/2 -translate-y-1/2"
             animate={getSpinningAnimation()}
-            initial={false}
+            initial={{ x: 0 }}
             exit={{ 
               opacity: 0,
-              transition: { duration: 0.3 }
+              transition: { 
+                duration: 0.2,
+                ease: "easeOut"
+              }
             }}
             style={{
               willChange: 'transform',
-              x: isSpinning ? 0 : -240,
               translateY: '-50%',
             }}
           >
@@ -82,8 +84,9 @@ export const SpinningItems = ({
                   flex-shrink-0 ${itemSize} mx-1 rounded-lg
                   ${!isSpinning && finalItem?.id === item.id ? "bg-accent/10" : "bg-accent/5"}
                   border border-accent/20
-                  transition-all duration-700
                 `}
+                initial={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
               >
                 <div className="flex flex-col h-full relative p-4">
                   <div className="flex-1 flex items-center justify-center">
@@ -91,7 +94,7 @@ export const SpinningItems = ({
                       src={item.image}
                       alt={item.name}
                       className={`
-                        ${imageSize} object-contain transform transition-transform duration-700
+                        ${imageSize} object-contain
                         ${!isSpinning && finalItem?.id === item.id ? 'scale-105' : ''}
                       `}
                       loading="eager"
@@ -99,7 +102,7 @@ export const SpinningItems = ({
                     />
                   </div>
                   
-                  <div className="mt-2 text-center relative z-10">
+                  <div className="mt-2 text-center">
                     <h3 className="text-xs sm:text-sm font-semibold truncate">
                       {item.name}
                     </h3>
