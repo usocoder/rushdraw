@@ -8,9 +8,10 @@ interface SpinningItemsProps {
   spinSpeed: number;
   finalItem: CaseItem | null;
   hasRushDraw?: boolean;
+  isOpponent?: boolean;
 }
 
-export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRushDraw }: SpinningItemsProps) => {
+export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRushDraw, isOpponent }: SpinningItemsProps) => {
   const getSpinningAnimation = () => {
     if (!isSpinning) return {};
 

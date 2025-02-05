@@ -92,7 +92,6 @@ export const CaseOpeningModal = ({
     setIsSpinning(true);
     setCurrentItems(generateSpinningItems());
 
-    // New speed pattern: start extremely fast then slow down to a stop
     const speedPattern = [
       { speed: 100, time: 0 },
       { speed: 80, time: 500 },
@@ -168,19 +167,42 @@ export const CaseOpeningModal = ({
     
     setOpponentResults(results);
 
-    await Promise.all([ 
+    // Start all spins simultaneously
+    const [playerResult, ...opponentResults] = await Promise.all([ 
       startSpinning(true),
-      ...selectedOpponents.map(async (_, index) => {
-        const opponentResult = await startSpinning(false);
-        setOpponentResults(prev => {
-          const newResults = [...prev];
-          if (newResults[index]) {
-            newResults[index].finalItem = opponentResult;
-          }
-          return newResults;
-        });
-      })
+      ...selectedOpponents.map(async () => startSpinning(false))
     ]);
+
+    // Determine winner based on multiplier
+    const allResults = [
+      { player: "You", item: playerResult },
+      ...opponentResults.map((result, index) => ({
+        player: selectedOpponents[index],
+        item: result
+      }))
+    ];
+
+    const winner = allResults.reduce((highest, current) => {
+      return (current.item.multiplier > highest.item.multiplier) ? current : highest;
+    }, allResults[0]);
+
+    // If player didn't win, update their final item
+    if (winner.player !== "You") {
+      setFinalItem(null);
+      toast({
+        title: `${winner.player} won the battle!`,
+        description: `With ${winner.item.name} (${winner.item.multiplier}x)`,
+        variant: "destructive",
+      });
+    }
+
+    // Update opponent results
+    setOpponentResults(prev => 
+      prev.map((result, index) => ({
+        ...result,
+        finalItem: opponentResults[index]
+      }))
+    );
   };
 
   return (
