@@ -19,6 +19,8 @@ interface CaseOpeningModalProps {
   isFreePlay?: boolean;
 }
 
+const MAX_TRANSACTION_AMOUNT = 99999999.99; // Maximum amount allowed by the database
+
 export const CaseOpeningModal = ({
   isOpen,
   onOpenChange,
@@ -74,7 +76,14 @@ export const CaseOpeningModal = ({
     } else {
       setFinalItem(item);
       if (!isFreePlay) {
-        const winAmount = caseData.price * item.multiplier;
+        const winAmount = Math.min(caseData.price * item.multiplier, MAX_TRANSACTION_AMOUNT);
+        if (winAmount >= MAX_TRANSACTION_AMOUNT) {
+          toast({
+            title: "Maximum win amount exceeded",
+            description: "Your win has been capped at the maximum allowed amount.",
+            variant: "warning",
+          });
+        }
         await createTransaction('case_win', winAmount);
       }
     }
@@ -82,6 +91,14 @@ export const CaseOpeningModal = ({
 
   const startSpinning = async () => {
     if (!isFreePlay) {
+      if (caseData.price > MAX_TRANSACTION_AMOUNT) {
+        toast({
+          title: "Case price too high",
+          description: "This case exceeds the maximum transaction amount.",
+          variant: "destructive",
+        });
+        return;
+      }
       const success = await createTransaction('case_open', caseData.price);
       if (!success) {
         onOpenChange(false);
@@ -101,7 +118,15 @@ export const CaseOpeningModal = ({
 
   const handleWin = async (amount: number) => {
     if (!isFreePlay) {
-      await createTransaction('case_win', amount);
+      const cappedAmount = Math.min(amount, MAX_TRANSACTION_AMOUNT);
+      if (cappedAmount !== amount) {
+        toast({
+          title: "Maximum win amount exceeded",
+          description: "Your win has been capped at the maximum allowed amount.",
+          variant: "warning",
+        });
+      }
+      await createTransaction('case_win', cappedAmount);
     }
   };
 
