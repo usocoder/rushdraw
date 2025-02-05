@@ -10,6 +10,8 @@ import { BattleSpinner } from "./case-opening/BattleSpinner";
 import { BattleResults } from "./case-opening/BattleResults";
 import { OpeningControls } from "./case-opening/OpeningControls";
 import { OpeningHeader } from "./case-opening/OpeningHeader";
+import { X } from "lucide-react";
+import { Button } from "./ui/button";
 
 interface CaseOpeningModalProps {
   isOpen: boolean;
@@ -105,7 +107,17 @@ export const CaseOpeningModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px] bg-card border-accent">
+      <DialogContent className="sm:max-w-[800px] bg-card border-accent relative">
+        <Button
+          variant="ghost"
+          size="icon"
+          className="absolute right-4 top-4 rounded-full"
+          onClick={() => onOpenChange(false)}
+        >
+          <X className="h-4 w-4" />
+          <span className="sr-only">Close</span>
+        </Button>
+        
         <OpeningHeader
           name={caseData.name}
           isFreePlay={isFreePlay}
