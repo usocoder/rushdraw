@@ -33,8 +33,8 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
       x: [0, adjustedPosition - 200, adjustedPosition], // Subtract 200px to account for item width
       transition: {
         duration: spinSpeed * 0.5,
-        ease: "easeInOutQuint", // Changed to a smoother easing function
-        times: [0, 0.9, 1], // Adjusted timing for smoother stop
+        ease: [0.64, 0.0, 0.35, 1], // Changed to a valid easing function (easeInOutCubic)
+        times: [0, 0.85, 1], // Adjusted timing for smoother stop
       }
     };
   };
