@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { supabase } from "@/integrations/supabase/client";
-import { Trophy, Award } from "lucide-react";
+import { Trophy } from "lucide-react";
 
 interface LeaderboardEntry {
   username: string;
@@ -39,7 +39,7 @@ export const LeaderboardModal = ({ isOpen, onOpenChange }: { isOpen: boolean; on
       .select(`
         user_id,
         value_won,
-        profiles!inner(username)
+        profiles!case_openings_user_id_fkey (username)
       `)
       .order('created_at', { ascending: false });
 
@@ -51,7 +51,7 @@ export const LeaderboardModal = ({ isOpen, onOpenChange }: { isOpen: boolean; on
     const leaderboardMap = new Map<string, LeaderboardEntry>();
 
     data.forEach((entry) => {
-      const username = entry.profiles.username || 'Unknown';
+      const username = entry.profiles?.username || 'Unknown';
       const current = leaderboardMap.get(username) || {
         username,
         total_value: 0,

@@ -59,7 +59,8 @@ export const ChatModal = ({ isOpen, onOpenChange }: { isOpen: boolean; onOpenCha
         id,
         message,
         created_at,
-        profiles!inner(username)
+        user_id,
+        profiles!chat_messages_user_id_fkey (username)
       `)
       .order('created_at', { ascending: true })
       .limit(50);
@@ -69,7 +70,17 @@ export const ChatModal = ({ isOpen, onOpenChange }: { isOpen: boolean; onOpenCha
       return;
     }
 
-    setMessages(data);
+    // Transform the data to match the ChatMessage interface
+    const formattedMessages = data.map(msg => ({
+      id: msg.id,
+      message: msg.message,
+      created_at: msg.created_at,
+      profiles: {
+        username: msg.profiles?.username || 'Unknown'
+      }
+    }));
+
+    setMessages(formattedMessages);
   };
 
   const handleSendMessage = async (e: React.FormEvent) => {
