@@ -24,14 +24,14 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
 
     return {
       x: [
-        0, // Start position
-        -7800, // Moving
-        -8000, // Final position
+        0,
+        -7800,
+        -8000,
       ],
       transition: {
         duration: spinSpeed * 0.5,
-        ease: "linear",
-        times: [0, 0.95, 1],
+        ease: [0.25, 0.1, 0.25, 1], // Custom cubic-bezier for smoother stop
+        times: [0, 0.9, 1],
       }
     };
   };
@@ -65,15 +65,15 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
               flex-shrink-0 w-48 h-48 mx-1 rounded-lg
               ${!isSpinning && finalItem?.id === item.id ? "bg-accent/20" : "glass-card"}
               ${hasRushDraw && item.rarity === 'legendary' ? 'border-yellow-500 shadow-yellow-500/50' : 'border-accent/20'}
-              transition-all duration-300
+              transition-all duration-500
             `}
-            initial={!isSpinning ? { scale: 0.8, opacity: 0 } : false}
+            initial={!isSpinning ? { scale: 0.95, opacity: 0.5 } : false}
             animate={!isSpinning ? { 
-              scale: finalItem?.id === item.id ? 1.05 : 1,
-              opacity: 1
+              scale: finalItem?.id === item.id ? 1 : 0.95,
+              opacity: finalItem?.id === item.id ? 1 : 0.5,
             } : undefined}
             transition={{ 
-              duration: 0.3,
+              duration: 0.5,
               ease: "easeOut"
             }}
           >
@@ -90,8 +90,8 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
                   src={item.image}
                   alt={item.name}
                   className={`
-                    w-32 h-32 object-contain transform transition-transform duration-300
-                    ${!isSpinning && finalItem?.id === item.id ? 'scale-110' : ''}
+                    w-32 h-32 object-contain transform transition-transform duration-500
+                    ${!isSpinning && finalItem?.id === item.id ? 'scale-105' : ''}
                   `}
                   loading="eager"
                   style={{ imageRendering: 'crisp-edges' }}
