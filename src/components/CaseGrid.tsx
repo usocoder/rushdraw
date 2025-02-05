@@ -25,7 +25,13 @@ export const CaseGrid = () => {
       }
       
       console.log('Cases fetched:', data);
-      return data;
+      return data?.map(case_ => ({
+        ...case_,
+        category: 
+          case_.price < 50 ? 'budget' :
+          case_.price < 500 ? 'mid' :
+          case_.price < 5000 ? 'high' : 'premium'
+      }));
     },
   });
 
