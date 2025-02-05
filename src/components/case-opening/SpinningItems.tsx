@@ -53,7 +53,6 @@ export const SpinningItems = ({
         </div>
       )}
       
-      {/* Center line indicator */}
       <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-primary z-20">
         <div className="absolute -left-1 top-0 w-2 h-2 bg-primary rotate-45" />
         <div className="absolute -left-1 bottom-0 w-2 h-2 bg-primary rotate-45" />
@@ -67,9 +66,10 @@ export const SpinningItems = ({
             initial={{ x: 0 }}
             exit={{ 
               opacity: 0,
+              x: -240,
               transition: { 
-                duration: 0.2,
-                ease: "easeOut"
+                duration: 0.5,
+                ease: "easeInOut"
               }
             }}
             style={{
@@ -86,7 +86,14 @@ export const SpinningItems = ({
                   border border-accent/20
                 `}
                 initial={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
+                animate={{ 
+                  opacity: !isSpinning && finalItem?.id !== item.id ? 0 : 1,
+                  scale: !isSpinning && finalItem?.id === item.id ? 1.05 : 1,
+                }}
+                transition={{
+                  duration: 0.3,
+                  ease: "easeOut"
+                }}
               >
                 <div className="flex flex-col h-full relative p-4">
                   <div className="flex-1 flex items-center justify-center">
