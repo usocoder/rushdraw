@@ -19,6 +19,8 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
     );
   }
 
+  const displayItems = isSpinning ? items : finalItem ? [finalItem] : items.slice(0, 5);
+
   const getSpinningAnimation = () => {
     if (!isSpinning) return {};
 
@@ -26,7 +28,7 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
       x: [0, -8000],
       transition: {
         duration: spinSpeed,
-        ease: "easeInOut",
+        ease: [0.25, 0.1, 0.25, 1], // Improved easing curve
         times: [0, 1],
       }
     };
@@ -46,28 +48,26 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
 
       <motion.div
         className="flex items-center absolute top-1/2 -translate-y-1/2"
-        animate={isSpinning ? getSpinningAnimation() : { x: -240 }}
-        transition={!isSpinning ? {
-          duration: 0.5,
-          ease: "easeOut"
-        } : undefined}
+        animate={getSpinningAnimation()}
+        initial={false}
         style={{
           willChange: 'transform',
-          translateY: '-50%', // Center vertically
+          x: isSpinning ? 0 : -240,
+          translateY: '-50%',
         }}
       >
-        {(isSpinning ? items : finalItem ? [finalItem] : []).map((item, index) => (
+        {displayItems.map((item, index) => (
           <motion.div
-            key={index}
+            key={`${item.id}-${index}`}
             className={`
               flex-shrink-0 w-48 h-48 mx-1 rounded-lg
-              ${!isSpinning && finalItem?.id === item.id ? "bg-accent" : "glass-card"}
+              ${!isSpinning && finalItem?.id === item.id ? "bg-accent shadow-lg scale-105" : "glass-card"}
               ${hasRushDraw && item.rarity === 'legendary' ? 'border-yellow-500 shadow-yellow-500/50' : 'border-accent/20'}
-              transition-all duration-300 transform hover:scale-105
+              transition-all duration-300 transform
             `}
             initial={!isSpinning && { scale: 0.8, opacity: 0 }}
             animate={!isSpinning && { 
-              scale: 1, 
+              scale: finalItem?.id === item.id ? 1.05 : 1,
               opacity: 1,
               y: [10, -10, 0],
             }}
@@ -91,7 +91,10 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
                 <img 
                   src={item.image}
                   alt={item.name}
-                  className="w-32 h-32 object-contain transform transition-transform duration-300"
+                  className={`
+                    w-32 h-32 object-contain transform transition-transform duration-300
+                    ${!isSpinning && finalItem?.id === item.id ? 'scale-110' : ''}
+                  `}
                   loading="eager"
                   style={{ imageRendering: 'crisp-edges' }}
                 />
