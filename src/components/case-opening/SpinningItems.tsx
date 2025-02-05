@@ -28,7 +28,7 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
       x: [0, -8000],
       transition: {
         duration: spinSpeed,
-        ease: [0.25, 0.1, 0.25, 1], // Improved easing curve
+        ease: [0.25, 0.1, 0.25, 1],
         times: [0, 1],
       }
     };
@@ -63,18 +63,18 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
               flex-shrink-0 w-48 h-48 mx-1 rounded-lg
               ${!isSpinning && finalItem?.id === item.id ? "bg-accent shadow-lg scale-105" : "glass-card"}
               ${hasRushDraw && item.rarity === 'legendary' ? 'border-yellow-500 shadow-yellow-500/50' : 'border-accent/20'}
-              transition-all duration-300 transform
+              transition-all duration-500
             `}
             initial={!isSpinning && { scale: 0.8, opacity: 0 }}
-            animate={!isSpinning && { 
+            animate={!isSpinning ? { 
               scale: finalItem?.id === item.id ? 1.05 : 1,
               opacity: 1,
-              y: [10, -10, 0],
-            }}
+              y: finalItem?.id === item.id ? [10, -10, 0] : 0,
+            } : undefined}
             transition={{ 
-              duration: 0.5,
+              duration: 0.8,
               y: {
-                duration: 0.8,
+                duration: 1.2,
                 ease: "easeOut"
               }
             }}
@@ -92,7 +92,7 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
                   src={item.image}
                   alt={item.name}
                   className={`
-                    w-32 h-32 object-contain transform transition-transform duration-300
+                    w-32 h-32 object-contain transform transition-transform duration-500
                     ${!isSpinning && finalItem?.id === item.id ? 'scale-110' : ''}
                   `}
                   loading="eager"
