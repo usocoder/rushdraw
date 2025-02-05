@@ -22,11 +22,11 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
     const adjustedPosition = finalPosition + centerPosition;
 
     return {
-      x: [0, adjustedPosition - 200, adjustedPosition], // Subtract 200px to account for item width
+      x: [0, adjustedPosition],
       transition: {
         duration: spinSpeed * 0.5,
-        ease: [0.64, 0.0, 0.35, 1], // Changed to a valid easing function (easeInOutCubic)
-        times: [0, 0.85, 1], // Adjusted timing for smoother stop
+        ease: [0.64, 0.0, 0.35, 1],
+        times: [0, 1],
       }
     };
   };
