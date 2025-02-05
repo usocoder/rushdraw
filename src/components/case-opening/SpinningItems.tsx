@@ -25,11 +25,17 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
     if (!isSpinning) return {};
 
     return {
-      x: [0, -8000],
+      x: [
+        0, // Start position
+        -7800, // Almost at the end
+        -7900, // Quick reverse
+        -7850, // Forward again
+        -8000, // Final position
+      ],
       transition: {
         duration: spinSpeed,
-        ease: [0.25, 0.1, 0.25, 1],
-        times: [0, 1],
+        ease: "easeOut",
+        times: [0, 0.85, 0.9, 0.95, 1], // Timing for each keyframe
       }
     };
   };
