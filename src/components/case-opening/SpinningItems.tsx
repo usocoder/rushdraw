@@ -30,8 +30,8 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
       ],
       transition: {
         duration: spinSpeed * 0.5,
-        ease: "linear", // Changed to linear for consistent speed
-        times: [0, 0.95, 1], // Adjusted timing for smoother stop
+        ease: "linear",
+        times: [0, 0.95, 1],
       }
     };
   };
@@ -63,23 +63,18 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
             key={`${item.id}-${index}`}
             className={`
               flex-shrink-0 w-48 h-48 mx-1 rounded-lg
-              ${!isSpinning && finalItem?.id === item.id ? "bg-accent shadow-lg scale-105" : "glass-card"}
+              ${!isSpinning && finalItem?.id === item.id ? "bg-accent/20" : "glass-card"}
               ${hasRushDraw && item.rarity === 'legendary' ? 'border-yellow-500 shadow-yellow-500/50' : 'border-accent/20'}
-              transition-all duration-500
+              transition-all duration-300
             `}
             initial={!isSpinning ? { scale: 0.8, opacity: 0 } : false}
             animate={!isSpinning ? { 
               scale: finalItem?.id === item.id ? 1.05 : 1,
-              opacity: 1,
-              y: finalItem?.id === item.id ? [0, -10, 0] : 0,
+              opacity: 1
             } : undefined}
             transition={{ 
-              duration: 0.8,
-              y: {
-                duration: 1.2,
-                ease: "easeOut",
-                delay: 0.2
-              }
+              duration: 0.3,
+              ease: "easeOut"
             }}
           >
             <div className="flex flex-col h-full relative p-4">
@@ -95,7 +90,7 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
                   src={item.image}
                   alt={item.name}
                   className={`
-                    w-32 h-32 object-contain transform transition-transform duration-500
+                    w-32 h-32 object-contain transform transition-transform duration-300
                     ${!isSpinning && finalItem?.id === item.id ? 'scale-110' : ''}
                   `}
                   loading="eager"
