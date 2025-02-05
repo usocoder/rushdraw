@@ -55,22 +55,33 @@ const Admin = () => {
 
       console.log('Is UUID?', isUUID);
 
-      // First try to find the profile
-      const { data: profileData, error: profileError } = await supabase
+      // Try to find the profile by username first
+      let { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('id, username')
-        .eq(isUUID ? 'id' : 'username', identifier)
+        .eq('username', identifier)
         .maybeSingle();
+
+      // If not found by username and it's a UUID, try by ID
+      if (!profileData && isUUID) {
+        const { data: uuidData, error: uuidError } = await supabase
+          .from('profiles')
+          .select('id, username')
+          .eq('id', identifier)
+          .maybeSingle();
+          
+        if (uuidError) {
+          console.error('Error checking UUID:', uuidError);
+          throw new Error('Failed to verify user ID');
+        }
+        
+        profileData = uuidData;
+      }
 
       console.log('Profile lookup result:', { profileData, profileError });
 
-      if (profileError) {
-        console.error('Error checking profile:', profileError);
-        throw new Error('Failed to verify user');
-      }
-
       if (!profileData) {
-        throw new Error('User not found. Please check the username or ID and try again.');
+        throw new Error(`User not found. Please check the ${isUUID ? 'ID' : 'username'} and try again.`);
       }
 
       // Create a completed deposit transaction
