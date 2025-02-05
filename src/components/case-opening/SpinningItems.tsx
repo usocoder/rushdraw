@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { CaseItem } from "@/types/case";
-import { Loader, Sparkles } from "lucide-react";
+import { Loader } from "lucide-react";
 
 interface SpinningItemsProps {
   items: CaseItem[];
@@ -23,14 +23,10 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
     if (!isSpinning) return {};
 
     return {
-      x: [
-        0,
-        -7800,
-        -8000,
-      ],
+      x: [0, -7800, -8000],
       transition: {
         duration: spinSpeed * 0.5,
-        ease: [0.25, 0.1, 0.25, 1], // Custom cubic-bezier for smoother stop
+        ease: [0.25, 0.1, 0.25, 1],
         times: [0, 0.9, 1],
       }
     };
@@ -63,34 +59,28 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
             key={`${item.id}-${index}`}
             className={`
               flex-shrink-0 w-48 h-48 mx-1 rounded-lg
-              ${!isSpinning && finalItem?.id === item.id ? "bg-accent/20" : "glass-card"}
-              ${hasRushDraw && item.rarity === 'legendary' ? 'border-yellow-500 shadow-yellow-500/50' : 'border-accent/20'}
-              transition-all duration-500
+              ${!isSpinning && finalItem?.id === item.id ? "bg-accent/10" : "bg-accent/5"}
+              border border-accent/20
+              transition-all duration-700
             `}
             initial={!isSpinning ? { scale: 0.95, opacity: 0.5 } : false}
             animate={!isSpinning ? { 
               scale: finalItem?.id === item.id ? 1 : 0.95,
               opacity: finalItem?.id === item.id ? 1 : 0.5,
+              x: finalItem?.id === item.id ? 0 : 0
             } : undefined}
             transition={{ 
-              duration: 0.5,
+              duration: 0.7,
               ease: "easeOut"
             }}
           >
             <div className="flex flex-col h-full relative p-4">
-              {hasRushDraw && item.rarity === 'legendary' && (
-                <>
-                  <Sparkles className="absolute top-2 right-2 w-6 h-6 text-yellow-500 animate-pulse" />
-                  <div className="absolute inset-0 bg-gradient-to-br from-yellow-500/10 to-transparent rounded-lg" />
-                </>
-              )}
-              
               <div className="flex-1 flex items-center justify-center">
                 <img 
                   src={item.image}
                   alt={item.name}
                   className={`
-                    w-32 h-32 object-contain transform transition-transform duration-500
+                    w-32 h-32 object-contain transform transition-transform duration-700
                     ${!isSpinning && finalItem?.id === item.id ? 'scale-105' : ''}
                   `}
                   loading="eager"
