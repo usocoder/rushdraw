@@ -14,12 +14,8 @@ interface TransactionWithProfile {
   pending_amount: number;
   created_at: string;
   crypto_address: string | null;
-  profiles: {
-    username: string | null;
-    auth: {
-      email: string;
-    } | null;
-  } | null;
+  user_email?: string;
+  username?: string;
 }
 
 export const TransactionApprovals = () => {
@@ -31,40 +27,40 @@ export const TransactionApprovals = () => {
     queryKey: ['pending-transactions'],
     queryFn: async () => {
       console.log('Fetching pending transactions...');
-      const { data, error } = await supabase
+      const { data: transactions, error: transactionError } = await supabase
         .from('transactions')
-        .select(`
-          id,
-          user_id,
-          type,
-          amount,
-          status,
-          pending_amount,
-          created_at,
-          crypto_address,
-          profiles (
-            username,
-            auth (
-              email
-            )
-          )
-        `)
+        .select('*')
         .eq('status', 'pending')
         .order('created_at', { ascending: false });
 
-      if (error) {
-        console.error('Error fetching transactions:', error);
-        throw error;
+      if (transactionError) {
+        console.error('Error fetching transactions:', transactionError);
+        throw transactionError;
       }
 
-      // Transform data to match TransactionWithProfile interface
-      const transformedData = data.map(transaction => ({
-        ...transaction,
-        profiles: transaction.profiles || null
-      }));
+      // Fetch user profiles separately
+      const { data: profiles, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, username, auth.email')
+        .in('id', transactions.map(t => t.user_id));
+
+      if (profileError) {
+        console.error('Error fetching profiles:', profileError);
+        throw profileError;
+      }
+
+      // Combine transactions with profile data
+      const transformedData: TransactionWithProfile[] = transactions.map(transaction => {
+        const userProfile = profiles.find(p => p.id === transaction.user_id);
+        return {
+          ...transaction,
+          user_email: userProfile?.auth?.email || 'No email',
+          username: userProfile?.username || 'No username'
+        };
+      });
 
       console.log('Fetched pending transactions:', transformedData);
-      return transformedData as TransactionWithProfile[];
+      return transformedData;
     },
   });
 
@@ -159,15 +155,11 @@ export const TransactionApprovals = () => {
                 <div className="mt-2 space-y-1 text-sm">
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <User className="w-4 h-4" />
-                    <span>
-                      {transaction.profiles?.username || 'No username'}
-                    </span>
+                    <span>{transaction.username}</span>
                   </div>
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <Mail className="w-4 h-4" />
-                    <span>
-                      {transaction.profiles?.auth?.email || 'No email'}
-                    </span>
+                    <span>{transaction.user_email}</span>
                   </div>
                   {transaction.type === 'withdraw' && transaction.crypto_address && (
                     <div className="flex items-center gap-2 text-muted-foreground">
