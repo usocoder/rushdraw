@@ -80,6 +80,48 @@ export type Database = {
           },
         ]
       }
+      case_openings: {
+        Row: {
+          case_id: string
+          created_at: string
+          id: string
+          item_won: string
+          user_id: string
+          value_won: number
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          id?: string
+          item_won: string
+          user_id: string
+          value_won: number
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          id?: string
+          item_won?: string
+          user_id?: string
+          value_won?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_openings_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_openings_item_won_fkey"
+            columns: ["item_won"]
+            isOneToOne: false
+            referencedRelation: "case_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cases: {
         Row: {
           best_drop: string
@@ -110,6 +152,27 @@ export type Database = {
           name?: string
           price?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          user_id?: string
         }
         Relationships: []
       }

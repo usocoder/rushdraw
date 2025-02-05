@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { CryptoDeposit } from "./CryptoDeposit";
 import { WithdrawModal } from "./WithdrawModal";
-import { ArrowDown, ArrowUp, LogIn, LogOut, UserPlus, Wallet, Settings, Trophy } from "lucide-react";
+import { ArrowDown, ArrowUp, LogIn, LogOut, UserPlus, Wallet, Settings, Trophy, MessageSquare } from "lucide-react";
 import { RegisterModal } from "./RegisterModal";
 import { LoginModal } from "./LoginModal";
+import { LeaderboardModal } from "./LeaderboardModal";
+import { ChatModal } from "./ChatModal";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { useBalance } from "@/contexts/BalanceContext";
 import { useQuery } from "@tanstack/react-query";
@@ -16,6 +18,8 @@ export const Hero = () => {
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const { user, logout } = useBrowserAuth();
   const { balance } = useBalance();
   const navigate = useNavigate();
@@ -68,6 +72,24 @@ export const Hero = () => {
                   <span className="text-sm">Level {userProgress.current_level}</span>
                 </div>
               )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsLeaderboardOpen(true)}
+                className="mr-2"
+              >
+                <Trophy className="mr-2 h-4 w-4" />
+                Leaderboard
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsChatOpen(true)}
+                className="mr-2"
+              >
+                <MessageSquare className="mr-2 h-4 w-4" />
+                Chat
+              </Button>
               <span className="text-muted-foreground self-center mr-2">
                 Welcome, {user.username}!
               </span>
@@ -103,14 +125,14 @@ export const Hero = () => {
 
         <div className="text-center">
           <div className="mb-8 inline-block px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg animate-pulse">
-            <h2 className="text-2xl font-bold text-white">🎉 Daily Jackpot: $10,000 🎉</h2>
+            <h2 className="text-2xl font-bold text-white">🎉 Weekly Jackpot: $10,000 🎉</h2>
           </div>
           
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-pink-600">
             RushDraw
           </h1>
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Experience the thrill of opening cases and winning incredible rewards. Daily 10k jackpot. support@rushdraw.com
+            Experience the thrill of opening cases and winning incredible rewards. Weekly 10k jackpot. support@rushdraw.com
           </p>
           <div className="flex justify-center gap-4">
             {user ? (
@@ -151,6 +173,16 @@ export const Hero = () => {
         <LoginModal
           isOpen={isLoginOpen}
           onOpenChange={setIsLoginOpen}
+        />
+
+        <LeaderboardModal
+          isOpen={isLeaderboardOpen}
+          onOpenChange={setIsLeaderboardOpen}
+        />
+
+        <ChatModal
+          isOpen={isChatOpen}
+          onOpenChange={setIsChatOpen}
         />
       </div>
     </div>

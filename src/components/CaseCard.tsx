@@ -4,6 +4,8 @@ import { Case } from "../types/case";
 import { CaseOpeningModal } from "./CaseOpeningModal";
 import { RegisterModal } from "./RegisterModal";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
+import { CaseItemsModal } from "./CaseItemsModal";
+import { Box } from "lucide-react";
 
 interface CaseCardProps extends Case {}
 
@@ -11,6 +13,7 @@ export const CaseCard = ({ name, price, image, bestDrop, items = [], id, categor
   const [isOpeningCase, setIsOpeningCase] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
   const [isFreePlay, setIsFreePlay] = useState(false);
+  const [showItems, setShowItems] = useState(false);
   const { user } = useBrowserAuth();
   
   const bestItem = items?.reduce((prev, current) => 
@@ -62,12 +65,21 @@ export const CaseCard = ({ name, price, image, bestDrop, items = [], id, categor
           >
             Open Case
           </button>
-          <button 
-            className="w-full bg-secondary hover:bg-accent text-white font-semibold py-2 rounded-lg transition-colors duration-300"
-            onClick={handleFreePlay}
-          >
-            Free Play
-          </button>
+          <div className="grid grid-cols-2 gap-2">
+            <button 
+              className="w-full bg-secondary hover:bg-accent text-white font-semibold py-2 rounded-lg transition-colors duration-300"
+              onClick={handleFreePlay}
+            >
+              Free Play
+            </button>
+            <button 
+              className="w-full bg-secondary hover:bg-accent text-white font-semibold py-2 rounded-lg transition-colors duration-300 flex items-center justify-center gap-2"
+              onClick={() => setShowItems(true)}
+            >
+              <Box className="h-4 w-4" />
+              Items
+            </button>
+          </div>
         </div>
       </motion.div>
 
@@ -81,6 +93,13 @@ export const CaseCard = ({ name, price, image, bestDrop, items = [], id, categor
       <RegisterModal
         isOpen={showRegister}
         onOpenChange={setShowRegister}
+      />
+
+      <CaseItemsModal
+        isOpen={showItems}
+        onOpenChange={setShowItems}
+        items={items}
+        caseName={name}
       />
     </>
   );
