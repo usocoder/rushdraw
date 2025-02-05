@@ -38,6 +38,10 @@ export const TransactionApprovals = () => {
         throw transactionError;
       }
 
+      if (!transactions) {
+        return [];
+      }
+
       // Get user profiles with emails
       const { data: profiles, error: profileError } = await supabase
         .from('profiles')
@@ -49,27 +53,27 @@ export const TransactionApprovals = () => {
         throw profileError;
       }
 
-      // Get emails from auth.users
-      const { data: users, error: userError } = await supabase.auth.admin.listUsers();
+      // Get user emails from auth.users
+      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
 
-      if (userError) {
-        console.error('Error fetching users:', userError);
-        throw userError;
+      if (authError) {
+        console.error('Error fetching auth users:', authError);
+        throw authError;
       }
 
       // Combine transactions with profile data and emails
       const transformedData: TransactionWithProfile[] = transactions.map(transaction => {
         const userProfile = profiles?.find(p => p.id === transaction.user_id);
-        const userAuth = users?.users.find(u => u.id === transaction.user_id);
+        const authUser = authUsers?.users?.find(u => u.id === transaction.user_id);
         
         return {
           ...transaction,
-          user_email: userAuth?.email || 'No email',
+          user_email: authUser?.email || 'No email',
           username: userProfile?.username || 'No username'
         };
       });
 
-      console.log('Fetched pending transactions:', transformedData);
+      console.log('Transformed transactions:', transformedData);
       return transformedData;
     },
   });
