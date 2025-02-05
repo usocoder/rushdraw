@@ -90,7 +90,10 @@ export const CaseOpeningModal = ({
     }
 
     setIsSpinning(true);
-    setCurrentItems(generateSpinningItems());
+    const items = generateSpinningItems();
+    if (isPlayerSpin) {
+      setCurrentItems(items);
+    }
 
     const speedPattern = [
       { speed: 100, time: 0 },
@@ -116,7 +119,10 @@ export const CaseOpeningModal = ({
     
     return new Promise((resolve) => {
       setTimeout(async () => {
-        setIsSpinning(false);
+        if (isPlayerSpin) {
+          setIsSpinning(false);
+        }
+        
         const random = Math.random();
         let cumulative = 0;
         
@@ -149,7 +155,7 @@ export const CaseOpeningModal = ({
         
         setHasRushDraw(false);
         resolve(winner);
-      }, 10000); // Final result timing remains unchanged
+      }, 10000);
     });
   };
 
@@ -166,6 +172,7 @@ export const CaseOpeningModal = ({
     }));
     
     setOpponentResults(results);
+    setIsSpinning(true);
 
     // Start all spins simultaneously
     const [playerResult, ...opponentResults] = await Promise.all([ 
@@ -186,8 +193,14 @@ export const CaseOpeningModal = ({
       return (current.item.multiplier > highest.item.multiplier) ? current : highest;
     }, allResults[0]);
 
-    // If player didn't win, update their final item
-    if (winner.player !== "You") {
+    // Update all results
+    if (winner.player === "You") {
+      setFinalItem(playerResult);
+      if (!isFreePlay) {
+        const winAmount = caseData.price * playerResult.multiplier;
+        await createTransaction('case_win', winAmount);
+      }
+    } else {
       setFinalItem(null);
       toast({
         title: `${winner.player} won the battle!`,
@@ -196,13 +209,14 @@ export const CaseOpeningModal = ({
       });
     }
 
-    // Update opponent results
+    // Update opponent results and stop their spinning
     setOpponentResults(prev => 
       prev.map((result, index) => ({
         ...result,
         finalItem: opponentResults[index]
       }))
     );
+    setIsSpinning(false);
   };
 
   return (
@@ -251,32 +265,27 @@ export const CaseOpeningModal = ({
           <div className="grid grid-cols-1 gap-4">
             {/* Player's box */}
             <div className="relative h-48 overflow-hidden rounded-lg bg-muted">
-              <div className="absolute top-1/2 left-1/2 w-0.5 h-full bg-primary -translate-x-1/2 -translate-y-1/2 z-10">
-                <div className="absolute top-0 left-1/2 w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-primary rotate-45"></div>
-                <div className="absolute bottom-0 left-1/2 w-4 h-4 -translate-x-1/2 translate-y-1/2 bg-primary rotate-45"></div>
-              </div>
               <SpinningItems
                 items={currentItems}
                 isSpinning={isSpinning}
                 spinSpeed={spinSpeed}
                 finalItem={finalItem}
                 hasRushDraw={hasRushDraw}
+                playerName="You"
               />
             </div>
 
             {/* Opponent boxes */}
             {isBattleMode && opponentResults.map((opponent, index) => (
               <div key={index} className="relative h-48 overflow-hidden rounded-lg bg-muted">
-                <div className="absolute top-1/2 left-1/2 w-0.5 h-full bg-primary -translate-x-1/2 -translate-y-1/2 z-10">
-                  <div className="absolute top-0 left-1/2 w-4 h-4 -translate-x-1/2 -translate-y-1/2 bg-primary rotate-45"></div>
-                  <div className="absolute bottom-0 left-1/2 w-4 h-4 -translate-x-1/2 translate-y-1/2 bg-primary rotate-45"></div>
-                </div>
                 <SpinningItems
                   items={opponent.items}
                   isSpinning={isSpinning}
                   spinSpeed={spinSpeed}
                   finalItem={opponent.finalItem}
                   hasRushDraw={false}
+                  isOpponent={true}
+                  playerName={opponent.player}
                 />
               </div>
             ))}

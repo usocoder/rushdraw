@@ -9,9 +9,18 @@ interface SpinningItemsProps {
   finalItem: CaseItem | null;
   hasRushDraw?: boolean;
   isOpponent?: boolean;
+  playerName?: string;
 }
 
-export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRushDraw, isOpponent }: SpinningItemsProps) => {
+export const SpinningItems = ({ 
+  items, 
+  isSpinning, 
+  spinSpeed, 
+  finalItem, 
+  hasRushDraw, 
+  isOpponent,
+  playerName 
+}: SpinningItemsProps) => {
   const getSpinningAnimation = () => {
     if (!isSpinning) return {};
 
@@ -34,6 +43,12 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
 
   return (
     <div className="relative w-full h-full overflow-hidden">
+      {playerName && (
+        <div className="absolute top-2 left-2 z-20 bg-background/80 px-2 py-1 rounded-md">
+          {playerName}
+        </div>
+      )}
+      
       {/* Center line indicator */}
       <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-primary z-20">
         <div className="absolute -left-1 top-0 w-2 h-2 bg-primary rotate-45" />
