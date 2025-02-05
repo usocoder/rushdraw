@@ -22,22 +22,23 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
   const getSpinningAnimation = () => {
     if (!isSpinning) return {};
 
+    // Calculate the position to stop at the center
+    const finalPosition = -8000; // Base position
+    const itemWidth = 200; // Width of each item including margin
+    const centerOffset = (window.innerWidth / 2) - (itemWidth / 2);
+    
     return {
-      x: [0, -7800, -8000],
+      x: [0, finalPosition - centerOffset, finalPosition],
       transition: {
         duration: spinSpeed * 0.5,
         ease: [0.25, 0.1, 0.25, 1],
-        times: [0, 0.9, 1],
+        times: [0, 0.85, 1],
       }
     };
   };
 
   return (
     <div className="relative w-full h-full overflow-hidden">
-      {/* Gradient overlays for smooth fade effect */}
-      <div className="absolute left-0 top-0 bottom-0 w-24 z-10 bg-gradient-to-r from-muted to-transparent pointer-events-none" />
-      <div className="absolute right-0 top-0 bottom-0 w-24 z-10 bg-gradient-to-l from-muted to-transparent pointer-events-none" />
-      
       {/* Center line indicator */}
       <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-primary z-20">
         <div className="absolute -left-1 top-0 w-2 h-2 bg-primary rotate-45" />
