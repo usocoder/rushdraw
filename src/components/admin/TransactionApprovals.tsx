@@ -21,7 +21,6 @@ export const TransactionApprovals = () => {
   const { toast } = useToast();
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Fetch pending transactions and profiles separately
   const { data: pendingTransactions, isLoading, refetch } = useQuery({
     queryKey: ['pending-transactions'],
     queryFn: async () => {
@@ -83,28 +82,24 @@ export const TransactionApprovals = () => {
 
       const status = approve ? "completed" : "rejected";
       
-      // Update transaction status
+      // If approved, update the user's balance first
+      if (approve) {
+        const { error: balanceError } = await supabase
+          .rpc('increment_balance', { 
+            user_id: transaction.user_id, 
+            amount: transaction.amount 
+          });
+
+        if (balanceError) throw balanceError;
+      }
+
+      // Then update transaction status
       const { error: updateError } = await supabase
         .from("transactions")
         .update({ status })
         .eq("id", transactionId);
 
       if (updateError) throw updateError;
-
-      // If approved, update the user's balance
-      if (approve) {
-        const { error: balanceError } = await supabase
-          .from("profiles")
-          .update({ 
-            balance: supabase.rpc('increment_balance', { 
-              user_id: transaction.user_id, 
-              amount: transaction.amount 
-            })
-          })
-          .eq("id", transaction.user_id);
-
-        if (balanceError) throw balanceError;
-      }
 
       toast({
         title: `Transaction ${approve ? "Approved" : "Rejected"}`,
