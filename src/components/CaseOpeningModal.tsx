@@ -105,7 +105,7 @@ export const CaseOpeningModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[800px] bg-card border-accent relative">
+      <DialogContent className="sm:max-w-[800px] bg-background border-accent relative">
         <Button
           variant="ghost"
           size="icon"
