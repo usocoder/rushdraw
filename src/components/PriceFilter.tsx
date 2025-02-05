@@ -8,6 +8,10 @@ interface PriceFilterProps {
 export const PriceFilter = ({ activeFilter, onFilterChange }: PriceFilterProps) => {
   const filters = [
     { name: "All Cases", value: "all" },
+    { name: "Budget (<$50)", value: "budget" },
+    { name: "Mid-tier ($50-$500)", value: "mid" },
+    { name: "High-roller ($500-$5000)", value: "high" },
+    { name: "Premium (>$5000)", value: "premium" },
   ];
 
   return (

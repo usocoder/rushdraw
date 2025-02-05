@@ -9,6 +9,12 @@ export const cases: Case[] = [
   ...premiumCases,
   ...midCases,
   ...highCases
-];
+].map(caseItem => ({
+  ...caseItem,
+  category: 
+    caseItem.price < 50 ? 'budget' :
+    caseItem.price < 500 ? 'mid' :
+    caseItem.price < 5000 ? 'high' : 'premium'
+}));
 
 export default cases;
