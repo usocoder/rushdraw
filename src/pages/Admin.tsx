@@ -50,33 +50,38 @@ const Admin = () => {
       // First try to find user by username
       const { data: usernameData, error: usernameError } = await supabase
         .from('profiles')
-        .select('id')
+        .select('id, username')
         .eq('username', identifier)
         .maybeSingle();
 
       if (usernameError) throw usernameError;
 
-      // If not found by username, check if the identifier is a valid UUID
       let targetUserId = usernameData?.id;
+      let targetUsername = usernameData?.username;
       
       if (!targetUserId) {
         // Validate UUID format using regex
         const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-        if (!uuidRegex.test(identifier)) {
-          throw new Error('User not found. Please enter a valid username or user ID.');
+        if (uuidRegex.test(identifier)) {
+          // Try to find user by ID
+          const { data: idData, error: idError } = await supabase
+            .from('profiles')
+            .select('id, username')
+            .eq('id', identifier)
+            .maybeSingle();
+
+          if (idError) throw idError;
+          if (!idData) throw new Error(`No user found with ID: ${identifier}`);
+          
+          targetUserId = idData.id;
+          targetUsername = idData.username;
+        } else {
+          throw new Error('Please enter a valid username or user ID');
         }
+      }
 
-        // Try to find user by ID
-        const { data: idData, error: idError } = await supabase
-          .from('profiles')
-          .select('id')
-          .eq('id', identifier)
-          .maybeSingle();
-
-        if (idError) throw idError;
-        if (!idData) throw new Error('User not found');
-        
-        targetUserId = idData.id;
+      if (!targetUserId) {
+        throw new Error(`No user found with identifier: ${identifier}`);
       }
 
       // Create a completed deposit transaction
@@ -93,7 +98,7 @@ const Admin = () => {
 
       toast({
         title: "Balance Added",
-        description: `Successfully added $${amount} to user's balance`,
+        description: `Successfully added $${amount} to ${targetUsername || targetUserId}'s balance`,
       });
 
       // Reset form
