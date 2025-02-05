@@ -26,7 +26,7 @@ export const Footer = () => {
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-4">Payment and withdrawals</h3>
+            <h3 className="text-lg font-semibold mb-4">Payment and Withdrawals</h3>
             <div className="text-sm text-muted-foreground space-y-2">
               <p>We accept major cryptocurrencies for deposits and withdrawals.</p>
               <p>Daily Rewards.</p>
