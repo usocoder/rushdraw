@@ -19,7 +19,7 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
     );
   }
 
-  const displayItems = isSpinning ? items : finalItem ? [finalItem] : items.slice(0, 5);
+  const displayItems = isSpinning ? items : finalItem ? [finalItem] : items;
 
   const getSpinningAnimation = () => {
     if (!isSpinning) return {};
@@ -28,13 +28,13 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
       x: [
         0, // Start position
         -7800, // Almost at the end
-        -7900, // Quick reverse
-        -7850, // Forward again
+        -8000, // Full stop
+        -8000, // Stay stopped for a moment
         -8000, // Final position
       ],
       transition: {
         duration: spinSpeed,
-        ease: "easeOut",
+        ease: ["easeOut", "easeOut", "easeOut", "linear", "linear"],
         times: [0, 0.85, 0.9, 0.95, 1], // Timing for each keyframe
       }
     };
@@ -71,17 +71,18 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
               ${hasRushDraw && item.rarity === 'legendary' ? 'border-yellow-500 shadow-yellow-500/50' : 'border-accent/20'}
               transition-all duration-500
             `}
-            initial={!isSpinning && { scale: 0.8, opacity: 0 }}
+            initial={!isSpinning ? { scale: 0.8, opacity: 0 } : false}
             animate={!isSpinning ? { 
               scale: finalItem?.id === item.id ? 1.05 : 1,
               opacity: 1,
-              y: finalItem?.id === item.id ? [10, -10, 0] : 0,
+              y: finalItem?.id === item.id ? [0, -10, 0] : 0,
             } : undefined}
             transition={{ 
               duration: 0.8,
               y: {
                 duration: 1.2,
-                ease: "easeOut"
+                ease: "easeOut",
+                delay: 0.2 // Add a slight delay for the bounce effect
               }
             }}
           >
