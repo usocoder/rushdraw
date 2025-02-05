@@ -2,10 +2,9 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { CryptoDeposit } from "./CryptoDeposit";
 import { WithdrawModal } from "./WithdrawModal";
-import { ArrowDown, ArrowUp, LogIn, LogOut, UserPlus, Wallet, Settings, Trophy } from "lucide-react";
+import { ArrowDown, ArrowUp, LogIn, LogOut, UserPlus, Wallet, Settings } from "lucide-react";
 import { RegisterModal } from "./RegisterModal";
 import { LoginModal } from "./LoginModal";
-import { LeaderboardModal } from "./LeaderboardModal";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { useBalance } from "@/contexts/BalanceContext";
 import { useQuery } from "@tanstack/react-query";
@@ -17,7 +16,6 @@ export const Hero = () => {
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false);
   const { user, logout } = useBrowserAuth();
   const { balance } = useBalance();
   const navigate = useNavigate();
@@ -66,19 +64,9 @@ export const Hero = () => {
               </div>
               {userProgress && (
                 <div className="flex items-center gap-2 mr-4">
-                  <Trophy className="h-4 w-4 text-primary" />
                   <span className="text-sm">Level {userProgress.current_level}</span>
                 </div>
               )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setIsLeaderboardOpen(true)}
-                className="mr-2"
-              >
-                <Trophy className="mr-2 h-4 w-4" />
-                Leaderboard
-              </Button>
               <span className="text-muted-foreground self-center mr-2">
                 Welcome, {user.username}!
               </span>
@@ -162,11 +150,6 @@ export const Hero = () => {
         <LoginModal
           isOpen={isLoginOpen}
           onOpenChange={setIsLoginOpen}
-        />
-
-        <LeaderboardModal
-          isOpen={isLeaderboardOpen}
-          onOpenChange={setIsLeaderboardOpen}
         />
       </div>
     </div>
