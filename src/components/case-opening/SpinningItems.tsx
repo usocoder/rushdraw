@@ -29,9 +29,9 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
         -8000, // Final position
       ],
       transition: {
-        duration: spinSpeed * 0.5, // Reduced duration
-        ease: ["easeInOut", "easeOut"],
-        times: [0, 0.9, 1],
+        duration: spinSpeed * 0.5,
+        ease: "linear", // Changed to linear for consistent speed
+        times: [0, 0.95, 1], // Adjusted timing for smoother stop
       }
     };
   };
@@ -58,7 +58,7 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
           translateY: '-50%',
         }}
       >
-        {(isSpinning ? items : finalItem ? [finalItem] : items).map((item, index) => (
+        {items.map((item, index) => (
           <motion.div
             key={`${item.id}-${index}`}
             className={`
