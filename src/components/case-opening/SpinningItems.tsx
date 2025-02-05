@@ -27,15 +27,13 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
     return {
       x: [
         0, // Start position
-        -7800, // Almost at the end
-        -8000, // Full stop
-        -8000, // Stay stopped for a moment
+        -7800, // Moving
         -8000, // Final position
       ],
       transition: {
         duration: spinSpeed,
-        ease: ["easeOut", "easeOut", "easeOut", "linear", "linear"],
-        times: [0, 0.85, 0.9, 0.95, 1], // Timing for each keyframe
+        ease: ["easeInOut", "easeOut"],
+        times: [0, 0.9, 1], // Simplified timing for a cleaner stop
       }
     };
   };
@@ -82,7 +80,7 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
               y: {
                 duration: 1.2,
                 ease: "easeOut",
-                delay: 0.2 // Add a slight delay for the bounce effect
+                delay: 0.2
               }
             }}
           >
