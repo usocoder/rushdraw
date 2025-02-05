@@ -22,17 +22,19 @@ export const SpinningItems = ({ items, isSpinning, spinSpeed, finalItem, hasRush
   const getSpinningAnimation = () => {
     if (!isSpinning) return {};
 
-    // Calculate the position to stop at the center
-    const finalPosition = -8000; // Base position
+    // Calculate the exact position to stop at the center
     const itemWidth = 200; // Width of each item including margin
-    const centerOffset = (window.innerWidth / 2) - (itemWidth / 2);
-    
+    const containerWidth = window.innerWidth;
+    const centerPosition = (containerWidth / 2) - (itemWidth / 2);
+    const finalPosition = -8000;
+    const adjustedPosition = finalPosition + centerPosition;
+
     return {
-      x: [0, finalPosition - centerOffset, finalPosition],
+      x: [0, adjustedPosition - 200, adjustedPosition], // Subtract 200px to account for item width
       transition: {
         duration: spinSpeed * 0.5,
-        ease: [0.25, 0.1, 0.25, 1],
-        times: [0, 0.85, 1],
+        ease: "easeInOutQuint", // Changed to a smoother easing function
+        times: [0, 0.9, 1], // Adjusted timing for smoother stop
       }
     };
   };
