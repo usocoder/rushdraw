@@ -68,8 +68,7 @@ export const ChatModal = ({ isOpen, onOpenChange }: { isOpen: boolean; onOpenCha
         id,
         message,
         created_at,
-        user_id,
-        profiles!chat_messages_user_id_fkey (username)
+        profiles:user_id (username)
       `)
       .order('created_at', { ascending: true })
       .limit(50);

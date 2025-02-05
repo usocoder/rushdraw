@@ -47,7 +47,7 @@ export const LeaderboardModal = ({ isOpen, onOpenChange }: { isOpen: boolean; on
       .select(`
         user_id,
         value_won,
-        profiles!case_openings_user_id_fkey (username)
+        profiles:user_id (username)
       `)
       .order('created_at', { ascending: false });
 
