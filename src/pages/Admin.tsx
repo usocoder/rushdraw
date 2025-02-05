@@ -47,11 +47,15 @@ const Admin = () => {
     
     setIsProcessing(true);
     try {
-      // First check if user exists in auth.users through profiles
+      // Check if the identifier is a UUID
+      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      const isUUID = uuidRegex.test(identifier);
+
+      // Query based on whether the identifier is a UUID or username
       const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('id, username')
-        .or(`username.eq.${identifier},id.eq.${identifier}`)
+        .or(isUUID ? `id.eq.${identifier}` : `username.eq.${identifier}`)
         .maybeSingle();
 
       if (profileError) {
