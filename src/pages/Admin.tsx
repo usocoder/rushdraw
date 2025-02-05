@@ -47,58 +47,40 @@ const Admin = () => {
     
     setIsProcessing(true);
     try {
-      // First try to find user by username
-      const { data: usernameData, error: usernameError } = await supabase
+      // First check if user exists in auth.users through profiles
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('id, username')
-        .eq('username', identifier)
+        .or(`username.eq.${identifier},id.eq.${identifier}`)
         .maybeSingle();
 
-      if (usernameError) throw usernameError;
-
-      let targetUserId = usernameData?.id;
-      let targetUsername = usernameData?.username;
-      
-      if (!targetUserId) {
-        // Validate UUID format using regex
-        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-        if (uuidRegex.test(identifier)) {
-          // Try to find user by ID
-          const { data: idData, error: idError } = await supabase
-            .from('profiles')
-            .select('id, username')
-            .eq('id', identifier)
-            .maybeSingle();
-
-          if (idError) throw idError;
-          if (!idData) throw new Error(`No user found with ID: ${identifier}`);
-          
-          targetUserId = idData.id;
-          targetUsername = idData.username;
-        } else {
-          throw new Error('Please enter a valid username or user ID');
-        }
+      if (profileError) {
+        console.error('Error checking profile:', profileError);
+        throw new Error('Failed to verify user');
       }
 
-      if (!targetUserId) {
-        throw new Error(`No user found with identifier: ${identifier}`);
+      if (!profileData) {
+        throw new Error('User not found. Please check the username or ID and try again.');
       }
 
       // Create a completed deposit transaction
       const { error: transactionError } = await supabase
         .from('transactions')
         .insert({
-          user_id: targetUserId,
+          user_id: profileData.id,
           type: 'deposit',
           amount: Number(amount),
           status: 'completed'
         });
 
-      if (transactionError) throw transactionError;
+      if (transactionError) {
+        console.error('Error creating transaction:', transactionError);
+        throw new Error('Failed to process transaction');
+      }
 
       toast({
         title: "Balance Added",
-        description: `Successfully added $${amount} to ${targetUsername || targetUserId}'s balance`,
+        description: `Successfully added $${amount} to ${profileData.username || profileData.id}'s balance`,
       });
 
       // Reset form
