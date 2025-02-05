@@ -107,10 +107,10 @@ export const Hero = () => {
           </div>
           
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-pink-600">
-            Rushdraw
+            RushDraw
           </h1>
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Experience the thrill of opening cases and winning incredible rewards. Start your journey now!
+            Experience the thrill of opening cases and winning incredible rewards. Daily 10k jackpot. support@rushdraw.com
           </p>
           <div className="flex justify-center gap-4">
             {user ? (

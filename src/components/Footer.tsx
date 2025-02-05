@@ -26,10 +26,10 @@ export const Footer = () => {
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-4">Payment & Shipping</h3>
+            <h3 className="text-lg font-semibold mb-4">Payment and withdrawals</h3>
             <div className="text-sm text-muted-foreground space-y-2">
               <p>We accept major cryptocurrencies for deposits and withdrawals.</p>
-              <p>Worldwide shipping available for physical items.</p>
+              <p>Daily Rewards.</p>
               <p>Secure payment processing and instant crypto withdrawals.</p>
               <p>KYC verification required for withdrawals over certain limits.</p>
             </div>
@@ -44,7 +44,7 @@ export const Footer = () => {
             Items obtained have real-world value and can be shipped to you or withdrawn as cryptocurrency following our verification process.
           </p>
           <p>
-            © {new Date().getFullYear()} RushDrop. All rights reserved. Licensed Gaming Operator: [License Number].
+            © {new Date().getFullYear()} RushDrop. All rights reserved. Licensed Gaming Operator: Rushdraw.com.
             All transactions are processed in accordance with international gaming regulations and anti-money laundering policies.
           </p>
         </div>
