@@ -4,14 +4,12 @@ import { Case, CaseItem } from "../types/case";
 import { useBalance } from "@/contexts/BalanceContext";
 import { useToast } from "./ui/use-toast";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
-import { BattleControls } from "./case-opening/BattleControls";
 import { WinningResult } from "./case-opening/WinningResult";
-import { BattleSpinner } from "./case-opening/BattleSpinner";
-import { BattleResults } from "./case-opening/BattleResults";
-import { OpeningControls } from "./case-opening/OpeningControls";
 import { OpeningHeader } from "./case-opening/OpeningHeader";
 import { X } from "lucide-react";
 import { Button } from "./ui/button";
+import { ModalControls } from "./case-opening/ModalControls";
+import { BattleModalContent } from "./case-opening/BattleModalContent";
 
 interface CaseOpeningModalProps {
   isOpen: boolean;
@@ -111,7 +109,7 @@ export const CaseOpeningModal = ({
         <Button
           variant="ghost"
           size="icon"
-          className="absolute right-4 top-4 rounded-full"
+          className="absolute right-4 top-4 rounded-full z-50"
           onClick={() => onOpenChange(false)}
         >
           <X className="h-4 w-4" />
@@ -125,59 +123,36 @@ export const CaseOpeningModal = ({
           hasRushDraw={hasRushDraw}
         />
         
-        {!isSpinning && !finalItem && !battleWinner && (
-          <div className="flex flex-col gap-4">
-            <OpeningControls
-              onSoloOpen={startSpinning}
-              onBattleMode={() => setIsBattleMode(true)}
-            />
-            
-            {isBattleMode && (
-              <BattleControls 
-                onBattleStart={startBattle}
-                onSoloOpen={() => startSpinning()}
-              />
-            )}
-          </div>
+        <ModalControls 
+          isSpinning={isSpinning}
+          finalItem={!!finalItem}
+          battleWinner={!!battleWinner}
+          isBattleMode={isBattleMode}
+          onSoloOpen={startSpinning}
+          onBattleMode={() => setIsBattleMode(true)}
+          onBattleStart={startBattle}
+        />
+
+        {!isBattleMode && finalItem && !isSpinning && (
+          <WinningResult 
+            item={finalItem}
+            casePrice={caseData.price}
+            isFreePlay={isFreePlay}
+            hasRushDraw={hasRushDraw}
+          />
         )}
 
-        <div className="p-6">
-          <div className="grid grid-cols-1 gap-4">
-            <BattleSpinner
-              caseData={caseData}
-              isSpinning={isSpinning}
-              onSpinComplete={(item) => handleSpinComplete(item, "You")}
-              playerName="You"
-            />
-
-            {isBattleMode && opponents.map((opponent, index) => (
-              <BattleSpinner
-                key={index}
-                caseData={caseData}
-                isSpinning={isSpinning}
-                onSpinComplete={(item) => handleSpinComplete(item, opponent)}
-                playerName={opponent}
-                isOpponent
-              />
-            ))}
-          </div>
-
-          {!isBattleMode && finalItem && !isSpinning && (
-            <WinningResult 
-              item={finalItem}
-              casePrice={caseData.price}
-              isFreePlay={isFreePlay}
-              hasRushDraw={hasRushDraw}
-            />
-          )}
-
-          <BattleResults
-            winner={battleWinner}
-            isFreePlay={isFreePlay}
-            casePrice={caseData.price}
-            onWin={handleWin}
-          />
-        </div>
+        <BattleModalContent 
+          caseData={caseData}
+          isSpinning={isSpinning}
+          isBattleMode={isBattleMode}
+          opponents={opponents}
+          battleWinner={battleWinner}
+          onSpinComplete={handleSpinComplete}
+          isFreePlay={isFreePlay}
+          casePrice={caseData.price}
+          onWin={handleWin}
+        />
       </DialogContent>
     </Dialog>
   );
