@@ -47,22 +47,22 @@ const Admin = () => {
     
     setIsProcessing(true);
     try {
+      console.log('Looking up user with identifier:', identifier);
+      
       // Check if the identifier is a UUID
       const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
       const isUUID = uuidRegex.test(identifier);
 
-      // Query based on whether the identifier is a UUID or username
-      let query = supabase
+      console.log('Is UUID?', isUUID);
+
+      // First try to find the profile
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('id, username');
+        .select('id, username')
+        .eq(isUUID ? 'id' : 'username', identifier)
+        .maybeSingle();
 
-      if (isUUID) {
-        query = query.eq('id', identifier);
-      } else {
-        query = query.eq('username', identifier);
-      }
-
-      const { data: profileData, error: profileError } = await query.maybeSingle();
+      console.log('Profile lookup result:', { profileData, profileError });
 
       if (profileError) {
         console.error('Error checking profile:', profileError);
