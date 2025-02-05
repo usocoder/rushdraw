@@ -19,7 +19,7 @@ interface CaseOpeningModalProps {
   isFreePlay?: boolean;
 }
 
-const MAX_TRANSACTION_AMOUNT = 99999999.99; // Maximum amount allowed by the database
+const MAX_TRANSACTION_AMOUNT = 99999999.99;
 
 export const CaseOpeningModal = ({
   isOpen,
@@ -59,6 +59,16 @@ export const CaseOpeningModal = ({
         onOpenChange(false);
         return;
       }
+
+      if (caseData.price > MAX_TRANSACTION_AMOUNT) {
+        toast({
+          title: "Case price too high",
+          description: "This case exceeds the maximum transaction amount.",
+          variant: "destructive",
+        });
+        onOpenChange(false);
+        return;
+      }
     } else if (!isOpen) {
       setIsSpinning(false);
       setFinalItem(null);
@@ -91,14 +101,6 @@ export const CaseOpeningModal = ({
 
   const startSpinning = async () => {
     if (!isFreePlay) {
-      if (caseData.price > MAX_TRANSACTION_AMOUNT) {
-        toast({
-          title: "Case price too high",
-          description: "This case exceeds the maximum transaction amount.",
-          variant: "destructive",
-        });
-        return;
-      }
       const success = await createTransaction('case_open', caseData.price);
       if (!success) {
         onOpenChange(false);
