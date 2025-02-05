@@ -10,6 +10,7 @@ import { X } from "lucide-react";
 import { Button } from "./ui/button";
 import { ModalControls } from "./case-opening/ModalControls";
 import { BattleModalContent } from "./case-opening/BattleModalContent";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CaseOpeningModalProps {
   isOpen: boolean;
@@ -33,6 +34,7 @@ export const CaseOpeningModal = ({
   const { balance, createTransaction } = useBalance();
   const { user } = useBrowserAuth();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (isOpen && !isFreePlay) {
@@ -105,11 +107,16 @@ export const CaseOpeningModal = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] w-full max-w-[800px] bg-background/95 backdrop-blur-sm border-accent p-6">
+      <DialogContent className={`
+        fixed left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] 
+        w-full max-w-[800px] bg-background/95 backdrop-blur-sm border-accent
+        ${isMobile ? 'h-[90vh] overflow-y-auto' : ''}
+        p-4 sm:p-6
+      `}>
         <Button
           variant="ghost"
           size="icon"
-          className="absolute right-4 top-4 rounded-full z-50"
+          className="absolute right-2 top-2 sm:right-4 sm:top-4 rounded-full z-50"
           onClick={() => onOpenChange(false)}
         >
           <X className="h-4 w-4" />

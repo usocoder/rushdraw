@@ -1,6 +1,6 @@
 import { motion } from "framer-motion";
 import { CaseItem } from "@/types/case";
-import { Loader } from "lucide-react";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface SpinningItemsProps {
   items: CaseItem[];
@@ -21,11 +21,13 @@ export const SpinningItems = ({
   isOpponent,
   playerName 
 }: SpinningItemsProps) => {
+  const isMobile = useIsMobile();
+  
   const getSpinningAnimation = () => {
     if (!isSpinning) return {};
 
     // Calculate the exact position to stop at the center
-    const itemWidth = 200; // Width of each item including margin
+    const itemWidth = isMobile ? 160 : 200; // Smaller width for mobile
     const containerWidth = window.innerWidth;
     const centerPosition = (containerWidth / 2) - (itemWidth / 2);
     const finalPosition = -8000;
@@ -41,10 +43,13 @@ export const SpinningItems = ({
     };
   };
 
+  const itemSize = isMobile ? "w-40 h-40" : "w-48 h-48";
+  const imageSize = isMobile ? "w-24 h-24" : "w-32 h-32";
+
   return (
     <div className="relative w-full h-full overflow-hidden">
       {playerName && (
-        <div className="absolute top-2 left-2 z-20 bg-background/80 px-2 py-1 rounded-md">
+        <div className="absolute top-2 left-2 z-20 bg-background/80 px-2 py-1 rounded-md text-sm">
           {playerName}
         </div>
       )}
@@ -69,7 +74,7 @@ export const SpinningItems = ({
           <motion.div
             key={`${item.id}-${index}`}
             className={`
-              flex-shrink-0 w-48 h-48 mx-1 rounded-lg
+              flex-shrink-0 ${itemSize} mx-1 rounded-lg
               ${!isSpinning && finalItem?.id === item.id ? "bg-accent/10" : "bg-accent/5"}
               border border-accent/20
               transition-all duration-700
@@ -91,7 +96,7 @@ export const SpinningItems = ({
                   src={item.image}
                   alt={item.name}
                   className={`
-                    w-32 h-32 object-contain transform transition-transform duration-700
+                    ${imageSize} object-contain transform transition-transform duration-700
                     ${!isSpinning && finalItem?.id === item.id ? 'scale-105' : ''}
                   `}
                   loading="eager"
@@ -100,10 +105,10 @@ export const SpinningItems = ({
               </div>
               
               <div className="mt-2 text-center relative z-10">
-                <h3 className="text-sm font-semibold truncate">
+                <h3 className="text-xs sm:text-sm font-semibold truncate">
                   {item.name}
                 </h3>
-                <p className={`text-lg font-bold ${
+                <p className={`text-base sm:text-lg font-bold ${
                   item.rarity === 'legendary' ? 'text-yellow-500' : 'text-primary'
                 }`}>
                   {item.multiplier}x
