@@ -47,24 +47,34 @@ const Admin = () => {
     
     setIsProcessing(true);
     try {
-      // First, find the user by email or username
+      // Find the user by username or email
       const { data: userData, error: userError } = await supabase
         .from('profiles')
         .select('id')
-        .or(`username.eq.${identifier},id.in.(${
-          supabase.from('auth.users').select('id').eq('email', identifier).toString()
-        })`)
-        .single();
+        .eq('username', identifier)
+        .maybeSingle();
 
-      if (userError || !userData) {
-        throw new Error('User not found');
+      if (userError) throw userError;
+
+      // If not found by username, try to find by ID (which matches email from auth)
+      if (!userData) {
+        const { data: emailUser, error: emailError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', user?.id)
+          .maybeSingle();
+
+        if (emailError) throw emailError;
+        if (!emailUser) throw new Error('User not found');
       }
+
+      const userId = userData?.id || user?.id;
 
       // Create a completed deposit transaction
       const { error: transactionError } = await supabase
         .from('transactions')
         .insert({
-          user_id: userData.id,
+          user_id: userId,
           type: 'deposit',
           amount: Number(amount),
           status: 'completed'
