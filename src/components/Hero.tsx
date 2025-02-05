@@ -55,19 +55,19 @@ export const Hero = () => {
   return (
     <div className="relative overflow-hidden bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 py-16">
-        <div className="absolute top-4 right-4 flex gap-2 items-center">
+        <div className="absolute top-4 right-4 flex flex-wrap gap-2 items-center max-w-full sm:flex-nowrap">
           {user ? (
             <>
-              <div className="flex items-center gap-4 mr-4">
-                <Wallet className="h-4 w-4 text-primary" />
-                <span className="text-lg font-semibold">${balance.toFixed(2)}</span>
+              <div className="flex items-center gap-2 min-w-0">
+                <Wallet className="h-4 w-4 text-primary shrink-0" />
+                <span className="text-lg font-semibold truncate">${balance.toFixed(2)}</span>
               </div>
               {userProgress && (
-                <div className="flex items-center gap-2 mr-4">
+                <div className="flex items-center gap-2 shrink-0">
                   <span className="text-sm">Level {userProgress.current_level}</span>
                 </div>
               )}
-              <span className="text-muted-foreground self-center mr-2">
+              <span className="text-muted-foreground self-center truncate">
                 Welcome, {user.username}!
               </span>
               {userRole?.role === 'admin' && (
@@ -75,24 +75,24 @@ export const Hero = () => {
                   variant="outline" 
                   size="sm" 
                   onClick={() => navigate('/admin')}
-                  className="mr-2"
+                  className="shrink-0"
                 >
                   <Settings className="mr-2 h-4 w-4" />
                   Admin
                 </Button>
               )}
-              <Button variant="outline" size="sm" onClick={logout}>
+              <Button variant="outline" size="sm" onClick={logout} className="shrink-0">
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout
               </Button>
             </>
           ) : (
             <>
-              <Button size="sm" variant="outline" onClick={() => setIsRegisterOpen(true)}>
+              <Button size="sm" variant="outline" onClick={() => setIsRegisterOpen(true)} className="shrink-0">
                 <UserPlus className="mr-2 h-4 w-4" />
                 Register
               </Button>
-              <Button size="sm" variant="ghost" onClick={() => setIsLoginOpen(true)}>
+              <Button size="sm" variant="ghost" onClick={() => setIsLoginOpen(true)} className="shrink-0">
                 <LogIn className="mr-2 h-4 w-4" />
                 Login
               </Button>
