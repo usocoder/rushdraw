@@ -29,26 +29,29 @@ export const CryptoAddressList = ({ addresses }: CryptoAddressListProps) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {addresses.map((crypto) => (
-        <div key={crypto.currency} className="flex items-center gap-4 p-4 rounded-lg bg-card hover:bg-accent/5 transition-colors">
-          <div className="text-2xl font-mono">{crypto.icon}</div>
-          <div className="flex-1">
-            <h3 className="font-semibold">{crypto.currency}</h3>
-            <p className="text-sm text-muted-foreground font-mono truncate">
+        <div 
+          key={crypto.currency} 
+          className="flex items-center gap-2 p-3 rounded-lg bg-card hover:bg-accent/5 transition-colors"
+        >
+          <div className="text-xl font-mono">{crypto.icon}</div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-sm">{crypto.currency}</h3>
+            <p className="text-xs text-muted-foreground font-mono truncate">
               {crypto.address}
             </p>
           </div>
           <Button
             variant="outline"
-            size="icon"
+            size="sm"
             onClick={() => handleCopy(crypto.address)}
-            className="flex-shrink-0"
+            className="flex-shrink-0 h-8 w-8"
           >
             {copiedAddress === crypto.address ? (
-              <Check className="h-4 w-4 text-green-500" />
+              <Check className="h-3 w-3 text-green-500" />
             ) : (
-              <Copy className="h-4 w-4" />
+              <Copy className="h-3 w-3" />
             )}
           </Button>
         </div>

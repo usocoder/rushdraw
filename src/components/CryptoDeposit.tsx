@@ -38,10 +38,10 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Deposit Crypto</DialogTitle>
-          <DialogDescription>
+          <DialogDescription className="text-sm">
             Send crypto to one of the addresses below, then click "I've sent the crypto" to initiate the deposit process.
           </DialogDescription>
         </DialogHeader>
