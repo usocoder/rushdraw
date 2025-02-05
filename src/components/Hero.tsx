@@ -55,7 +55,7 @@ export const Hero = () => {
   return (
     <div className="relative overflow-hidden bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 py-16">
-        <div className="absolute top-4 right-4 flex flex-wrap gap-2 items-center max-w-full sm:flex-nowrap">
+        <div className="absolute top-4 right-4 z-10 flex flex-wrap gap-2 items-center max-w-full sm:flex-nowrap">
           {user ? (
             <>
               <div className="flex items-center gap-2 min-w-0">
@@ -100,7 +100,7 @@ export const Hero = () => {
           )}
         </div>
 
-        <div className="text-center">
+        <div className="text-center mt-16 sm:mt-0">
           <div className="mb-8 inline-block px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg animate-pulse">
             <h2 className="text-2xl font-bold text-white">🎉 Weekly Jackpot: $10,000 🎉</h2>
           </div>
