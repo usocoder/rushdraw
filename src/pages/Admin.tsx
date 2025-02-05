@@ -56,26 +56,34 @@ const Admin = () => {
 
       if (usernameError) throw usernameError;
 
-      // If not found by username, try to find by email (which matches the id)
-      const { data: emailData, error: emailError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', identifier)
-        .maybeSingle();
-
-      if (emailError) throw emailError;
-
-      const targetUser = usernameData || emailData;
+      // If not found by username, check if the identifier is a valid UUID
+      let targetUserId = usernameData?.id;
       
-      if (!targetUser) {
-        throw new Error('User not found');
+      if (!targetUserId) {
+        // Validate UUID format using regex
+        const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+        if (!uuidRegex.test(identifier)) {
+          throw new Error('User not found. Please enter a valid username or user ID.');
+        }
+
+        // Try to find user by ID
+        const { data: idData, error: idError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', identifier)
+          .maybeSingle();
+
+        if (idError) throw idError;
+        if (!idData) throw new Error('User not found');
+        
+        targetUserId = idData.id;
       }
 
       // Create a completed deposit transaction
       const { error: transactionError } = await supabase
         .from('transactions')
         .insert({
-          user_id: targetUser.id,
+          user_id: targetUserId,
           type: 'deposit',
           amount: Number(amount),
           status: 'completed'
@@ -128,12 +136,12 @@ const Admin = () => {
         <h2 className="text-2xl font-bold mb-4">Add Balance</h2>
         <form onSubmit={handleAddBalance} className="space-y-4">
           <div>
-            <Label htmlFor="identifier">Username or Email</Label>
+            <Label htmlFor="identifier">Username or User ID</Label>
             <Input
               id="identifier"
               value={identifier}
               onChange={(e) => setIdentifier(e.target.value)}
-              placeholder="Enter username or email..."
+              placeholder="Enter username or user ID..."
               required
             />
           </div>
