@@ -81,7 +81,7 @@ export const CaseOpeningModal = ({
           toast({
             title: "Maximum win amount exceeded",
             description: "Your win has been capped at the maximum allowed amount.",
-            variant: "warning",
+            variant: "default",
           });
         }
         await createTransaction('case_win', winAmount);
@@ -123,7 +123,7 @@ export const CaseOpeningModal = ({
         toast({
           title: "Maximum win amount exceeded",
           description: "Your win has been capped at the maximum allowed amount.",
-          variant: "warning",
+          variant: "default",
         });
       }
       await createTransaction('case_win', cappedAmount);
