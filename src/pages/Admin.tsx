@@ -52,11 +52,17 @@ const Admin = () => {
       const isUUID = uuidRegex.test(identifier);
 
       // Query based on whether the identifier is a UUID or username
-      const { data: profileData, error: profileError } = await supabase
+      let query = supabase
         .from('profiles')
-        .select('id, username')
-        .or(isUUID ? `id.eq.${identifier}` : `username.eq.${identifier}`)
-        .maybeSingle();
+        .select('id, username');
+
+      if (isUUID) {
+        query = query.eq('id', identifier);
+      } else {
+        query = query.eq('username', identifier);
+      }
+
+      const { data: profileData, error: profileError } = await query.maybeSingle();
 
       if (profileError) {
         console.error('Error checking profile:', profileError);
