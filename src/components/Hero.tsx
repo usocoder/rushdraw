@@ -102,6 +102,10 @@ export const Hero = () => {
         </div>
 
         <div className="text-center">
+          <div className="mb-8 inline-block px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg animate-pulse">
+            <h2 className="text-2xl font-bold text-white">🎉 Daily Jackpot: $10,000 🎉</h2>
+          </div>
+          
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-pink-600">
             Rushdraw
           </h1>
