@@ -92,22 +92,23 @@ export const CaseOpeningModal = ({
     setIsSpinning(true);
     setCurrentItems(generateSpinningItems());
 
-    // New speed pattern: starts fast then slows down to a stop
+    // New speed pattern: start extremely fast then slow down to a stop
     const speedPattern = [
-      { speed: 70, time: 0 },      // Start very fast
-      { speed: 60, time: 500 },
-      { speed: 50, time: 1000 },
-      { speed: 45, time: 1500 },
-      { speed: 40, time: 2000 },
-      { speed: 35, time: 2500 },
+      { speed: 100, time: 0 },
+      { speed: 80, time: 500 },
+      { speed: 70, time: 1000 },
+      { speed: 60, time: 1500 },
+      { speed: 50, time: 2000 },
+      { speed: 40, time: 2500 },
       { speed: 30, time: 3000 },
-      { speed: 25, time: 4000 },
-      { speed: 20, time: 5000 },
-      { speed: 15, time: 6000 },
-      { speed: 10, time: 7000 },
-      { speed: 7, time: 8000 },
-      { speed: 4, time: 9000 },
-      { speed: 1, time: 10000 }    // Final stop
+      { speed: 25, time: 3500 },
+      { speed: 20, time: 4000 },
+      { speed: 15, time: 5000 },
+      { speed: 10, time: 6000 },
+      { speed: 7, time: 7000 },
+      { speed: 4, time: 8000 },
+      { speed: 2, time: 9000 },
+      { speed: 1, time: 10000 }
     ];
 
     speedPattern.forEach(({ speed, time }) => {
@@ -149,7 +150,7 @@ export const CaseOpeningModal = ({
         
         setHasRushDraw(false);
         resolve(winner);
-      }, 10000); // Timing remains unchanged to match the final speed setting
+      }, 10000); // Final result timing remains unchanged
     });
   };
 
