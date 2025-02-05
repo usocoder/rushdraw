@@ -13,7 +13,7 @@ interface CryptoAddressListProps {
   addresses: CryptoAddress[];
 }
 
-export const CryptoAddresssList = ({ addresses }: CryptoAddressListProps) => {
+export const CryptoAddressList = ({ addresses }: CryptoAddressListProps) => {
   const [copiedAddress, setCopiedAddress] = useState<string | null>(null);
   const { toast } = useToast();
 

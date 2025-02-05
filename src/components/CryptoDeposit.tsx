@@ -1,5 +1,5 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
-import { CryptoAddresssList } from "./crypto/CryptoAddressList";
+import { CryptoAddressList } from "./crypto/CryptoAddressList";
 import { DepositForm } from "./crypto/DepositForm";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 
@@ -47,7 +47,7 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
         </DialogHeader>
 
         <div className="grid gap-4 py-4">
-          <CryptoAddresssList addresses={CRYPTO_ADDRESSES} />
+          <CryptoAddressList addresses={CRYPTO_ADDRESSES} />
           <DepositForm userId={user.id} onSuccess={() => onOpenChange(false)} />
         </div>
       </DialogContent>
