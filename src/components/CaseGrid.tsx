@@ -4,6 +4,8 @@ import { PriceFilter } from "./PriceFilter";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "./ui/skeleton";
+import { Button } from "./ui/button";
+import { Swords } from "lucide-react";
 
 export const CaseGrid = () => {
   const [activeFilter, setActiveFilter] = useState("all");
@@ -50,7 +52,18 @@ export const CaseGrid = () => {
 
   return (
     <div className="py-12 px-6 lg:px-8">
-      <PriceFilter activeFilter={activeFilter} onFilterChange={setActiveFilter} />
+      <div className="flex justify-between items-center mb-6">
+        <PriceFilter activeFilter={activeFilter} onFilterChange={setActiveFilter} />
+        <Button 
+          variant="outline"
+          size="lg"
+          className="flex items-center gap-2"
+          onClick={() => {/* Battle functionality will be implemented later */}}
+        >
+          <Swords className="h-5 w-5" />
+          Create Battle
+        </Button>
+      </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {isLoading ? (
           // Loading skeletons
