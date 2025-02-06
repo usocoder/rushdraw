@@ -26,6 +26,7 @@ export const CaseOpeningModal = ({
   caseData,
   isBattleMode = false,
 }: CaseOpeningModalProps) => {
+  const [selectedCases, setSelectedCases] = useState<Case[]>([caseData]);
   const [isSpinning, setIsSpinning] = useState(false);
   const [finalItem, setFinalItem] = useState<CaseItem | null>(null);
   const [hasRushDraw, setHasRushDraw] = useState(false);
@@ -54,6 +55,7 @@ export const CaseOpeningModal = ({
       setIsResetting(true);
       const timeout = setTimeout(() => {
         resetState();
+        setSelectedCases([caseData]);
       }, 300);
       return () => clearTimeout(timeout);
     }
@@ -68,17 +70,18 @@ export const CaseOpeningModal = ({
       return;
     }
     
-    if (balance < caseData.price) {
+    const totalPrice = selectedCases.reduce((sum, case_) => sum + case_.price, 0);
+    if (balance < totalPrice) {
       toast({
         title: "Insufficient balance",
-        description: "Please deposit more funds to open this case",
+        description: "Please deposit more funds to open these cases",
         variant: "destructive",
       });
       onOpenChange(false);
       return;
     }
 
-    if (caseData.price > MAX_TRANSACTION_AMOUNT) {
+    if (totalPrice > MAX_TRANSACTION_AMOUNT) {
       toast({
         title: "Case price too high",
         description: "This case exceeds the maximum transaction amount.",
@@ -87,7 +90,7 @@ export const CaseOpeningModal = ({
       onOpenChange(false);
       return;
     }
-  }, [isOpen, balance, caseData.price, user, onOpenChange, toast]);
+  }, [isOpen, balance, selectedCases, user, onOpenChange, toast, caseData]);
 
   const handleSpinComplete = async (item: CaseItem, player: string) => {
     if (player === "You") {
@@ -107,7 +110,6 @@ export const CaseOpeningModal = ({
       return;
     }
 
-    // For battle mode, we need to wait for all spins to complete
     const allSpinsComplete = finalItem !== null || player !== "You";
     if (allSpinsComplete) {
       const winner = isCrazyMode ? 
@@ -129,7 +131,8 @@ export const CaseOpeningModal = ({
     setFinalItem(null);
     setBattleWinner(null);
     
-    const success = await createTransaction('case_open', caseData.price);
+    const totalPrice = selectedCases.reduce((sum, case_) => sum + case_.price, 0);
+    const success = await createTransaction('case_open', totalPrice);
     if (!success) {
       onOpenChange(false);
       return;
@@ -146,6 +149,13 @@ export const CaseOpeningModal = ({
   const handleSoloOpen = () => {
     setOpponents([]);
     startSpinning();
+  };
+
+  const handleCaseSelect = (caseId: string) => {
+    const selectedCase = caseData.items.find(item => item.id === caseId);
+    if (selectedCase) {
+      setSelectedCases(prev => [...prev, { ...caseData, items: [selectedCase] }]);
+    }
   };
 
   const toggleCrazyMode = () => {
@@ -171,7 +181,7 @@ export const CaseOpeningModal = ({
         </Button>
         
         <OpeningHeader
-          name={caseData.name}
+          name={selectedCases.map(c => c.name).join(", ")}
           isBattleMode={isBattleMode}
           hasRushDraw={hasRushDraw}
           isCrazyMode={isCrazyMode}
@@ -184,6 +194,8 @@ export const CaseOpeningModal = ({
               onBattleStart={handleBattleStart}
               isCrazyMode={isCrazyMode}
               onToggleCrazyMode={toggleCrazyMode}
+              onCaseSelect={handleCaseSelect}
+              selectedCases={selectedCases}
             />
           </div>
         ) : (
@@ -199,7 +211,7 @@ export const CaseOpeningModal = ({
         )}
 
         <CaseOpeningContent 
-          caseData={caseData}
+          caseData={selectedCases[0]}
           isSpinning={isSpinning}
           isBattleMode={isBattleMode}
           finalItem={finalItem}
