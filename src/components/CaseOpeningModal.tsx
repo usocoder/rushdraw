@@ -152,9 +152,24 @@ export const CaseOpeningModal = ({
   };
 
   const handleCaseSelect = (caseId: string) => {
-    const selectedCase = caseData.items.find(item => item.id === caseId);
+    const { data: cases } = useQuery({
+      queryKey: ['cases'],
+      queryFn: async () => {
+        const { data, error } = await supabase
+          .from('cases')
+          .select(`
+            *,
+            case_items (*)
+          `);
+        
+        if (error) throw error;
+        return data;
+      },
+    });
+
+    const selectedCase = cases?.find(c => c.id === caseId);
     if (selectedCase) {
-      setSelectedCases(prev => [...prev, { ...caseData, items: [selectedCase] }]);
+      setSelectedCases(prev => [...prev, selectedCase]);
     }
   };
 
