@@ -61,6 +61,30 @@ export const TransactionApprovals = () => {
     },
   });
 
+  // Set up real-time subscription for transactions
+  useEffect(() => {
+    const channel = supabase
+      .channel('transaction-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions',
+          filter: `status=eq.pending`,
+        },
+        () => {
+          console.log('Transaction updated, refreshing...');
+          refetch();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [refetch]);
+
   const handleApproval = async (transactionId: string, approve: boolean) => {
     if (isProcessing) return;
     setIsProcessing(true);
