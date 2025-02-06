@@ -30,9 +30,30 @@ export const RouletteBetting = ({
   const [gameHistory, setGameHistory] = useState<string[]>([]);
   const [isSpinning, setIsSpinning] = useState(false);
   const [spinResult, setSpinResult] = useState<string | null>(null);
+  const [currentSpinDisplay, setCurrentSpinDisplay] = useState<string>("red");
   const { toast } = useToast();
   const { balance, createTransaction } = useBalance();
   const { user } = useBrowserAuth();
+
+  // Spinning animation effect
+  useEffect(() => {
+    let spinInterval: NodeJS.Timeout;
+    if (isSpinning) {
+      const options = ["red", "black", "green", "red", "black", "red", "black", "green"];
+      let currentIndex = 0;
+      
+      spinInterval = setInterval(() => {
+        setCurrentSpinDisplay(options[currentIndex % options.length]);
+        currentIndex++;
+      }, 200); // Adjust speed of spinning here
+    }
+
+    return () => {
+      if (spinInterval) {
+        clearInterval(spinInterval);
+      }
+    };
+  }, [isSpinning]);
 
   useEffect(() => {
     const fetchCurrentGame = async () => {
@@ -50,7 +71,6 @@ export const RouletteBetting = ({
       }
 
       if (!game) {
-        // Create a new game if none exists
         const { data: newGame, error: createError } = await supabase
           .from('roulette_games')
           .insert([{ start_time: null }])
@@ -85,14 +105,18 @@ export const RouletteBetting = ({
           const game = payload.new as RouletteGame;
           
           if (game.result) {
-            setSpinResult(game.result);
-            setIsSpinning(false);
-            setGameHistory(prev => [game.result, ...prev].slice(0, 10));
-            // Start new game after 3 seconds
+            // Stop spinning after a short delay to show the result
+            setTimeout(() => {
+              setIsSpinning(false);
+              setSpinResult(game.result);
+              setGameHistory(prev => [game.result, ...prev].slice(0, 10));
+            }, 2000);
+
+            // Start new game after showing result
             setTimeout(() => {
               fetchCurrentGame();
               setSpinResult(null);
-            }, 3000);
+            }, 5000);
           }
         }
       )
@@ -136,6 +160,7 @@ export const RouletteBetting = ({
 
       // Start spinning animation
       setIsSpinning(true);
+      setSpinResult(null);
 
       // Update game start time
       const { error: startError } = await supabase
@@ -175,8 +200,11 @@ export const RouletteBetting = ({
         <div className="grid gap-4 py-4">
           <div className="text-center">
             {isSpinning ? (
-              <div className="text-2xl font-bold mb-2 animate-pulse">
-                Spinning...
+              <div className={`text-2xl font-bold mb-2 animate-pulse ${
+                currentSpinDisplay === 'green' ? 'text-green-600' : 
+                currentSpinDisplay === 'red' ? 'text-red-600' : 'text-black'
+              }`}>
+                {currentSpinDisplay.toUpperCase()} {currentSpinDisplay === 'green' ? '14x' : '2x'}
               </div>
             ) : spinResult ? (
               <div className={`text-2xl font-bold mb-2 ${
