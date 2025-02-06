@@ -5,11 +5,13 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
   const [spinItems, setSpinItems] = useState<CaseItem[]>([]);
   const [spinSpeed, setSpinSpeed] = useState(20);
   const [finalItem, setFinalItem] = useState<CaseItem | null>(null);
+  const [isRevealing, setIsRevealing] = useState(false);
 
   useEffect(() => {
     if (isSpinning) {
       // Reset states
       setFinalItem(null);
+      setIsRevealing(false);
       
       // Determine winning item based on odds
       const random = Math.random();
@@ -33,15 +35,15 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
       const allItems = [...itemsBeforeWinner, winner, ...itemsAfterWinner];
       setSpinItems(allItems);
 
-      // Animation speed pattern
+      // Animation speed pattern with smoother transitions
       const speedPattern = [
         { speed: 80, time: 0 },
         { speed: 60, time: 1000 },
         { speed: 40, time: 2000 },
         { speed: 20, time: 4000 },
         { speed: 10, time: 6000 },
-        { speed: 5, time: 8000 },
-        { speed: 2, time: 9000 }
+        { speed: 5, time: 7000 },
+        { speed: 2, time: 8000 }
       ];
 
       // Apply speed changes
@@ -50,18 +52,25 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
       });
 
       // Set final item and trigger completion after animation ends
-      const animationDuration = 9500;
+      const spinDuration = 8500;
+      const revealDelay = 500;
+
       setTimeout(() => {
+        setIsRevealing(true);
         setFinalItem(winner);
+      }, spinDuration);
+
+      setTimeout(() => {
         onComplete(winner);
-      }, animationDuration);
+      }, spinDuration + revealDelay);
     } else {
       // Reset states when not spinning
       setSpinItems([]);
       setSpinSpeed(20);
       setFinalItem(null);
+      setIsRevealing(false);
     }
   }, [isSpinning, items, onComplete]);
 
-  return { spinItems, spinSpeed, finalItem };
+  return { spinItems, spinSpeed, finalItem, isRevealing };
 };

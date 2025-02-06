@@ -15,7 +15,7 @@ export const WinningResult = ({ item, casePrice, isFreePlay = false, hasRushDraw
       className="mt-6 text-center"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.5 }}
+      transition={{ delay: 0.2 }}
     >
       <motion.div 
         className="flex items-center justify-center mb-4"
@@ -24,7 +24,8 @@ export const WinningResult = ({ item, casePrice, isFreePlay = false, hasRushDraw
         transition={{ 
           type: "spring",
           stiffness: 260,
-          damping: 20 
+          damping: 20,
+          delay: 0.3
         }}
       >
         <div className="relative">
@@ -41,7 +42,7 @@ export const WinningResult = ({ item, casePrice, isFreePlay = false, hasRushDraw
             <motion.div
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
-              transition={{ delay: 1 }}
+              transition={{ delay: 0.5 }}
               className="absolute -top-2 -right-2"
             >
               {hasRushDraw && item.rarity === 'legendary' ? (
@@ -56,7 +57,7 @@ export const WinningResult = ({ item, casePrice, isFreePlay = false, hasRushDraw
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.8 }}
+        transition={{ delay: 0.4 }}
       >
         <h3 className="text-xl font-bold mb-2">
           {isFreePlay ? "You could have won: " : "You won: "}{item.name}!

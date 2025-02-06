@@ -10,6 +10,7 @@ interface SpinningItemsProps {
   hasRushDraw?: boolean;
   isOpponent?: boolean;
   playerName?: string;
+  isRevealing?: boolean;
 }
 
 export const SpinningItems = ({ 
@@ -19,7 +20,8 @@ export const SpinningItems = ({
   finalItem, 
   hasRushDraw, 
   isOpponent,
-  playerName 
+  playerName,
+  isRevealing
 }: SpinningItemsProps) => {
   const isMobile = useIsMobile();
   
@@ -36,7 +38,7 @@ export const SpinningItems = ({
       x: [0, adjustedPosition],
       transition: {
         duration: spinSpeed * 0.5,
-        ease: "easeOut",
+        ease: isRevealing ? "easeOut" : "linear",
         times: [0, 1],
       }
     };

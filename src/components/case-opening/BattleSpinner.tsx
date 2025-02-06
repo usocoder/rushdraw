@@ -17,7 +17,7 @@ export const BattleSpinner = ({
   playerName,
   isOpponent
 }: BattleSpinnerProps) => {
-  const { spinItems, spinSpeed, finalItem } = useSpinningLogic(
+  const { spinItems, spinSpeed, finalItem, isRevealing } = useSpinningLogic(
     caseData.items,
     isSpinning,
     onSpinComplete
@@ -33,6 +33,7 @@ export const BattleSpinner = ({
         hasRushDraw={false}
         isOpponent={isOpponent}
         playerName={playerName}
+        isRevealing={isRevealing}
       />
     </div>
   );
