@@ -26,10 +26,10 @@ export const RouletteBetting = ({
   const [betAmount, setBetAmount] = useState("");
   const [selectedColor, setSelectedColor] = useState<"red" | "black" | "green" | null>(null);
   const [currentGame, setCurrentGame] = useState<RouletteGame | null>(null);
-  const [timeLeft, setTimeLeft] = useState(20);
   const [isProcessing, setIsProcessing] = useState(false);
   const [gameHistory, setGameHistory] = useState<string[]>([]);
-  const [isGameStarted, setIsGameStarted] = useState(false);
+  const [isSpinning, setIsSpinning] = useState(false);
+  const [spinResult, setSpinResult] = useState<string | null>(null);
   const { toast } = useToast();
   const { balance, createTransaction } = useBalance();
   const { user } = useBrowserAuth();
@@ -63,18 +63,8 @@ export const RouletteBetting = ({
         }
         
         setCurrentGame(newGame);
-        setIsGameStarted(false);
       } else {
         setCurrentGame(game);
-        setIsGameStarted(!!game.start_time);
-        // Calculate time left only if game has started
-        if (game.start_time) {
-          const startTime = new Date(game.start_time).getTime();
-          const now = new Date().getTime();
-          const elapsed = Math.floor((now - startTime) / 1000);
-          const remaining = Math.max(0, 20 - elapsed);
-          setTimeLeft(remaining);
-        }
       }
     };
 
@@ -94,17 +84,14 @@ export const RouletteBetting = ({
           console.log('Game update:', payload);
           const game = payload.new as RouletteGame;
           
-          if (game.start_time && !isGameStarted) {
-            setIsGameStarted(true);
-            setTimeLeft(20);
-          }
-          
           if (game.result) {
+            setSpinResult(game.result);
+            setIsSpinning(false);
             setGameHistory(prev => [game.result, ...prev].slice(0, 10));
-            setIsGameStarted(false);
             // Start new game after 3 seconds
             setTimeout(() => {
               fetchCurrentGame();
+              setSpinResult(null);
             }, 3000);
           }
         }
@@ -115,22 +102,6 @@ export const RouletteBetting = ({
       supabase.removeChannel(channel);
     };
   }, []);
-
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (isGameStarted && timeLeft > 0) {
-      timer = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 0) return 0;
-          return prev - 1;
-        });
-      }, 1000);
-    }
-
-    return () => {
-      if (timer) clearInterval(timer);
-    };
-  }, [isGameStarted, timeLeft]);
 
   const handleBet = async () => {
     if (!user || !selectedColor || !betAmount || !currentGame) return;
@@ -151,7 +122,7 @@ export const RouletteBetting = ({
       const success = await createTransaction('case_open', amount);
       if (!success) throw new Error("Failed to create transaction");
 
-      // Place bet
+      // Place bet and start game
       const { error: betError } = await supabase
         .from('roulette_bets')
         .insert({
@@ -162,6 +133,17 @@ export const RouletteBetting = ({
         });
 
       if (betError) throw betError;
+
+      // Start spinning animation
+      setIsSpinning(true);
+
+      // Update game start time
+      const { error: startError } = await supabase
+        .from('roulette_games')
+        .update({ start_time: new Date().toISOString() })
+        .eq('id', currentGame.id);
+
+      if (startError) throw startError;
 
       toast({
         title: "Bet placed!",
@@ -177,6 +159,7 @@ export const RouletteBetting = ({
         description: error.message || "Please try again later",
         variant: "destructive",
       });
+      setIsSpinning(false);
     } finally {
       setIsProcessing(false);
     }
@@ -191,18 +174,20 @@ export const RouletteBetting = ({
 
         <div className="grid gap-4 py-4">
           <div className="text-center">
-            {isGameStarted ? (
-              <>
-                <div className="text-2xl font-bold mb-2">
-                  {timeLeft} seconds
-                </div>
-                <div className="text-sm text-muted-foreground">
-                  until next roll
-                </div>
-              </>
+            {isSpinning ? (
+              <div className="text-2xl font-bold mb-2 animate-pulse">
+                Spinning...
+              </div>
+            ) : spinResult ? (
+              <div className={`text-2xl font-bold mb-2 ${
+                spinResult === 'green' ? 'text-green-600' : 
+                spinResult === 'red' ? 'text-red-600' : 'text-black'
+              }`}>
+                {spinResult.toUpperCase()} {spinResult === 'green' ? '14x' : '2x'}!
+              </div>
             ) : (
               <div className="text-sm text-muted-foreground">
-                Waiting for game to start...
+                Place your bet to start the game
               </div>
             )}
           </div>
@@ -226,6 +211,7 @@ export const RouletteBetting = ({
               className="bg-red-600 hover:bg-red-700"
               onClick={() => setSelectedColor("red")}
               variant={selectedColor === "red" ? "default" : "outline"}
+              disabled={isSpinning}
             >
               Red (2x)
             </Button>
@@ -233,6 +219,7 @@ export const RouletteBetting = ({
               className="bg-black hover:bg-gray-900"
               onClick={() => setSelectedColor("black")}
               variant={selectedColor === "black" ? "default" : "outline"}
+              disabled={isSpinning}
             >
               Black (2x)
             </Button>
@@ -240,6 +227,7 @@ export const RouletteBetting = ({
               className="bg-green-600 hover:bg-green-700"
               onClick={() => setSelectedColor("green")}
               variant={selectedColor === "green" ? "default" : "outline"}
+              disabled={isSpinning}
             >
               Green (14x)
             </Button>
@@ -255,12 +243,13 @@ export const RouletteBetting = ({
               value={betAmount}
               onChange={(e) => setBetAmount(e.target.value)}
               placeholder="Enter amount..."
+              disabled={isSpinning}
             />
           </div>
 
           <Button
             onClick={handleBet}
-            disabled={isProcessing || !selectedColor || !betAmount || !isGameStarted}
+            disabled={isProcessing || !selectedColor || !betAmount || isSpinning}
           >
             {isProcessing ? (
               <>
