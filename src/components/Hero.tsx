@@ -133,7 +133,7 @@ export const Hero = () => {
             )}
           </div>
 
-          {user && (
+          {user && userProgress?.current_level >= 20 && (
             <div className="mt-8">
               <ReferralManager />
             </div>
