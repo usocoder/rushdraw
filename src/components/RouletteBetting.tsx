@@ -9,6 +9,13 @@ import { useBalance } from "@/contexts/BalanceContext";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { Loader2 } from "lucide-react";
 
+interface RouletteGame {
+  id: string;
+  result: string | null;
+  start_time: string;
+  end_time: string | null;
+}
+
 export const RouletteBetting = ({
   isOpen,
   onOpenChange,
@@ -18,7 +25,7 @@ export const RouletteBetting = ({
 }) => {
   const [betAmount, setBetAmount] = useState("");
   const [selectedColor, setSelectedColor] = useState<"red" | "black" | "green" | null>(null);
-  const [currentGame, setCurrentGame] = useState<any>(null);
+  const [currentGame, setCurrentGame] = useState<RouletteGame | null>(null);
   const [timeLeft, setTimeLeft] = useState(20);
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
@@ -27,7 +34,7 @@ export const RouletteBetting = ({
 
   useEffect(() => {
     const fetchCurrentGame = async () => {
-      const { data: game } = await supabase
+      const { data: game, error } = await supabase
         .from('roulette_games')
         .select('*')
         .is('result', null)
@@ -35,13 +42,23 @@ export const RouletteBetting = ({
         .limit(1)
         .maybeSingle();
 
+      if (error) {
+        console.error('Error fetching game:', error);
+        return;
+      }
+
       if (!game) {
         // Create a new game if none exists
-        const { data: newGame } = await supabase
+        const { data: newGame, error: createError } = await supabase
           .from('roulette_games')
           .insert([{}])
           .select()
           .single();
+        
+        if (createError) {
+          console.error('Error creating game:', createError);
+          return;
+        }
         
         setCurrentGame(newGame);
       } else {
@@ -69,7 +86,7 @@ export const RouletteBetting = ({
         },
         (payload) => {
           console.log('Game update:', payload);
-          if (payload.new.result) {
+          if (payload.new && (payload.new as RouletteGame).result) {
             // Start new game after 3 seconds
             setTimeout(() => {
               fetchCurrentGame();

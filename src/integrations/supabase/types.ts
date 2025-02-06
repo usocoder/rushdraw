@@ -6,88 +6,535 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-export interface Profile {
-  id: string
-  username: string | null
-  created_at: string
-  updated_at: string
-}
-
-export interface Balance {
-  id: string
-  user_id: string
-  amount: number
-  created_at: string
-  updated_at: string
-}
-
-export interface Transaction {
-  id: string
-  user_id: string
-  type: 'deposit' | 'withdraw' | 'case_open'
-  amount: number
-  status: 'pending' | 'completed' | 'failed'
-  created_at: string
-  updated_at: string
-}
-
-export interface RouletteBet {
-  id: string;
-  user_id: string;
-  game_id: string;
-  bet_amount: number;
-  bet_color: 'red' | 'black' | 'green';
-  created_at: string;
-}
-
-export interface RouletteGame {
-  id: string;
-  result: 'red' | 'black' | 'green' | null;
-  start_time: string;
-  end_time: string | null;
-  created_at: string;
-}
-
 export type Database = {
   public: {
     Tables: {
-      profiles: {
-        Row: Profile
-        Insert: Omit<Profile, 'created_at' | 'updated_at'>
-        Update: Partial<Omit<Profile, 'created_at' | 'updated_at'>>
-      }
       balances: {
-        Row: Balance
-        Insert: Omit<Balance, 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Omit<Balance, 'id' | 'created_at' | 'updated_at'>>
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
-      transactions: {
-        Row: Transaction
-        Insert: Omit<Transaction, 'id' | 'created_at' | 'updated_at'>
-        Update: Partial<Omit<Transaction, 'id' | 'created_at' | 'updated_at'>>
+      case_items: {
+        Row: {
+          case_id: string | null
+          created_at: string
+          id: string
+          image_url: string
+          multiplier: number
+          name: string
+          odds: number
+          rarity: string
+          updated_at: string
+          value: number
+        }
+        Insert: {
+          case_id?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          multiplier: number
+          name: string
+          odds: number
+          rarity: string
+          updated_at?: string
+          value: number
+        }
+        Update: {
+          case_id?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          multiplier?: number
+          name?: string
+          odds?: number
+          rarity?: string
+          updated_at?: string
+          value?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_items_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_openings: {
+        Row: {
+          case_id: string
+          created_at: string
+          id: string
+          item_won: string
+          user_id: string
+          value_won: number
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          id?: string
+          item_won: string
+          user_id: string
+          value_won: number
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          id?: string
+          item_won?: string
+          user_id?: string
+          value_won?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_openings_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "case_openings_item_won_fkey"
+            columns: ["item_won"]
+            isOneToOne: false
+            referencedRelation: "case_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cases: {
+        Row: {
+          best_drop: string
+          category: string
+          created_at: string
+          id: string
+          image_url: string
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          best_drop: string
+          category: string
+          created_at?: string
+          id?: string
+          image_url: string
+          name: string
+          price: number
+          updated_at?: string
+        }
+        Update: {
+          best_drop?: string
+          category?: string
+          created_at?: string
+          id?: string
+          image_url?: string
+          name?: string
+          price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      chat_messages: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      daily_rewards: {
+        Row: {
+          case_id: string | null
+          created_at: string
+          id: string
+          level_required: number
+          updated_at: string
+        }
+        Insert: {
+          case_id?: string | null
+          created_at?: string
+          id?: string
+          level_required: number
+          updated_at?: string
+        }
+        Update: {
+          case_id?: string | null
+          created_at?: string
+          id?: string
+          level_required?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_rewards_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      levels: {
+        Row: {
+          created_at: string
+          id: number
+          level_number: number
+          updated_at: string
+          xp_required: number
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          level_number: number
+          updated_at?: string
+          xp_required: number
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          level_number?: number
+          updated_at?: string
+          xp_required?: number
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          balance: number | null
+          created_at: string
+          id: string
+          updated_at: string
+          username: string | null
+        }
+        Insert: {
+          balance?: number | null
+          created_at?: string
+          id: string
+          updated_at?: string
+          username?: string | null
+        }
+        Update: {
+          balance?: number | null
+          created_at?: string
+          id?: string
+          updated_at?: string
+          username?: string | null
+        }
+        Relationships: []
       }
       roulette_bets: {
-        Row: RouletteBet
-        Insert: Omit<RouletteBet, 'id' | 'created_at'>
-        Update: Partial<Omit<RouletteBet, 'id' | 'created_at'>>
+        Row: {
+          bet_amount: number
+          bet_color: string
+          created_at: string
+          game_id: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          bet_amount: number
+          bet_color: string
+          created_at?: string
+          game_id: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          bet_amount?: number
+          bet_color?: string
+          created_at?: string
+          game_id?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roulette_bets_game_id_fkey"
+            columns: ["game_id"]
+            isOneToOne: false
+            referencedRelation: "roulette_games"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       roulette_games: {
-        Row: RouletteGame
-        Insert: Omit<RouletteGame, 'id' | 'created_at'>
-        Update: Partial<Omit<RouletteGame, 'id' | 'created_at'>>
+        Row: {
+          created_at: string
+          end_time: string | null
+          id: string
+          result: string | null
+          start_time: string | null
+        }
+        Insert: {
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          result?: string | null
+          start_time?: string | null
+        }
+        Update: {
+          created_at?: string
+          end_time?: string | null
+          id?: string
+          result?: string | null
+          start_time?: string | null
+        }
+        Relationships: []
+      }
+      transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          crypto_address: string | null
+          id: string
+          pending_amount: number | null
+          status: string
+          type: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          crypto_address?: string | null
+          id?: string
+          pending_amount?: number | null
+          status?: string
+          type: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          crypto_address?: string | null
+          id?: string
+          pending_amount?: number | null
+          status?: string
+          type?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_progress: {
+        Row: {
+          created_at: string
+          current_level: number
+          current_xp: number
+          id: string
+          last_reward_claim: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          current_level?: number
+          current_xp?: number
+          id?: string
+          last_reward_claim?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          current_level?: number
+          current_xp?: number
+          id?: string
+          last_reward_claim?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"] | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"] | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"] | null
+          user_id?: string | null
+        }
+        Relationships: []
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      claim_daily_reward: {
+        Args: {
+          user_id: string
+        }
+        Returns: {
+          case_id: string
+          case_name: string
+          success: boolean
+          message: string
+        }[]
+      }
+      increment_balance: {
+        Args: {
+          user_id: string
+          amount: number
+        }
+        Returns: undefined
+      }
+      update_user_xp: {
+        Args: {
+          user_id: string
+          xp_gained: number
+        }
+        Returns: undefined
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "user"
     }
     CompositeTypes: {
       [_ in never]: never
     }
   }
 }
+
+type PublicSchema = Database[Extract<keyof Database, "public">]
+
+export type Tables<
+  PublicTableNameOrOptions extends
+    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+        Database[PublicTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R
+    }
+    ? R
+    : never
+  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
+        PublicSchema["Views"])
+    ? (PublicSchema["Tables"] &
+        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
+        Row: infer R
+      }
+      ? R
+      : never
+    : never
+
+export type TablesInsert<
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I
+    }
+    ? I
+    : never
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+        Insert: infer I
+      }
+      ? I
+      : never
+    : never
+
+export type TablesUpdate<
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
+    | { schema: keyof Database },
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U
+    }
+    ? U
+    : never
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
+        Update: infer U
+      }
+      ? U
+      : never
+    : never
+
+export type Enums<
+  PublicEnumNameOrOptions extends
+    | keyof PublicSchema["Enums"]
+    | { schema: keyof Database },
+  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = PublicEnumNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
+    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
+    : never
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof PublicSchema["CompositeTypes"]
+    | { schema: keyof Database },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof Database
+  }
+    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
+    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never
