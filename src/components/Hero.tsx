@@ -10,7 +10,6 @@ import { useBalance } from "@/contexts/BalanceContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
-import { ReferralManager } from "./ReferralManager";
 
 export const Hero = () => {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
@@ -132,12 +131,6 @@ export const Hero = () => {
               </Button>
             )}
           </div>
-
-          {user && userProgress?.current_level >= 20 && (
-            <div className="mt-8">
-              <ReferralManager />
-            </div>
-          )}
         </div>
 
         <CryptoDeposit 
