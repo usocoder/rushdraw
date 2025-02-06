@@ -256,65 +256,6 @@ export type Database = {
         }
         Relationships: []
       }
-      roulette_bets: {
-        Row: {
-          bet_amount: number
-          bet_color: string
-          created_at: string
-          game_id: string
-          id: string
-          user_id: string
-        }
-        Insert: {
-          bet_amount: number
-          bet_color: string
-          created_at?: string
-          game_id: string
-          id?: string
-          user_id: string
-        }
-        Update: {
-          bet_amount?: number
-          bet_color?: string
-          created_at?: string
-          game_id?: string
-          id?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "roulette_bets_game_id_fkey"
-            columns: ["game_id"]
-            isOneToOne: false
-            referencedRelation: "roulette_games"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      roulette_games: {
-        Row: {
-          created_at: string
-          end_time: string | null
-          id: string
-          result: string | null
-          start_time: string | null
-        }
-        Insert: {
-          created_at?: string
-          end_time?: string | null
-          id?: string
-          result?: string | null
-          start_time?: string | null
-        }
-        Update: {
-          created_at?: string
-          end_time?: string | null
-          id?: string
-          result?: string | null
-          start_time?: string | null
-        }
-        Relationships: []
-      }
       transactions: {
         Row: {
           amount: number
