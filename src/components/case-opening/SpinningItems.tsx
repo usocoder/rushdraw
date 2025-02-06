@@ -25,16 +25,13 @@ export const SpinningItems = ({
 }: SpinningItemsProps) => {
   const isMobile = useIsMobile();
   
-  // Ensure we have valid items
-  const validItems = items.filter(item => item && item.image_url && item.name);
-  
   const getSpinningAnimation = () => {
     if (!isSpinning) return {};
 
     const itemWidth = isMobile ? 160 : 200;
     const containerWidth = window.innerWidth;
     const centerPosition = (containerWidth / 2) - (itemWidth / 2);
-    const finalPosition = -((validItems.length - 1) * itemWidth);
+    const finalPosition = -((items.length - 1) * itemWidth);
     const adjustedPosition = finalPosition + centerPosition;
 
     return {
@@ -49,10 +46,6 @@ export const SpinningItems = ({
 
   const itemSize = isMobile ? "w-40 h-40" : "w-48 h-48";
   const imageSize = isMobile ? "w-24 h-24" : "w-32 h-32";
-
-  if (!validItems.length) {
-    return <div>Loading items...</div>;
-  }
 
   return (
     <div className="relative w-full h-full overflow-hidden">
@@ -77,7 +70,7 @@ export const SpinningItems = ({
             translateY: '-50%',
           }}
         >
-          {validItems.map((item, index) => (
+          {items.map((item, index) => (
             <motion.div
               key={`${item.id}-${index}`}
               className={`
@@ -89,7 +82,7 @@ export const SpinningItems = ({
               <div className="flex flex-col h-full relative p-4">
                 <div className="flex-1 flex items-center justify-center">
                   <img 
-                    src={item.image_url}
+                    src={item.image}
                     alt={item.name}
                     className={`
                       ${imageSize} object-contain

@@ -81,16 +81,6 @@ export const CaseOpeningModal = ({
   }, [isOpen, balance, caseData.price, user, onOpenChange, toast]);
 
   const handleSpinComplete = async (item: CaseItem) => {
-    if (!item) {
-      toast({
-        title: "Error",
-        description: "An error occurred while opening the case",
-        variant: "destructive",
-      });
-      setIsSpinning(false);
-      return;
-    }
-
     setFinalItem(item);
     if (item.value >= MAX_TRANSACTION_AMOUNT) {
       toast({
