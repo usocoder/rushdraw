@@ -32,20 +32,31 @@ export const CaseOpeningModal = ({
   const [opponents, setOpponents] = useState<string[]>([]);
   const [hasRushDraw, setHasRushDraw] = useState(false);
   const [battleWinner, setBattleWinner] = useState<{ player: string; item: CaseItem } | null>(null);
+  const [isResetting, setIsResetting] = useState(false);
   
   const { balance, createTransaction } = useBalance();
   const { user } = useBrowserAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
+  const resetState = () => {
+    setIsSpinning(false);
+    setFinalItem(null);
+    setIsBattleMode(false);
+    setOpponents([]);
+    setBattleWinner(null);
+    setHasRushDraw(false);
+    setIsResetting(false);
+  };
+
   useEffect(() => {
     if (!isOpen) {
-      setIsSpinning(false);
-      setFinalItem(null);
-      setIsBattleMode(false);
-      setOpponents([]);
-      setBattleWinner(null);
-      return;
+      // Add a small delay before resetting state when modal closes
+      setIsResetting(true);
+      const timeout = setTimeout(() => {
+        resetState();
+      }, 300);
+      return () => clearTimeout(timeout);
     }
 
     if (!isFreePlay) {
@@ -104,6 +115,8 @@ export const CaseOpeningModal = ({
   };
 
   const startSpinning = async () => {
+    if (isSpinning || isResetting) return;
+    
     setFinalItem(null);
     setBattleWinner(null);
     
@@ -118,6 +131,8 @@ export const CaseOpeningModal = ({
   };
 
   const startBattle = async (numOpponents: number) => {
+    if (isSpinning || isResetting) return;
+    
     const botNames = ["Bot_Alpha", "Bot_Beta", "Bot_Gamma", "Bot_Delta"];
     const selectedOpponents = botNames.slice(0, numOpponents);
     setOpponents(selectedOpponents);
