@@ -23,10 +23,27 @@ export const BattleSpinner = ({
 
   useEffect(() => {
     if (isSpinning) {
-      const items = Array(200)
+      // First determine the winning item
+      const random = Math.random();
+      let cumulative = 0;
+      
+      const winner = caseData.items.find((item) => {
+        cumulative += item.odds;
+        return random <= cumulative;
+      }) || caseData.items[0];
+
+      // Generate items array with the winner at a specific position
+      const itemsBeforeWinner = Array(150)
         .fill(null)
         .map(() => caseData.items[Math.floor(Math.random() * caseData.items.length)]);
-      setSpinItems(items);
+      
+      // Place the winner at position 160 (this ensures it lands in the center)
+      const itemsAfterWinner = Array(40)
+        .fill(null)
+        .map(() => caseData.items[Math.floor(Math.random() * caseData.items.length)]);
+      
+      const allItems = [...itemsBeforeWinner, winner, ...itemsAfterWinner];
+      setSpinItems(allItems);
       
       const speedPattern = [
         { speed: 100, time: 0 },
@@ -44,15 +61,8 @@ export const BattleSpinner = ({
         setTimeout(() => setSpinSpeed(speed), time);
       });
 
+      // Set the final item and trigger completion after the animation
       setTimeout(() => {
-        const random = Math.random();
-        let cumulative = 0;
-        
-        const winner = caseData.items.find((item) => {
-          cumulative += item.odds;
-          return random <= cumulative;
-        }) || caseData.items[0];
-
         setFinalItem(winner);
         onSpinComplete(winner);
       }, 10000);
