@@ -2,9 +2,10 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { CryptoDeposit } from "./CryptoDeposit";
 import { WithdrawModal } from "./WithdrawModal";
-import { ArrowDown, ArrowUp, LogIn, LogOut, UserPlus, Wallet, Settings } from "lucide-react";
+import { ArrowDown, ArrowUp, LogIn, LogOut, UserPlus, Wallet, Settings, Dices } from "lucide-react";
 import { RegisterModal } from "./RegisterModal";
 import { LoginModal } from "./LoginModal";
+import { RouletteBetting } from "./RouletteBetting";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { useBalance } from "@/contexts/BalanceContext";
 import { useQuery } from "@tanstack/react-query";
@@ -16,6 +17,7 @@ export const Hero = () => {
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
+  const [isRouletteOpen, setIsRouletteOpen] = useState(false);
   const { user, logout } = useBrowserAuth();
   const { balance } = useBalance();
   const navigate = useNavigate();
@@ -122,6 +124,10 @@ export const Hero = () => {
                   <ArrowDown className="mr-2" />
                   Withdraw
                 </Button>
+                <Button size="lg" variant="secondary" onClick={() => setIsRouletteOpen(true)}>
+                  <Dices className="mr-2" />
+                  Roulette
+                </Button>
               </>
             ) : (
               <Button size="lg" onClick={() => setIsRegisterOpen(true)}>
@@ -150,6 +156,11 @@ export const Hero = () => {
         <LoginModal
           isOpen={isLoginOpen}
           onOpenChange={setIsLoginOpen}
+        />
+
+        <RouletteBetting
+          isOpen={isRouletteOpen}
+          onOpenChange={setIsRouletteOpen}
         />
       </div>
     </div>
