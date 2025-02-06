@@ -94,15 +94,14 @@ export const CaseOpeningModal = ({
       }
     } else {
       setFinalItem(item);
-      const winAmount = caseData.price * item.multiplier;
-      if (winAmount >= MAX_TRANSACTION_AMOUNT) {
+      if (item.value >= MAX_TRANSACTION_AMOUNT) {
         toast({
           title: "Maximum win amount exceeded",
           description: "Your win has been capped at the maximum allowed amount.",
           variant: "default",
         });
       }
-      await createTransaction('case_win', Math.min(winAmount, MAX_TRANSACTION_AMOUNT));
+      await createTransaction('case_win', Math.min(item.value, MAX_TRANSACTION_AMOUNT));
     }
     setIsSpinning(false);
   };
