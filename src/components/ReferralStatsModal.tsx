@@ -128,7 +128,30 @@ export const ReferralStatsModal = ({ isOpen, onOpenChange }: Props) => {
     
     setIsGenerating(true);
     try {
-      let codeToUse = customCode 
+      // Validate custom code format
+      if (customCode) {
+        if (customCode.length < 3 || customCode.length > 8) {
+          toast({
+            title: "Invalid Code Length",
+            description: "Custom code must be between 3 and 8 characters long.",
+            variant: "destructive",
+          });
+          setIsGenerating(false);
+          return;
+        }
+        
+        if (!/^[A-Za-z0-9]+$/.test(customCode)) {
+          toast({
+            title: "Invalid Characters",
+            description: "Custom code can only contain letters and numbers.",
+            variant: "destructive",
+          });
+          setIsGenerating(false);
+          return;
+        }
+      }
+
+      const codeToUse = customCode 
         ? customCode.toUpperCase() 
         : Math.random().toString(36).substring(2, 8).toUpperCase();
 
@@ -141,7 +164,7 @@ export const ReferralStatsModal = ({ isOpen, onOpenChange }: Props) => {
 
       if (existingCode) {
         toast({
-          title: "Code already taken",
+          title: "Code Already Taken",
           description: "This referral code is already in use. Please try a different one.",
           variant: "destructive",
         });
@@ -157,9 +180,13 @@ export const ReferralStatsModal = ({ isOpen, onOpenChange }: Props) => {
           code: codeToUse,
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error creating referral code:', error);
+        throw error;
+      }
 
       setReferralCode(codeToUse);
+      setCustomCode(''); // Clear the custom code input
       toast({
         title: "Success!",
         description: "Your referral code has been generated.",
@@ -226,7 +253,7 @@ export const ReferralStatsModal = ({ isOpen, onOpenChange }: Props) => {
             <div className="space-y-4">
               <div className="grid gap-2">
                 <Input
-                  placeholder="Enter custom code (optional)"
+                  placeholder="Enter custom code (3-8 characters)"
                   value={customCode}
                   onChange={(e) => setCustomCode(e.target.value.toUpperCase())}
                   maxLength={8}
