@@ -126,43 +126,45 @@ export const ReferralStatsModal = ({ isOpen, onOpenChange }: Props) => {
   const generateReferralCode = async () => {
     if (!user) return;
     
-    if (customCode) {
-      // Check if custom code already exists
+    setIsGenerating(true);
+    try {
+      let codeToUse = customCode 
+        ? customCode.toUpperCase() 
+        : Math.random().toString(36).substring(2, 8).toUpperCase();
+
+      // Check if code already exists
       const { data: existingCode } = await supabase
         .from('referral_codes')
         .select('code')
-        .eq('code', customCode.toUpperCase())
+        .eq('code', codeToUse)
         .maybeSingle();
 
       if (existingCode) {
         toast({
-          title: "Error",
-          description: "This code is already taken. Please try another one.",
+          title: "Code already taken",
+          description: "This referral code is already in use. Please try a different one.",
           variant: "destructive",
         });
+        setIsGenerating(false);
         return;
       }
-    }
-    
-    setIsGenerating(true);
-    try {
-      const code = customCode ? customCode.toUpperCase() : Math.random().toString(36).substring(2, 8).toUpperCase();
-      
+
+      // If code is available, create it
       const { error } = await supabase
         .from('referral_codes')
         .insert({
           user_id: user.id,
-          code,
+          code: codeToUse,
         });
 
       if (error) throw error;
 
-      setReferralCode(code);
+      setReferralCode(codeToUse);
       toast({
         title: "Success!",
         description: "Your referral code has been generated.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating referral code:', error);
       toast({
         title: "Error",
