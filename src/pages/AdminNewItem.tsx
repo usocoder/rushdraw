@@ -23,7 +23,6 @@ interface FormData {
   name: string;
   value: number;
   odds: number;
-  multiplier: number;
   rarity: string;
   image_url: string;
   case_id: string;
@@ -79,7 +78,6 @@ const AdminNewItem = () => {
         ...data,
         value: Number(data.value),
         odds: oddsDecimal, // Store as decimal in database
-        multiplier: Number(data.multiplier),
       });
 
     if (error) {
@@ -104,22 +102,17 @@ const AdminNewItem = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <Button variant="outline" onClick={() => navigate('/admin/items')}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Items
-        </Button>
-        <Button variant="ghost" size="icon" onClick={() => navigate('/admin')}>
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
+      <Button variant="outline" onClick={() => navigate('/admin/items')} className="mb-8">
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Back to Items
+      </Button>
 
       <Card>
         <CardHeader>
           <CardTitle>Create New Item</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div>
               <Label htmlFor="name">Name</Label>
               <Input 
@@ -161,22 +154,6 @@ const AdminNewItem = () => {
               />
               {errors.odds && (
                 <p className="text-sm text-red-500">{errors.odds.message}</p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="multiplier">Multiplier</Label>
-              <Input 
-                id="multiplier"
-                type="number"
-                step="0.01"
-                {...register("multiplier", { 
-                  required: "Multiplier is required",
-                  min: { value: 0, message: "Multiplier must be positive" }
-                })}
-              />
-              {errors.multiplier && (
-                <p className="text-sm text-red-500">{errors.multiplier.message}</p>
               )}
             </div>
 
@@ -239,7 +216,9 @@ const AdminNewItem = () => {
               )}
             </div>
 
-            <Button type="submit">Create Item</Button>
+            <Button type="submit" className="w-full">
+              Create Item
+            </Button>
           </form>
         </CardContent>
       </Card>

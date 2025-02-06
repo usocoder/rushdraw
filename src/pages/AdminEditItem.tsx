@@ -23,7 +23,6 @@ interface FormData {
   name: string;
   value: number;
   odds: number;
-  multiplier: number;
   rarity: string;
   image_url: string;
   case_id: string;
@@ -85,7 +84,6 @@ const AdminEditItem = () => {
       setValue('name', item.name);
       setValue('value', item.value);
       setValue('odds', item.odds * 100); // Convert from decimal to percentage for display
-      setValue('multiplier', item.multiplier);
       setValue('rarity', item.rarity);
       setValue('image_url', item.image_url);
       setValue('case_id', item.case_id);
@@ -103,7 +101,6 @@ const AdminEditItem = () => {
           ...data,
           value: Number(data.value),
           odds: oddsDecimal, // Store as decimal in database
-          multiplier: Number(data.multiplier),
         })
         .eq('id', id);
 
@@ -146,9 +143,6 @@ const AdminEditItem = () => {
         <Button variant="outline" onClick={() => navigate('/admin/items')}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Items
-        </Button>
-        <Button variant="ghost" size="icon" onClick={() => navigate('/admin')}>
-          <X className="h-4 w-4" />
         </Button>
       </div>
 
@@ -199,22 +193,6 @@ const AdminEditItem = () => {
               />
               {errors.odds && (
                 <p className="text-sm text-red-500">{errors.odds.message}</p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="multiplier">Multiplier</Label>
-              <Input 
-                id="multiplier"
-                type="number"
-                step="0.01"
-                {...register("multiplier", { 
-                  required: "Multiplier is required",
-                  min: { value: 0, message: "Multiplier must be positive" }
-                })}
-              />
-              {errors.multiplier && (
-                <p className="text-sm text-red-500">{errors.multiplier.message}</p>
               )}
             </div>
 
