@@ -18,6 +18,7 @@ serve(async (req) => {
     )
 
     const { referralCode, amount, userId } = await req.json()
+    console.log('Processing referral:', { referralCode, amount, userId })
 
     // Check if referral code exists and is valid
     const { data: referralData, error: referralError } = await supabaseClient
@@ -27,8 +28,18 @@ serve(async (req) => {
       .single()
 
     if (referralError || !referralData) {
+      console.error('Invalid referral code:', referralError)
       return new Response(
         JSON.stringify({ error: 'Invalid referral code' }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
+      )
+    }
+
+    // Prevent self-referral
+    if (referralData.user_id === userId) {
+      console.error('Self-referral attempted')
+      return new Response(
+        JSON.stringify({ error: 'Cannot use your own referral code' }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
       )
     }
@@ -39,18 +50,50 @@ serve(async (req) => {
       { user_id: referralData.user_id }
     )
     const commissionRate = commissionData || 0.10 // Default to 10% if no tier found
+    console.log('Commission rate:', commissionRate)
 
     // Calculate bonus amount
     const bonusAmount = amount * commissionRate
+    console.log('Bonus amount:', bonusAmount)
 
     // Update referral code usage and earnings
-    await supabaseClient
+    const { error: updateError } = await supabaseClient
       .from('referral_codes')
       .update({
-        times_used: supabaseClient.rpc('increment', { row_id: referralData.code }),
-        total_earnings: supabaseClient.rpc('add', { row_id: referralData.code, amount: bonusAmount })
+        times_used: supabaseClient.rpc('increment', { row_id: referralCode }),
+        total_earnings: supabaseClient.rpc('add', { row_id: referralCode, amount: bonusAmount })
       })
       .eq('code', referralCode)
+
+    if (updateError) {
+      console.error('Error updating referral stats:', updateError)
+      throw updateError
+    }
+
+    // Create referral record
+    const { error: referralRecordError } = await supabaseClient
+      .from('referrals')
+      .insert({
+        referrer_id: referralData.user_id,
+        referred_user_id: userId,
+        code_used: referralCode
+      })
+
+    if (referralRecordError) {
+      console.error('Error creating referral record:', referralRecordError)
+      throw referralRecordError
+    }
+
+    // Update user's profile to store the referral code used
+    const { error: profileError } = await supabaseClient
+      .from('profiles')
+      .update({ referral_code_used: referralCode })
+      .eq('id', userId)
+
+    if (profileError) {
+      console.error('Error updating profile:', profileError)
+      throw profileError
+    }
 
     return new Response(
       JSON.stringify({ 
@@ -61,6 +104,7 @@ serve(async (req) => {
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
+    console.error('Error processing referral:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 400 }
