@@ -10,7 +10,6 @@ interface CaseOpeningContentProps {
   opponents: string[];
   battleWinner: { player: string; item: CaseItem } | null;
   onSpinComplete: (item: CaseItem, player: string) => void;
-  isFreePlay: boolean;
   hasRushDraw: boolean;
   onWin: (amount: number) => Promise<void>;
 }
@@ -23,7 +22,6 @@ export const CaseOpeningContent = ({
   opponents,
   battleWinner,
   onSpinComplete,
-  isFreePlay,
   hasRushDraw,
   onWin,
 }: CaseOpeningContentProps) => {
@@ -33,7 +31,6 @@ export const CaseOpeningContent = ({
         <WinningResult 
           item={finalItem}
           casePrice={caseData.price}
-          isFreePlay={isFreePlay}
           hasRushDraw={hasRushDraw}
         />
       )}
@@ -45,7 +42,6 @@ export const CaseOpeningContent = ({
         opponents={opponents}
         battleWinner={battleWinner}
         onSpinComplete={onSpinComplete}
-        isFreePlay={isFreePlay}
         casePrice={caseData.price}
         onWin={onWin}
       />

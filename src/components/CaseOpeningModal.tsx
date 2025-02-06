@@ -15,7 +15,6 @@ interface CaseOpeningModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   caseData: Case;
-  isFreePlay?: boolean;
 }
 
 const MAX_TRANSACTION_AMOUNT = 99999999.99;
@@ -24,7 +23,6 @@ export const CaseOpeningModal = ({
   isOpen,
   onOpenChange,
   caseData,
-  isFreePlay = false,
 }: CaseOpeningModalProps) => {
   const [isSpinning, setIsSpinning] = useState(false);
   const [finalItem, setFinalItem] = useState<CaseItem | null>(null);
@@ -58,38 +56,36 @@ export const CaseOpeningModal = ({
       return () => clearTimeout(timeout);
     }
 
-    if (!isFreePlay) {
-      if (!user) {
-        toast({
-          title: "Registration required",
-          description: "Please register to open cases",
-          variant: "destructive",
-        });
-        onOpenChange(false);
-        return;
-      }
-      
-      if (balance < caseData.price) {
-        toast({
-          title: "Insufficient balance",
-          description: "Please deposit more funds to open this case",
-          variant: "destructive",
-        });
-        onOpenChange(false);
-        return;
-      }
-
-      if (caseData.price > MAX_TRANSACTION_AMOUNT) {
-        toast({
-          title: "Case price too high",
-          description: "This case exceeds the maximum transaction amount.",
-          variant: "destructive",
-        });
-        onOpenChange(false);
-        return;
-      }
+    if (!user) {
+      toast({
+        title: "Registration required",
+        description: "Please register to open cases",
+        variant: "destructive",
+      });
+      onOpenChange(false);
+      return;
     }
-  }, [isOpen, balance, caseData.price, user, isFreePlay, onOpenChange, toast]);
+    
+    if (balance < caseData.price) {
+      toast({
+        title: "Insufficient balance",
+        description: "Please deposit more funds to open this case",
+        variant: "destructive",
+      });
+      onOpenChange(false);
+      return;
+    }
+
+    if (caseData.price > MAX_TRANSACTION_AMOUNT) {
+      toast({
+        title: "Case price too high",
+        description: "This case exceeds the maximum transaction amount.",
+        variant: "destructive",
+      });
+      onOpenChange(false);
+      return;
+    }
+  }, [isOpen, balance, caseData.price, user, onOpenChange, toast]);
 
   const handleSpinComplete = async (item: CaseItem, player: string) => {
     if (isBattleMode) {
@@ -98,17 +94,15 @@ export const CaseOpeningModal = ({
       }
     } else {
       setFinalItem(item);
-      if (!isFreePlay) {
-        const winAmount = Math.min(caseData.price * item.multiplier, MAX_TRANSACTION_AMOUNT);
-        if (winAmount >= MAX_TRANSACTION_AMOUNT) {
-          toast({
-            title: "Maximum win amount exceeded",
-            description: "Your win has been capped at the maximum allowed amount.",
-            variant: "default",
-          });
-        }
-        await createTransaction('case_win', winAmount);
+      const winAmount = caseData.price * item.multiplier;
+      if (winAmount >= MAX_TRANSACTION_AMOUNT) {
+        toast({
+          title: "Maximum win amount exceeded",
+          description: "Your win has been capped at the maximum allowed amount.",
+          variant: "default",
+        });
       }
+      await createTransaction('case_win', Math.min(winAmount, MAX_TRANSACTION_AMOUNT));
     }
     setIsSpinning(false);
   };
@@ -119,12 +113,10 @@ export const CaseOpeningModal = ({
     setFinalItem(null);
     setBattleWinner(null);
     
-    if (!isFreePlay) {
-      const success = await createTransaction('case_open', caseData.price);
-      if (!success) {
-        onOpenChange(false);
-        return;
-      }
+    const success = await createTransaction('case_open', caseData.price);
+    if (!success) {
+      onOpenChange(false);
+      return;
     }
     setIsSpinning(true);
   };
@@ -140,17 +132,15 @@ export const CaseOpeningModal = ({
   };
 
   const handleWin = async (amount: number) => {
-    if (!isFreePlay) {
-      const cappedAmount = Math.min(amount, MAX_TRANSACTION_AMOUNT);
-      if (cappedAmount !== amount) {
-        toast({
-          title: "Maximum win amount exceeded",
-          description: "Your win has been capped at the maximum allowed amount.",
-          variant: "default",
-        });
-      }
-      await createTransaction('case_win', cappedAmount);
+    const cappedAmount = Math.min(amount, MAX_TRANSACTION_AMOUNT);
+    if (cappedAmount !== amount) {
+      toast({
+        title: "Maximum win amount exceeded",
+        description: "Your win has been capped at the maximum allowed amount.",
+        variant: "default",
+      });
     }
+    await createTransaction('case_win', cappedAmount);
   };
 
   return (
@@ -173,7 +163,6 @@ export const CaseOpeningModal = ({
         
         <OpeningHeader
           name={caseData.name}
-          isFreePlay={isFreePlay}
           isBattleMode={isBattleMode}
           hasRushDraw={hasRushDraw}
         />
@@ -196,7 +185,6 @@ export const CaseOpeningModal = ({
           opponents={opponents}
           battleWinner={battleWinner}
           onSpinComplete={handleSpinComplete}
-          isFreePlay={isFreePlay}
           hasRushDraw={hasRushDraw}
           onWin={handleWin}
         />
