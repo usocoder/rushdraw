@@ -12,6 +12,7 @@ interface CaseOpeningContentProps {
   onSpinComplete: (item: CaseItem, player: string) => void;
   hasRushDraw: boolean;
   onWin: (amount: number) => Promise<void>;
+  isCrazyMode?: boolean;
 }
 
 export const CaseOpeningContent = ({
@@ -24,6 +25,7 @@ export const CaseOpeningContent = ({
   onSpinComplete,
   hasRushDraw,
   onWin,
+  isCrazyMode = false,
 }: CaseOpeningContentProps) => {
   return (
     <>
@@ -36,6 +38,7 @@ export const CaseOpeningContent = ({
         onSpinComplete={onSpinComplete}
         casePrice={caseData.price}
         onWin={onWin}
+        isCrazyMode={isCrazyMode}
       />
 
       {!isBattleMode && finalItem && !isSpinning && (
@@ -43,6 +46,7 @@ export const CaseOpeningContent = ({
           item={finalItem}
           casePrice={caseData.price}
           hasRushDraw={hasRushDraw}
+          isCrazyMode={isCrazyMode}
         />
       )}
     </>

@@ -9,11 +9,13 @@ import { Button } from "./ui/button";
 import { OpeningHeader } from "./case-opening/OpeningHeader";
 import { CaseOpeningContent } from "./case-opening/CaseOpeningContent";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { BattleControls } from "./case-opening/BattleControls";
 
 interface CaseOpeningModalProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
   caseData: Case;
+  isBattleMode?: boolean;
 }
 
 const MAX_TRANSACTION_AMOUNT = 99999999.99;
@@ -22,11 +24,15 @@ export const CaseOpeningModal = ({
   isOpen,
   onOpenChange,
   caseData,
+  isBattleMode = false,
 }: CaseOpeningModalProps) => {
   const [isSpinning, setIsSpinning] = useState(false);
   const [finalItem, setFinalItem] = useState<CaseItem | null>(null);
   const [hasRushDraw, setHasRushDraw] = useState(false);
   const [isResetting, setIsResetting] = useState(false);
+  const [opponents, setOpponents] = useState<string[]>([]);
+  const [battleWinner, setBattleWinner] = useState<{ player: string; item: CaseItem } | null>(null);
+  const [isCrazyMode, setIsCrazyMode] = useState(false);
   
   const { balance, createTransaction } = useBalance();
   const { user } = useBrowserAuth();
@@ -38,6 +44,9 @@ export const CaseOpeningModal = ({
     setFinalItem(null);
     setHasRushDraw(false);
     setIsResetting(false);
+    setOpponents([]);
+    setBattleWinner(null);
+    setIsCrazyMode(false);
   };
 
   useEffect(() => {
@@ -80,23 +89,45 @@ export const CaseOpeningModal = ({
     }
   }, [isOpen, balance, caseData.price, user, onOpenChange, toast]);
 
-  const handleSpinComplete = async (item: CaseItem) => {
-    setFinalItem(item);
-    if (item.value >= MAX_TRANSACTION_AMOUNT) {
-      toast({
-        title: "Maximum win amount exceeded",
-        description: "Your win has been capped at the maximum allowed amount.",
-        variant: "default",
-      });
+  const handleSpinComplete = async (item: CaseItem, player: string) => {
+    if (player === "You") {
+      setFinalItem(item);
     }
-    await createTransaction('case_win', Math.min(item.value, MAX_TRANSACTION_AMOUNT));
-    setIsSpinning(false);
+    
+    if (!isBattleMode) {
+      if (item.value >= MAX_TRANSACTION_AMOUNT) {
+        toast({
+          title: "Maximum win amount exceeded",
+          description: "Your win has been capped at the maximum allowed amount.",
+          variant: "default",
+        });
+      }
+      await createTransaction('case_win', Math.min(item.value, MAX_TRANSACTION_AMOUNT));
+      setIsSpinning(false);
+      return;
+    }
+
+    // For battle mode, we need to wait for all spins to complete
+    const allSpinsComplete = finalItem !== null || player !== "You";
+    if (allSpinsComplete) {
+      const winner = isCrazyMode ? 
+        { player, item: { ...item, value: -item.value } } : 
+        { player, item };
+      setBattleWinner(winner);
+      
+      if (winner.player === "You") {
+        const winAmount = Math.min(winner.item.value, MAX_TRANSACTION_AMOUNT);
+        await createTransaction('case_win', winAmount);
+      }
+      setIsSpinning(false);
+    }
   };
 
   const startSpinning = async () => {
     if (isSpinning || isResetting) return;
     
     setFinalItem(null);
+    setBattleWinner(null);
     
     const success = await createTransaction('case_open', caseData.price);
     if (!success) {
@@ -104,6 +135,21 @@ export const CaseOpeningModal = ({
       return;
     }
     setIsSpinning(true);
+  };
+
+  const handleBattleStart = (numOpponents: number) => {
+    const bots = Array.from({ length: numOpponents }, (_, i) => `Rushbot${i + 1}`);
+    setOpponents(bots);
+    startSpinning();
+  };
+
+  const handleSoloOpen = () => {
+    setOpponents([]);
+    startSpinning();
+  };
+
+  const toggleCrazyMode = () => {
+    setIsCrazyMode(!isCrazyMode);
   };
 
   return (
@@ -126,32 +172,45 @@ export const CaseOpeningModal = ({
         
         <OpeningHeader
           name={caseData.name}
-          isBattleMode={false}
+          isBattleMode={isBattleMode}
           hasRushDraw={hasRushDraw}
+          isCrazyMode={isCrazyMode}
         />
         
-        <div className="flex justify-center my-4">
-          <Button 
-            onClick={startSpinning}
-            disabled={isSpinning || finalItem !== null}
-            size="lg"
-          >
-            Open Case
-          </Button>
-        </div>
+        {isBattleMode ? (
+          <div className="space-y-4">
+            <BattleControls 
+              onSoloOpen={handleSoloOpen}
+              onBattleStart={handleBattleStart}
+              isCrazyMode={isCrazyMode}
+              onToggleCrazyMode={toggleCrazyMode}
+            />
+          </div>
+        ) : (
+          <div className="flex justify-center my-4">
+            <Button 
+              onClick={startSpinning}
+              disabled={isSpinning || finalItem !== null}
+              size="lg"
+            >
+              Open Case
+            </Button>
+          </div>
+        )}
 
         <CaseOpeningContent 
           caseData={caseData}
           isSpinning={isSpinning}
-          isBattleMode={false}
+          isBattleMode={isBattleMode}
           finalItem={finalItem}
-          opponents={[]}
-          battleWinner={null}
+          opponents={opponents}
+          battleWinner={battleWinner}
           onSpinComplete={handleSpinComplete}
           hasRushDraw={hasRushDraw}
           onWin={async (amount) => {
             await createTransaction('case_win', Math.min(amount, MAX_TRANSACTION_AMOUNT));
           }}
+          isCrazyMode={isCrazyMode}
         />
       </DialogContent>
     </Dialog>
