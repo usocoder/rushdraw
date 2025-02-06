@@ -29,6 +29,7 @@ export const RouletteBetting = ({
   const [timeLeft, setTimeLeft] = useState(20);
   const [isProcessing, setIsProcessing] = useState(false);
   const [gameHistory, setGameHistory] = useState<string[]>([]);
+  const [isGameStarted, setIsGameStarted] = useState(false);
   const { toast } = useToast();
   const { balance, createTransaction } = useBalance();
   const { user } = useBrowserAuth();
@@ -52,7 +53,7 @@ export const RouletteBetting = ({
         // Create a new game if none exists
         const { data: newGame, error: createError } = await supabase
           .from('roulette_games')
-          .insert([{ start_time: new Date().toISOString() }])
+          .insert([{ start_time: null }])
           .select()
           .single();
         
@@ -62,9 +63,10 @@ export const RouletteBetting = ({
         }
         
         setCurrentGame(newGame);
-        setTimeLeft(20);
+        setIsGameStarted(false);
       } else {
         setCurrentGame(game);
+        setIsGameStarted(!!game.start_time);
         // Calculate time left only if game has started
         if (game.start_time) {
           const startTime = new Date(game.start_time).getTime();
@@ -91,8 +93,15 @@ export const RouletteBetting = ({
         (payload) => {
           console.log('Game update:', payload);
           const game = payload.new as RouletteGame;
+          
+          if (game.start_time && !isGameStarted) {
+            setIsGameStarted(true);
+            setTimeLeft(20);
+          }
+          
           if (game.result) {
             setGameHistory(prev => [game.result, ...prev].slice(0, 10));
+            setIsGameStarted(false);
             // Start new game after 3 seconds
             setTimeout(() => {
               fetchCurrentGame();
@@ -109,10 +118,10 @@ export const RouletteBetting = ({
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
-    if (currentGame?.start_time && timeLeft > 0) {
+    if (isGameStarted && timeLeft > 0) {
       timer = setInterval(() => {
         setTimeLeft((prev) => {
-          if (prev <= 0) return 20;
+          if (prev <= 0) return 0;
           return prev - 1;
         });
       }, 1000);
@@ -121,7 +130,7 @@ export const RouletteBetting = ({
     return () => {
       if (timer) clearInterval(timer);
     };
-  }, [currentGame?.start_time, timeLeft]);
+  }, [isGameStarted, timeLeft]);
 
   const handleBet = async () => {
     if (!user || !selectedColor || !betAmount || !currentGame) return;
@@ -182,7 +191,7 @@ export const RouletteBetting = ({
 
         <div className="grid gap-4 py-4">
           <div className="text-center">
-            {currentGame?.start_time ? (
+            {isGameStarted ? (
               <>
                 <div className="text-2xl font-bold mb-2">
                   {timeLeft} seconds
@@ -251,7 +260,7 @@ export const RouletteBetting = ({
 
           <Button
             onClick={handleBet}
-            disabled={isProcessing || !selectedColor || !betAmount || timeLeft <= 0}
+            disabled={isProcessing || !selectedColor || !betAmount || !isGameStarted}
           >
             {isProcessing ? (
               <>
