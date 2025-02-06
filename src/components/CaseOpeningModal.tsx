@@ -51,7 +51,6 @@ export const CaseOpeningModal = ({
 
   useEffect(() => {
     if (!isOpen) {
-      // Add a small delay before resetting state when modal closes
       setIsResetting(true);
       const timeout = setTimeout(() => {
         resetState();
