@@ -27,14 +27,6 @@ export const CaseOpeningContent = ({
 }: CaseOpeningContentProps) => {
   return (
     <>
-      {!isBattleMode && finalItem && !isSpinning && (
-        <WinningResult 
-          item={finalItem}
-          casePrice={caseData.price}
-          hasRushDraw={hasRushDraw}
-        />
-      )}
-
       <BattleModalContent 
         caseData={caseData}
         isSpinning={isSpinning}
@@ -45,6 +37,14 @@ export const CaseOpeningContent = ({
         casePrice={caseData.price}
         onWin={onWin}
       />
+
+      {!isBattleMode && finalItem && !isSpinning && (
+        <WinningResult 
+          item={finalItem}
+          casePrice={caseData.price}
+          hasRushDraw={hasRushDraw}
+        />
+      )}
     </>
   );
 };

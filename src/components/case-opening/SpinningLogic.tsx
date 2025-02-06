@@ -22,12 +22,12 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
       }) || items[0];
 
       // Calculate the number of items to show before the winner
-      const itemsBeforeWinner = Array(150)
+      const itemsBeforeWinner = Array(100)
         .fill(null)
         .map(() => items[Math.floor(Math.random() * items.length)]);
 
       // Add some items after the winner to ensure smooth animation
-      const itemsAfterWinner = Array(40)
+      const itemsAfterWinner = Array(20)
         .fill(null)
         .map(() => items[Math.floor(Math.random() * items.length)]);
 
@@ -37,13 +37,11 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
 
       // Animation speed pattern with smoother transitions
       const speedPattern = [
-        { speed: 80, time: 0 },
-        { speed: 60, time: 1000 },
-        { speed: 40, time: 2000 },
-        { speed: 20, time: 4000 },
-        { speed: 10, time: 6000 },
-        { speed: 5, time: 7000 },
-        { speed: 2, time: 8000 }
+        { speed: 60, time: 0 },
+        { speed: 40, time: 1000 },
+        { speed: 20, time: 2000 },
+        { speed: 10, time: 3000 },
+        { speed: 5, time: 4000 }
       ];
 
       // Apply speed changes
@@ -52,7 +50,7 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
       });
 
       // Set final item and trigger completion after animation ends
-      const spinDuration = 8500;
+      const spinDuration = 4500;
       const revealDelay = 500;
 
       setTimeout(() => {
