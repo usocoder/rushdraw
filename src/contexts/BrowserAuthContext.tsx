@@ -127,6 +127,12 @@ export const BrowserAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     try {
       const { error: signOutError } = await supabase.auth.signOut();
       if (signOutError) {
+        // If the error is due to session not found, we still want to clear the local state
+        if (signOutError.message.includes('session_not_found')) {
+          setUser(null);
+          setError(null);
+          return;
+        }
         setError(signOutError.message);
       } else {
         setError(null);
@@ -134,6 +140,8 @@ export const BrowserAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
       }
     } catch (err) {
       console.error('Logout error:', err);
+      // Even if there's an error, clear the local state
+      setUser(null);
       setError('An unexpected error occurred during logout');
     }
   };
