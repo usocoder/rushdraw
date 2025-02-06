@@ -42,7 +42,7 @@ export const CaseGrid = () => {
           name: item.name,
           value: item.value,
           odds: item.odds,
-          multiplier: item.multiplier,
+          multiplier: item.multiplier || 1,
           rarity: item.rarity as 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary',
           image: item.image_url
         })) || []
@@ -107,7 +107,7 @@ export const CaseGrid = () => {
               id={case_.id}
               name={case_.name}
               price={case_.price}
-              image={case_.image}
+              image={case_.image_url}
               bestDrop={case_.best_drop}
               category={case_.category}
               items={case_.items}
