@@ -82,19 +82,27 @@ export const TransactionApprovals = () => {
 
       const status = approve ? "completed" : "rejected";
 
-      // If approved, update the user's balance first using profiles table
+      // If approved, update the user's balance first
       if (approve) {
-        const { error: profileError } = await supabase
+        // First get current balance
+        const { data: profileData, error: profileFetchError } = await supabase
           .from('profiles')
-          .update({ 
-            balance: supabase.rpc('increment_balance', { 
-              user_id: transaction.user_id, 
-              amount: transaction.amount 
-            })
-          })
+          .select('balance')
+          .eq('id', transaction.user_id)
+          .single();
+
+        if (profileFetchError) throw profileFetchError;
+
+        const currentBalance = profileData?.balance || 0;
+        const newBalance = currentBalance + transaction.amount;
+
+        // Update the balance
+        const { error: profileUpdateError } = await supabase
+          .from('profiles')
+          .update({ balance: newBalance })
           .eq('id', transaction.user_id);
 
-        if (profileError) throw profileError;
+        if (profileUpdateError) throw profileUpdateError;
       }
       
       // Then update transaction status
