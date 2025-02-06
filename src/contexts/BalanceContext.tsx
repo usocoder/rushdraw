@@ -31,18 +31,18 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
     }
     try {
       console.log('Fetching balance for user:', user.id);
-      const { data, error } = await supabase
-        .from('balances')
-        .select('amount')
-        .eq('user_id', user.id)
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('balance')
+        .eq('id', user.id)
         .maybeSingle();
 
-      if (error) {
-        console.error('Error fetching balance:', error);
-        throw error;
+      if (profileError) {
+        console.error('Error fetching balance:', profileError);
+        throw profileError;
       }
       
-      const newBalance = data?.amount || 0;
+      const newBalance = profileData?.balance || 0;
       console.log('Fetched balance:', newBalance);
       setBalance(newBalance);
     } catch (error) {
@@ -118,19 +118,19 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
         )
         .subscribe();
 
-      // Subscribe to real-time changes on balances table
-      const balancesChannel = supabase
-        .channel('balance-updates')
+      // Subscribe to real-time changes on profiles table for balance updates
+      const profilesChannel = supabase
+        .channel('profile-updates')
         .on(
           'postgres_changes',
           {
             event: '*',
             schema: 'public',
-            table: 'balances',
-            filter: `user_id=eq.${user.id}`,
+            table: 'profiles',
+            filter: `id=eq.${user.id}`,
           },
           (payload) => {
-            console.log('Balance updated:', payload);
+            console.log('Profile updated:', payload);
             fetchBalance();
           }
         )
@@ -139,7 +139,7 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
       return () => {
         console.log('Cleaning up real-time listeners');
         supabase.removeChannel(transactionsChannel);
-        supabase.removeChannel(balancesChannel);
+        supabase.removeChannel(profilesChannel);
       };
     } else {
       setBalance(0);
