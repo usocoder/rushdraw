@@ -12,6 +12,7 @@ interface BattleModalContentProps {
   onSpinComplete: (item: CaseItem, player: string) => void;
   casePrice: number;
   onWin: (amount: number) => Promise<void>;
+  isCrazyMode?: boolean;
 }
 
 export const BattleModalContent = ({
@@ -23,6 +24,7 @@ export const BattleModalContent = ({
   onSpinComplete,
   casePrice,
   onWin,
+  isCrazyMode = false,
 }: BattleModalContentProps) => {
   const isMobile = useIsMobile();
   

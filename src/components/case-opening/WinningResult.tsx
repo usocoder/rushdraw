@@ -6,9 +6,16 @@ interface WinningResultProps {
   item: CaseItem;
   casePrice: number;
   hasRushDraw?: boolean;
+  isCrazyMode?: boolean;
 }
 
-export const WinningResult = ({ item, hasRushDraw = false }: WinningResultProps) => {
+export const WinningResult = ({ 
+  item, 
+  hasRushDraw = false,
+  isCrazyMode = false 
+}: WinningResultProps) => {
+  const displayValue = isCrazyMode ? -item.value : item.value;
+  
   return (
     <motion.div
       className="mt-6 text-center"
@@ -57,7 +64,7 @@ export const WinningResult = ({ item, hasRushDraw = false }: WinningResultProps)
         transition={{ delay: 0.4 }}
         className="text-2xl font-bold text-primary"
       >
-        ${item.value.toFixed(2)}
+        ${displayValue.toFixed(2)}
       </motion.div>
     </motion.div>
   );

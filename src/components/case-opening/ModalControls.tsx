@@ -10,6 +10,8 @@ interface ModalControlsProps {
   onSoloOpen: () => void;
   onBattleMode: () => void;
   onBattleStart: (numOpponents: number) => void;
+  isCrazyMode: boolean;
+  onToggleCrazyMode: () => void;
 }
 
 export const ModalControls = ({
@@ -20,6 +22,8 @@ export const ModalControls = ({
   onSoloOpen,
   onBattleMode,
   onBattleStart,
+  isCrazyMode,
+  onToggleCrazyMode,
 }: ModalControlsProps) => {
   if (isSpinning || finalItem || battleWinner) return null;
 
@@ -34,6 +38,8 @@ export const ModalControls = ({
         <BattleControls 
           onBattleStart={onBattleStart}
           onSoloOpen={onSoloOpen}
+          isCrazyMode={isCrazyMode}
+          onToggleCrazyMode={onToggleCrazyMode}
         />
       )}
     </div>
