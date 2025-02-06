@@ -61,27 +61,45 @@ export const TransactionApprovals = () => {
     },
   });
 
-  // Set up real-time subscription for transactions
+  // Set up real-time subscription for transactions and profiles
   useEffect(() => {
-    const channel = supabase
+    // Subscribe to transaction changes
+    const transactionChannel = supabase
       .channel('transaction-updates')
       .on(
         'postgres_changes',
         {
           event: '*',
           schema: 'public',
-          table: 'transactions',
-          filter: `status=eq.pending`,
+          table: 'transactions'
         },
-        () => {
-          console.log('Transaction updated, refreshing...');
+        (payload) => {
+          console.log('Transaction updated:', payload);
+          refetch();
+        }
+      )
+      .subscribe();
+
+    // Subscribe to profile balance changes
+    const profileChannel = supabase
+      .channel('profile-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles'
+        },
+        (payload) => {
+          console.log('Profile updated:', payload);
           refetch();
         }
       )
       .subscribe();
 
     return () => {
-      supabase.removeChannel(channel);
+      supabase.removeChannel(transactionChannel);
+      supabase.removeChannel(profileChannel);
     };
   }, [refetch]);
 
@@ -101,57 +119,36 @@ export const TransactionApprovals = () => {
 
       const status = approve ? "completed" : "rejected";
 
-      // If approved, update the user's balance first
-      if (approve) {
-        const { data: profileData, error: profileFetchError } = await supabase
-          .from('profiles')
-          .select('balance, referral_code_used')
-          .eq('id', transaction.user_id)
-          .single();
-
-        if (profileFetchError) throw profileFetchError;
-
-        const currentBalance = profileData?.balance || 0;
-        let finalAmount = transaction.amount;
-
-        // If there's a referral code, apply the bonus
-        if (profileData?.referral_code_used) {
-          const { data: commissionRate } = await supabase.rpc(
-            'get_referral_commission_rate',
-            { user_id: transaction.user_id }
-          );
-          
-          // Apply referral bonus (default to 10% if no specific rate)
-          const bonusRate = commissionRate || 0.10;
-          finalAmount = finalAmount * (1 + bonusRate);
-        }
-
-        // Update the balance
-        const { error: profileUpdateError } = await supabase
-          .from('profiles')
-          .update({ balance: currentBalance + finalAmount })
-          .eq('id', transaction.user_id);
-
-        if (profileUpdateError) throw profileUpdateError;
-
-        // Update the transaction amount to include any bonuses
-        transaction.amount = finalAmount;
-      }
-      
-      // Then update transaction status
+      // Update transaction status first
       const { error: updateError } = await supabase
         .from("transactions")
-        .update({ 
-          status,
-          amount: transaction.amount // Update with potentially modified amount
-        })
+        .update({ status })
         .eq("id", transactionId);
 
       if (updateError) throw updateError;
 
+      // If approved, update the user's balance
+      if (approve && transaction.type === 'deposit') {
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('balance')
+          .eq('id', transaction.user_id)
+          .single();
+
+        if (profileError) throw profileError;
+
+        const currentBalance = profileData?.balance || 0;
+        const { error: balanceError } = await supabase
+          .from('profiles')
+          .update({ balance: currentBalance + transaction.amount })
+          .eq('id', transaction.user_id);
+
+        if (balanceError) throw balanceError;
+      }
+
       toast({
         title: `Transaction ${approve ? "Approved" : "Rejected"}`,
-        description: `Transaction ${transactionId} has been ${status}.`,
+        description: `Transaction has been ${status}.`,
       });
 
       refetch();
