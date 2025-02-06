@@ -10,7 +10,6 @@ interface BattleModalContentProps {
   opponents: string[];
   battleWinner: { player: string; item: CaseItem } | null;
   onSpinComplete: (item: CaseItem, player: string) => void;
-  isFreePlay: boolean;
   casePrice: number;
   onWin: (amount: number) => Promise<void>;
 }
@@ -22,7 +21,6 @@ export const BattleModalContent = ({
   opponents,
   battleWinner,
   onSpinComplete,
-  isFreePlay,
   casePrice,
   onWin,
 }: BattleModalContentProps) => {
@@ -58,7 +56,6 @@ export const BattleModalContent = ({
 
       <BattleResults
         winner={battleWinner}
-        isFreePlay={isFreePlay}
         casePrice={casePrice}
         onWin={onWin}
       />

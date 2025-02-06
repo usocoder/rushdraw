@@ -4,20 +4,19 @@ import { useEffect } from "react";
 
 interface BattleResultsProps {
   winner: { player: string; item: CaseItem } | null;
-  isFreePlay: boolean;
   casePrice: number;
   onWin: (amount: number) => Promise<void>;
 }
 
-export const BattleResults = ({ winner, isFreePlay, casePrice, onWin }: BattleResultsProps) => {
+export const BattleResults = ({ winner, casePrice, onWin }: BattleResultsProps) => {
   useEffect(() => {
     if (!winner) return;
 
     const handleWin = async () => {
-      if (winner.player === "You" && !isFreePlay) {
+      if (winner.player === "You") {
         const winAmount = casePrice * winner.item.multiplier;
         await onWin(winAmount);
-      } else if (winner.player !== "You") {
+      } else {
         toast({
           title: `${winner.player} won the battle!`,
           description: `With ${winner.item.name} (${winner.item.multiplier}x)`,
@@ -27,7 +26,7 @@ export const BattleResults = ({ winner, isFreePlay, casePrice, onWin }: BattleRe
     };
 
     handleWin();
-  }, [winner, isFreePlay, casePrice, onWin]);
+  }, [winner, casePrice, onWin]);
 
   return null;
 };
