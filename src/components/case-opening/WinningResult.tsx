@@ -10,6 +10,8 @@ interface WinningResultProps {
 }
 
 export const WinningResult = ({ item, casePrice, isFreePlay = false, hasRushDraw = false }: WinningResultProps) => {
+  const winAmount = casePrice * item.multiplier;
+  
   return (
     <motion.div
       className="mt-6 text-center"
@@ -68,7 +70,7 @@ export const WinningResult = ({ item, casePrice, isFreePlay = false, hasRushDraw
           )}
         </h3>
         <p className="text-lg text-primary">
-          Value: ${(casePrice * item.multiplier).toFixed(2)}
+          Value: ${winAmount.toFixed(2)}
         </p>
         {isFreePlay && (
           <p className="mt-2 text-muted-foreground">
