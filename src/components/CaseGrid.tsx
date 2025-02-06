@@ -32,7 +32,7 @@ export const CaseGrid = () => {
       console.log('Cases fetched:', data);
       return data?.map(case_ => ({
         ...case_,
-        image: case_.image_url, // Map image_url to image prop
+        image: case_.image_url,
         category: 
           case_.price < 50 ? 'budget' :
           case_.price < 500 ? 'mid' :
@@ -44,7 +44,7 @@ export const CaseGrid = () => {
           odds: item.odds,
           multiplier: item.multiplier,
           rarity: item.rarity as 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary',
-          image: item.image_url // Map image_url to image prop for items
+          image: item.image_url
         })) || []
       }));
     },
@@ -107,18 +107,10 @@ export const CaseGrid = () => {
               id={case_.id}
               name={case_.name}
               price={case_.price}
-              image={case_.image_url} // Use image_url directly here
+              image={case_.image_url}
               bestDrop={case_.best_drop}
               category={case_.category}
-              items={case_.case_items?.map(item => ({
-                id: item.id,
-                name: item.name,
-                value: item.value,
-                odds: item.odds,
-                multiplier: item.multiplier,
-                rarity: item.rarity as 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary',
-                image: item.image_url // Use image_url directly here
-              })) || []}
+              items={case_.items}
             />
           ))
         )}

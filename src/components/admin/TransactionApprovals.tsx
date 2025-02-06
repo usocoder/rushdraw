@@ -66,7 +66,6 @@ export const TransactionApprovals = () => {
     setIsProcessing(true);
 
     try {
-      // First get the transaction details
       const { data: transaction, error: transactionError } = await supabase
         .from("transactions")
         .select("*")
@@ -80,7 +79,6 @@ export const TransactionApprovals = () => {
 
       // If approved, update the user's balance first
       if (approve) {
-        // Get current balance
         const { data: profileData, error: profileFetchError } = await supabase
           .from('profiles')
           .select('balance, referral_code_used')
@@ -198,7 +196,6 @@ export const TransactionApprovals = () => {
                   </div>
                 </div>
                 
-                {/* User Details Section */}
                 <div className="mt-2 space-y-1 text-sm">
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <User className="w-4 h-4" />
