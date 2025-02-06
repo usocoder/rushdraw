@@ -38,33 +38,45 @@ export const ReferralStatsModal = ({ isOpen, onOpenChange }: Props) => {
   }, [user]);
 
   const fetchUserWagered = async () => {
+    if (!user) return;
+
     try {
       // First try to get existing profile
-      const { data: profile } = await supabase
+      const { data: profile, error } = await supabase
         .from('profiles')
         .select('total_wagered')
-        .eq('id', user?.id)
+        .eq('id', user.id)
         .maybeSingle();
       
+      if (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
+      }
+
       if (profile) {
         setUserWagered(profile.total_wagered || 0);
-      } else if (user) {
+      } else {
         // Create profile if it doesn't exist
-        const { data: newProfile } = await supabase
+        const { data: newProfile, error: insertError } = await supabase
           .from('profiles')
           .insert([{ 
             id: user.id,
             total_wagered: 0
           }])
           .select('total_wagered')
-          .maybeSingle();
+          .single();
           
+        if (insertError) {
+          console.error('Error creating profile:', insertError);
+          throw insertError;
+        }
+
         if (newProfile) {
           setUserWagered(newProfile.total_wagered || 0);
         }
       }
     } catch (error) {
-      console.error('Error fetching user wagered:', error);
+      console.error('Error managing profile:', error);
       toast({
         title: "Error",
         description: "Failed to fetch wagering information",
