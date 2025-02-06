@@ -8,9 +8,7 @@ interface WinningResultProps {
   hasRushDraw?: boolean;
 }
 
-export const WinningResult = ({ item, casePrice, hasRushDraw = false }: WinningResultProps) => {
-  const winAmount = casePrice * item.multiplier;
-  
+export const WinningResult = ({ item, hasRushDraw = false }: WinningResultProps) => {
   return (
     <motion.div
       className="mt-6 text-center"
@@ -59,7 +57,7 @@ export const WinningResult = ({ item, casePrice, hasRushDraw = false }: WinningR
         transition={{ delay: 0.4 }}
         className="text-2xl font-bold text-primary"
       >
-        ${winAmount.toFixed(2)}
+        ${item.value.toFixed(2)}
       </motion.div>
     </motion.div>
   );
