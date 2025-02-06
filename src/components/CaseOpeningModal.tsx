@@ -4,12 +4,11 @@ import { Case, CaseItem } from "../types/case";
 import { useBalance } from "@/contexts/BalanceContext";
 import { useToast } from "./ui/use-toast";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
-import { WinningResult } from "./case-opening/WinningResult";
-import { OpeningHeader } from "./case-opening/OpeningHeader";
 import { X } from "lucide-react";
 import { Button } from "./ui/button";
 import { ModalControls } from "./case-opening/ModalControls";
-import { BattleModalContent } from "./case-opening/BattleModalContent";
+import { OpeningHeader } from "./case-opening/OpeningHeader";
+import { CaseOpeningContent } from "./case-opening/CaseOpeningContent";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CaseOpeningModalProps {
@@ -33,12 +32,12 @@ export const CaseOpeningModal = ({
   const [opponents, setOpponents] = useState<string[]>([]);
   const [hasRushDraw, setHasRushDraw] = useState(false);
   const [battleWinner, setBattleWinner] = useState<{ player: string; item: CaseItem } | null>(null);
+  
   const { balance, createTransaction } = useBalance();
   const { user } = useBrowserAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
-  // Reset all states when modal closes
   useEffect(() => {
     if (!isOpen) {
       setIsSpinning(false);
@@ -105,7 +104,6 @@ export const CaseOpeningModal = ({
   };
 
   const startSpinning = async () => {
-    // Reset states before starting new spin
     setFinalItem(null);
     setBattleWinner(null);
     
@@ -176,24 +174,16 @@ export const CaseOpeningModal = ({
           onBattleStart={startBattle}
         />
 
-        {!isBattleMode && finalItem && !isSpinning && (
-          <WinningResult 
-            item={finalItem}
-            casePrice={caseData.price}
-            isFreePlay={isFreePlay}
-            hasRushDraw={hasRushDraw}
-          />
-        )}
-
-        <BattleModalContent 
+        <CaseOpeningContent 
           caseData={caseData}
           isSpinning={isSpinning}
           isBattleMode={isBattleMode}
+          finalItem={finalItem}
           opponents={opponents}
           battleWinner={battleWinner}
           onSpinComplete={handleSpinComplete}
           isFreePlay={isFreePlay}
-          casePrice={caseData.price}
+          hasRushDraw={hasRushDraw}
           onWin={handleWin}
         />
       </DialogContent>
