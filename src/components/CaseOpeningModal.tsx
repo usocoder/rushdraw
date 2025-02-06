@@ -10,6 +10,8 @@ import { OpeningHeader } from "./case-opening/OpeningHeader";
 import { CaseOpeningContent } from "./case-opening/CaseOpeningContent";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { BattleControls } from "./case-opening/BattleControls";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CaseOpeningModalProps {
   isOpen: boolean;
@@ -92,6 +94,28 @@ export const CaseOpeningModal = ({
     }
   }, [isOpen, balance, selectedCases, user, onOpenChange, toast, caseData]);
 
+  const { data: cases } = useQuery({
+    queryKey: ['cases'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('cases')
+        .select(`
+          *,
+          case_items (*)
+        `);
+      
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const handleCaseSelect = (caseId: string) => {
+    const selectedCase = cases?.find(c => c.id === caseId);
+    if (selectedCase) {
+      setSelectedCases(prev => [...prev, selectedCase]);
+    }
+  };
+
   const handleSpinComplete = async (item: CaseItem, player: string) => {
     if (player === "You") {
       setFinalItem(item);
@@ -149,28 +173,6 @@ export const CaseOpeningModal = ({
   const handleSoloOpen = () => {
     setOpponents([]);
     startSpinning();
-  };
-
-  const handleCaseSelect = (caseId: string) => {
-    const { data: cases } = useQuery({
-      queryKey: ['cases'],
-      queryFn: async () => {
-        const { data, error } = await supabase
-          .from('cases')
-          .select(`
-            *,
-            case_items (*)
-          `);
-        
-        if (error) throw error;
-        return data;
-      },
-    });
-
-    const selectedCase = cases?.find(c => c.id === caseId);
-    if (selectedCase) {
-      setSelectedCases(prev => [...prev, selectedCase]);
-    }
   };
 
   const toggleCrazyMode = () => {
