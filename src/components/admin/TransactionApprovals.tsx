@@ -81,8 +81,16 @@ export const TransactionApprovals = () => {
       if (!transaction) throw new Error("Transaction not found");
 
       const status = approve ? "completed" : "rejected";
+
+      // Update transaction status first
+      const { error: updateError } = await supabase
+        .from("transactions")
+        .update({ status })
+        .eq("id", transactionId);
+
+      if (updateError) throw updateError;
       
-      // If approved, update the user's balance first
+      // If approved, update the user's balance using the increment_balance function
       if (approve) {
         const { error: balanceError } = await supabase
           .rpc('increment_balance', { 
@@ -92,14 +100,6 @@ export const TransactionApprovals = () => {
 
         if (balanceError) throw balanceError;
       }
-
-      // Then update transaction status
-      const { error: updateError } = await supabase
-        .from("transactions")
-        .update({ status })
-        .eq("id", transactionId);
-
-      if (updateError) throw updateError;
 
       toast({
         title: `Transaction ${approve ? "Approved" : "Rejected"}`,
