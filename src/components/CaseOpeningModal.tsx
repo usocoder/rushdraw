@@ -39,7 +39,16 @@ export const CaseOpeningModal = ({
   const isMobile = useIsMobile();
 
   useEffect(() => {
-    if (isOpen && !isFreePlay) {
+    if (!isOpen) {
+      setIsSpinning(false);
+      setFinalItem(null);
+      setIsBattleMode(false);
+      setOpponents([]);
+      setBattleWinner(null);
+      return;
+    }
+
+    if (!isFreePlay) {
       if (!user) {
         toast({
           title: "Registration required",
@@ -69,14 +78,8 @@ export const CaseOpeningModal = ({
         onOpenChange(false);
         return;
       }
-    } else if (!isOpen) {
-      setIsSpinning(false);
-      setFinalItem(null);
-      setIsBattleMode(false);
-      setOpponents([]);
-      setBattleWinner(null);
     }
-  }, [isOpen, balance, caseData.price, user, isFreePlay]);
+  }, [isOpen, balance, caseData.price, user, isFreePlay, onOpenChange, toast]);
 
   const handleSpinComplete = async (item: CaseItem, player: string) => {
     if (isBattleMode) {
@@ -97,9 +100,14 @@ export const CaseOpeningModal = ({
         await createTransaction('case_win', winAmount);
       }
     }
+    setIsSpinning(false);
   };
 
   const startSpinning = async () => {
+    // Reset states before starting new spin
+    setFinalItem(null);
+    setBattleWinner(null);
+    
     if (!isFreePlay) {
       const success = await createTransaction('case_open', caseData.price);
       if (!success) {
