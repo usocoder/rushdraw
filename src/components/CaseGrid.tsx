@@ -32,10 +32,20 @@ export const CaseGrid = () => {
       console.log('Cases fetched:', data);
       return data?.map(case_ => ({
         ...case_,
+        image: case_.image_url, // Map image_url to image prop
         category: 
           case_.price < 50 ? 'budget' :
           case_.price < 500 ? 'mid' :
-          case_.price < 5000 ? 'high' : 'premium'
+          case_.price < 5000 ? 'high' : 'premium',
+        items: case_.case_items?.map(item => ({
+          id: item.id,
+          name: item.name,
+          value: item.value,
+          odds: item.odds,
+          multiplier: item.multiplier,
+          rarity: item.rarity as 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary',
+          image: item.image_url // Map image_url to image prop for items
+        })) || []
       }));
     },
   });
@@ -46,7 +56,6 @@ export const CaseGrid = () => {
   });
 
   const handleCreateBattle = () => {
-    // Select the first available case for battle
     if (cases && cases.length > 0) {
       setSelectedCase(cases[0]);
       setIsBattleMode(true);
@@ -84,7 +93,6 @@ export const CaseGrid = () => {
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {isLoading ? (
-          // Loading skeletons
           Array.from({ length: 8 }).map((_, index) => (
             <div key={index} className="space-y-4">
               <Skeleton className="h-[200px] w-full rounded-xl" />
@@ -99,7 +107,7 @@ export const CaseGrid = () => {
               id={case_.id}
               name={case_.name}
               price={case_.price}
-              image={case_.image_url}
+              image={case_.image_url} // Use image_url directly here
               bestDrop={case_.best_drop}
               category={case_.category}
               items={case_.case_items?.map(item => ({
@@ -109,7 +117,7 @@ export const CaseGrid = () => {
                 odds: item.odds,
                 multiplier: item.multiplier,
                 rarity: item.rarity as 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary',
-                image: item.image_url
+                image: item.image_url // Use image_url directly here
               })) || []}
             />
           ))
