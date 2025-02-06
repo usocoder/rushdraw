@@ -37,7 +37,6 @@ const AdminEditItem = () => {
   const queryClient = useQueryClient();
   const { register, handleSubmit, control, setValue, formState: { errors } } = useForm<FormData>();
 
-  // Check if user is admin
   const { data: userRole, isLoading: isCheckingRole } = useQuery({
     queryKey: ['userRole', user?.id],
     queryFn: async () => {
@@ -53,7 +52,6 @@ const AdminEditItem = () => {
     enabled: !!user,
   });
 
-  // Fetch item data
   const { data: item, isLoading: isLoadingItem } = useQuery({
     queryKey: ['item', id],
     queryFn: async () => {
@@ -69,7 +67,6 @@ const AdminEditItem = () => {
     enabled: !!id,
   });
 
-  // Fetch cases for dropdown
   const { data: cases } = useQuery({
     queryKey: ['cases'],
     queryFn: async () => {
@@ -83,12 +80,11 @@ const AdminEditItem = () => {
     },
   });
 
-  // Set form values when item data is loaded
   useEffect(() => {
     if (item) {
       setValue('name', item.name);
       setValue('value', item.value);
-      setValue('odds', item.odds);
+      setValue('odds', item.odds * 100); // Convert from decimal to percentage for display
       setValue('multiplier', item.multiplier);
       setValue('rarity', item.rarity);
       setValue('image_url', item.image_url);
@@ -96,15 +92,17 @@ const AdminEditItem = () => {
     }
   }, [item, setValue]);
 
-  // Update mutation
   const updateMutation = useMutation({
     mutationFn: async (data: FormData) => {
+      // Convert odds from percentage to decimal
+      const oddsDecimal = Number(data.odds) / 100;
+
       const { error } = await supabase
         .from('case_items')
         .update({
           ...data,
           value: Number(data.value),
-          odds: Number(data.odds),
+          odds: oddsDecimal, // Store as decimal in database
           multiplier: Number(data.multiplier),
         })
         .eq('id', id);
@@ -128,7 +126,6 @@ const AdminEditItem = () => {
     },
   });
 
-  // Redirect non-admin users
   useEffect(() => {
     if (!isCheckingRole && (!user || userRole?.role !== 'admin')) {
       navigate('/');
@@ -193,10 +190,10 @@ const AdminEditItem = () => {
               <Input 
                 id="odds"
                 type="number"
-                step="0.01"
+                step="0.00001"
                 {...register("odds", { 
                   required: "Odds are required",
-                  min: { value: 0, message: "Odds must be positive" },
+                  min: { value: 0.00001, message: "Odds must be at least 0.00001%" },
                   max: { value: 100, message: "Odds cannot exceed 100%" }
                 })}
               />

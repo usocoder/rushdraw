@@ -70,12 +70,15 @@ const AdminNewItem = () => {
   }, [user, userRole, isCheckingRole, navigate]);
 
   const onSubmit = async (data: FormData) => {
+    // Convert odds from percentage to decimal
+    const oddsDecimal = Number(data.odds) / 100;
+
     const { error } = await supabase
       .from('case_items')
       .insert({
         ...data,
         value: Number(data.value),
-        odds: Number(data.odds),
+        odds: oddsDecimal, // Store as decimal in database
         multiplier: Number(data.multiplier),
       });
 
@@ -149,10 +152,10 @@ const AdminNewItem = () => {
               <Input 
                 id="odds"
                 type="number"
-                step="0.01"
+                step="0.00001"
                 {...register("odds", { 
                   required: "Odds are required",
-                  min: { value: 0, message: "Odds must be positive" },
+                  min: { value: 0.00001, message: "Odds must be at least 0.00001%" },
                   max: { value: 100, message: "Odds cannot exceed 100%" }
                 })}
               />
