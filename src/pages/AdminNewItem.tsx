@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, X } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -69,15 +69,15 @@ const AdminNewItem = () => {
   }, [user, userRole, isCheckingRole, navigate]);
 
   const onSubmit = async (data: FormData) => {
-    // Convert odds from percentage to decimal
-    const oddsDecimal = Number(data.odds) / 100;
-
     const { error } = await supabase
       .from('case_items')
       .insert({
-        ...data,
+        name: data.name,
         value: Number(data.value),
-        odds: oddsDecimal, // Store as decimal in database
+        odds: Number(data.odds) / 100, // Convert from percentage to decimal
+        rarity: data.rarity,
+        image_url: data.image_url,
+        case_id: data.case_id,
       });
 
     if (error) {

@@ -49,7 +49,12 @@ const AdminNewCase = () => {
   const onSubmit = async (data: FormData) => {
     const { error } = await supabase
       .from('cases')
-      .insert([data]);
+      .insert([{
+        name: data.name,
+        price: Number(data.price),
+        image_url: data.image_url,
+        category: data.category
+      }]);
 
     if (error) {
       toast({
