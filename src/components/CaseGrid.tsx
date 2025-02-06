@@ -53,9 +53,11 @@ export const CaseGrid = () => {
     }
   };
 
-  const handleCloseModal = () => {
-    setSelectedCase(null);
-    setIsBattleMode(false);
+  const handleOpenChange = (open: boolean) => {
+    if (!open) {
+      setSelectedCase(null);
+      setIsBattleMode(false);
+    }
   };
 
   if (error) {
@@ -117,7 +119,7 @@ export const CaseGrid = () => {
       {selectedCase && (
         <CaseOpeningModal
           isOpen={!!selectedCase}
-          onClose={handleCloseModal}
+          onOpenChange={handleOpenChange}
           caseData={selectedCase}
           isBattleMode={isBattleMode}
         />
