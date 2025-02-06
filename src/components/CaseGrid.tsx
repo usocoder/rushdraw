@@ -107,7 +107,7 @@ export const CaseGrid = () => {
               id={case_.id}
               name={case_.name}
               price={case_.price}
-              image={case_.image_url}
+              image={case_.image}
               bestDrop={case_.best_drop}
               category={case_.category}
               items={case_.items}
