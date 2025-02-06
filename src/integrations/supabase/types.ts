@@ -176,6 +176,27 @@ export type Database = {
         }
         Relationships: []
       }
+      commission_tiers: {
+        Row: {
+          commission_rate: number
+          created_at: string
+          id: string
+          wager_requirement: number
+        }
+        Insert: {
+          commission_rate: number
+          created_at?: string
+          id?: string
+          wager_requirement: number
+        }
+        Update: {
+          commission_rate?: number
+          created_at?: string
+          id?: string
+          wager_requirement?: number
+        }
+        Relationships: []
+      }
       daily_rewards: {
         Row: {
           case_id: string | null
@@ -238,6 +259,7 @@ export type Database = {
           created_at: string
           id: string
           referral_code_used: string | null
+          total_wagered: number | null
           updated_at: string
           username: string | null
         }
@@ -246,6 +268,7 @@ export type Database = {
           created_at?: string
           id: string
           referral_code_used?: string | null
+          total_wagered?: number | null
           updated_at?: string
           username?: string | null
         }
@@ -254,6 +277,7 @@ export type Database = {
           created_at?: string
           id?: string
           referral_code_used?: string | null
+          total_wagered?: number | null
           updated_at?: string
           username?: string | null
         }
@@ -412,6 +436,12 @@ export type Database = {
           success: boolean
           message: string
         }[]
+      }
+      get_referral_commission_rate: {
+        Args: {
+          user_id: string
+        }
+        Returns: number
       }
       increment_balance: {
         Args: {
