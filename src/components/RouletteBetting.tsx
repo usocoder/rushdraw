@@ -28,6 +28,7 @@ export const RouletteBetting = ({
   const [currentGame, setCurrentGame] = useState<RouletteGame | null>(null);
   const [timeLeft, setTimeLeft] = useState(20);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [gameHistory, setGameHistory] = useState<string[]>([]);
   const { toast } = useToast();
   const { balance, createTransaction } = useBalance();
   const { user } = useBrowserAuth();
@@ -51,7 +52,7 @@ export const RouletteBetting = ({
         // Create a new game if none exists
         const { data: newGame, error: createError } = await supabase
           .from('roulette_games')
-          .insert([{}])
+          .insert([{ start_time: new Date().toISOString() }])
           .select()
           .single();
         
@@ -61,14 +62,17 @@ export const RouletteBetting = ({
         }
         
         setCurrentGame(newGame);
+        setTimeLeft(20);
       } else {
         setCurrentGame(game);
-        // Calculate time left
-        const startTime = new Date(game.start_time).getTime();
-        const now = new Date().getTime();
-        const elapsed = Math.floor((now - startTime) / 1000);
-        const remaining = Math.max(0, 20 - elapsed);
-        setTimeLeft(remaining);
+        // Calculate time left only if game has started
+        if (game.start_time) {
+          const startTime = new Date(game.start_time).getTime();
+          const now = new Date().getTime();
+          const elapsed = Math.floor((now - startTime) / 1000);
+          const remaining = Math.max(0, 20 - elapsed);
+          setTimeLeft(remaining);
+        }
       }
     };
 
@@ -86,7 +90,9 @@ export const RouletteBetting = ({
         },
         (payload) => {
           console.log('Game update:', payload);
-          if (payload.new && (payload.new as RouletteGame).result) {
+          const game = payload.new as RouletteGame;
+          if (game.result) {
+            setGameHistory(prev => [game.result, ...prev].slice(0, 10));
             // Start new game after 3 seconds
             setTimeout(() => {
               fetchCurrentGame();
@@ -102,15 +108,20 @@ export const RouletteBetting = ({
   }, []);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 0) return 20;
-        return prev - 1;
-      });
-    }, 1000);
+    let timer: NodeJS.Timeout;
+    if (currentGame?.start_time && timeLeft > 0) {
+      timer = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 0) return 20;
+          return prev - 1;
+        });
+      }, 1000);
+    }
 
-    return () => clearInterval(timer);
-  }, []);
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [currentGame?.start_time, timeLeft]);
 
   const handleBet = async () => {
     if (!user || !selectedColor || !betAmount || !currentGame) return;
@@ -171,12 +182,34 @@ export const RouletteBetting = ({
 
         <div className="grid gap-4 py-4">
           <div className="text-center">
-            <div className="text-2xl font-bold mb-2">
-              {timeLeft} seconds
-            </div>
-            <div className="text-sm text-muted-foreground">
-              until next roll
-            </div>
+            {currentGame?.start_time ? (
+              <>
+                <div className="text-2xl font-bold mb-2">
+                  {timeLeft} seconds
+                </div>
+                <div className="text-sm text-muted-foreground">
+                  until next roll
+                </div>
+              </>
+            ) : (
+              <div className="text-sm text-muted-foreground">
+                Waiting for game to start...
+              </div>
+            )}
+          </div>
+
+          {/* Game History */}
+          <div className="flex gap-1 overflow-x-auto p-2 bg-black/10 rounded-lg">
+            {gameHistory.map((result, i) => (
+              <div
+                key={i}
+                className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm shrink-0
+                  ${result === 'green' ? 'bg-green-600' : 
+                    result === 'red' ? 'bg-red-600' : 'bg-black'}`}
+              >
+                {result === 'green' ? '14x' : '2x'}
+              </div>
+            ))}
           </div>
 
           <div className="grid grid-cols-3 gap-2">
