@@ -24,22 +24,27 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
   const { toast } = useToast();
 
   const fetchBalance = async () => {
-    if (!user) return;
+    if (!user) {
+      setBalance(0);
+      setLoading(false);
+      return;
+    }
     try {
       console.log('Fetching balance for user:', user.id);
       const { data, error } = await supabase
         .from('balances')
         .select('amount')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching balance:', error);
         throw error;
       }
       
-      console.log('Fetched balance:', data.amount);
-      setBalance(data.amount);
+      const newBalance = data?.amount || 0;
+      console.log('Fetched balance:', newBalance);
+      setBalance(newBalance);
     } catch (error) {
       console.error('Error fetching balance:', error);
       toast({
@@ -136,6 +141,9 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
         supabase.removeChannel(transactionsChannel);
         supabase.removeChannel(balancesChannel);
       };
+    } else {
+      setBalance(0);
+      setLoading(false);
     }
   }, [user]);
 
