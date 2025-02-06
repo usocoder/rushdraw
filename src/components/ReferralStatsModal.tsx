@@ -38,14 +38,38 @@ export const ReferralStatsModal = ({ isOpen, onOpenChange }: Props) => {
   }, [user]);
 
   const fetchUserWagered = async () => {
-    const { data } = await supabase
-      .from('profiles')
-      .select('total_wagered')
-      .eq('id', user?.id)
-      .single();
-    
-    if (data) {
-      setUserWagered(data.total_wagered || 0);
+    try {
+      // First try to get existing profile
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('total_wagered')
+        .eq('id', user?.id)
+        .maybeSingle();
+      
+      if (profile) {
+        setUserWagered(profile.total_wagered || 0);
+      } else if (user) {
+        // Create profile if it doesn't exist
+        const { data: newProfile } = await supabase
+          .from('profiles')
+          .insert([{ 
+            id: user.id,
+            total_wagered: 0
+          }])
+          .select('total_wagered')
+          .maybeSingle();
+          
+        if (newProfile) {
+          setUserWagered(newProfile.total_wagered || 0);
+        }
+      }
+    } catch (error) {
+      console.error('Error fetching user wagered:', error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch wagering information",
+        variant: "destructive",
+      });
     }
   };
 
