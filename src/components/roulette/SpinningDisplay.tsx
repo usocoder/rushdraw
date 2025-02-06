@@ -22,7 +22,7 @@ export const SpinningDisplay = ({
       spinInterval = setInterval(() => {
         setCurrentSpinDisplay(options[currentIndex % options.length]);
         currentIndex++;
-      }, 150); // Slightly faster spinning
+      }, 150);
     }
 
     return () => {

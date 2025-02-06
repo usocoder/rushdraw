@@ -52,7 +52,7 @@ export const RouletteBetting = ({
       if (!game) {
         const { data: newGame, error: createError } = await supabase
           .from('roulette_games')
-          .insert([{ start_time: null }])
+          .insert([{ start_time: new Date().toISOString() }])
           .select()
           .single();
         
@@ -84,18 +84,23 @@ export const RouletteBetting = ({
           const game = payload.new as RouletteGame;
           
           if (game.result) {
-            // Stop spinning after a short delay to show the result
+            setSpinResult(game.result);
+            
+            // Add result to history
+            setGameHistory(prev => [game.result, ...prev].slice(0, 10));
+            
+            // Stop spinning after showing the result
             setTimeout(() => {
               setIsSpinning(false);
-              setSpinResult(game.result);
-              setGameHistory(prev => [game.result, ...prev].slice(0, 10));
+              
+              // Start new game after showing result
+              setTimeout(() => {
+                fetchCurrentGame();
+                setSpinResult(null);
+                setSelectedColor(null);
+                setBetAmount("");
+              }, 3000);
             }, 2000);
-
-            // Start new game after showing result
-            setTimeout(() => {
-              fetchCurrentGame();
-              setSpinResult(null);
-            }, 5000);
           }
         }
       )
@@ -150,8 +155,6 @@ export const RouletteBetting = ({
         description: `You bet $${amount} on ${selectedColor}`,
       });
 
-      setBetAmount("");
-      setSelectedColor(null);
     } catch (error: any) {
       console.error('Error placing bet:', error);
       toast({
