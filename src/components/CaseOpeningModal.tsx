@@ -38,6 +38,7 @@ export const CaseOpeningModal = ({
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
+  // Reset all states when modal closes
   useEffect(() => {
     if (!isOpen) {
       setIsSpinning(false);
