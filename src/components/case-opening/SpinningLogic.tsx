@@ -1,14 +1,18 @@
 import { useState, useEffect } from "react";
 import { CaseItem } from "@/types/case";
 
-export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onComplete: (item: CaseItem) => void) => {
+export const useSpinningLogic = (
+  items: CaseItem[],
+  isSpinning: boolean,
+  onComplete: (item: CaseItem) => void
+) => {
   const [spinItems, setSpinItems] = useState<CaseItem[]>([]);
   const [spinSpeed, setSpinSpeed] = useState(20);
   const [finalItem, setFinalItem] = useState<CaseItem | null>(null);
   const [isRevealing, setIsRevealing] = useState(false);
 
   useEffect(() => {
-    if (isSpinning) {
+    if (isSpinning && items && items.length > 0) {
       // Reset states
       setFinalItem(null);
       setIsRevealing(false);
@@ -61,7 +65,7 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
       setTimeout(() => {
         onComplete(winner);
       }, spinDuration + revealDelay);
-    } else {
+    } else if (!isSpinning) {
       // Reset states when not spinning
       setSpinItems([]);
       setSpinSpeed(20);
