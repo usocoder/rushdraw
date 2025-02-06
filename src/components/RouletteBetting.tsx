@@ -1,13 +1,12 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "./ui/dialog";
 import { useState, useEffect } from "react";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
-import { Label } from "./ui/label";
 import { useToast } from "./ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useBalance } from "@/contexts/BalanceContext";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
-import { Loader2 } from "lucide-react";
+import { SpinningDisplay } from "./roulette/SpinningDisplay";
+import { GameHistory } from "./roulette/GameHistory";
+import { BettingControls } from "./roulette/BettingControls";
 
 interface RouletteGame {
   id: string;
@@ -34,26 +33,6 @@ export const RouletteBetting = ({
   const { toast } = useToast();
   const { balance, createTransaction } = useBalance();
   const { user } = useBrowserAuth();
-
-  // Spinning animation effect
-  useEffect(() => {
-    let spinInterval: NodeJS.Timeout;
-    if (isSpinning) {
-      const options = ["red", "black", "green", "red", "black", "red", "black", "green"];
-      let currentIndex = 0;
-      
-      spinInterval = setInterval(() => {
-        setCurrentSpinDisplay(options[currentIndex % options.length]);
-        currentIndex++;
-      }, 200); // Adjust speed of spinning here
-    }
-
-    return () => {
-      if (spinInterval) {
-        clearInterval(spinInterval);
-      }
-    };
-  }, [isSpinning]);
 
   useEffect(() => {
     const fetchCurrentGame = async () => {
@@ -142,11 +121,9 @@ export const RouletteBetting = ({
 
     setIsProcessing(true);
     try {
-      // Create transaction first
       const success = await createTransaction('case_open', amount);
       if (!success) throw new Error("Failed to create transaction");
 
-      // Place bet and start game
       const { error: betError } = await supabase
         .from('roulette_bets')
         .insert({
@@ -158,11 +135,9 @@ export const RouletteBetting = ({
 
       if (betError) throw betError;
 
-      // Start spinning animation
       setIsSpinning(true);
       setSpinResult(null);
 
-      // Update game start time
       const { error: startError } = await supabase
         .from('roulette_games')
         .update({ start_time: new Date().toISOString() })
@@ -199,95 +174,25 @@ export const RouletteBetting = ({
 
         <div className="grid gap-4 py-4">
           <div className="text-center">
-            {isSpinning ? (
-              <div className={`text-2xl font-bold mb-2 animate-pulse ${
-                currentSpinDisplay === 'green' ? 'text-green-600' : 
-                currentSpinDisplay === 'red' ? 'text-red-600' : 'text-black'
-              }`}>
-                {currentSpinDisplay.toUpperCase()} {currentSpinDisplay === 'green' ? '14x' : '2x'}
-              </div>
-            ) : spinResult ? (
-              <div className={`text-2xl font-bold mb-2 ${
-                spinResult === 'green' ? 'text-green-600' : 
-                spinResult === 'red' ? 'text-red-600' : 'text-black'
-              }`}>
-                {spinResult.toUpperCase()} {spinResult === 'green' ? '14x' : '2x'}!
-              </div>
-            ) : (
-              <div className="text-sm text-muted-foreground">
-                Place your bet to start the game
-              </div>
-            )}
-          </div>
-
-          {/* Game History */}
-          <div className="flex gap-1 overflow-x-auto p-2 bg-black/10 rounded-lg">
-            {gameHistory.map((result, i) => (
-              <div
-                key={i}
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-sm shrink-0
-                  ${result === 'green' ? 'bg-green-600' : 
-                    result === 'red' ? 'bg-red-600' : 'bg-black'}`}
-              >
-                {result === 'green' ? '14x' : '2x'}
-              </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-3 gap-2">
-            <Button
-              className="bg-red-600 hover:bg-red-700"
-              onClick={() => setSelectedColor("red")}
-              variant={selectedColor === "red" ? "default" : "outline"}
-              disabled={isSpinning}
-            >
-              Red (2x)
-            </Button>
-            <Button
-              className="bg-black hover:bg-gray-900"
-              onClick={() => setSelectedColor("black")}
-              variant={selectedColor === "black" ? "default" : "outline"}
-              disabled={isSpinning}
-            >
-              Black (2x)
-            </Button>
-            <Button
-              className="bg-green-600 hover:bg-green-700"
-              onClick={() => setSelectedColor("green")}
-              variant={selectedColor === "green" ? "default" : "outline"}
-              disabled={isSpinning}
-            >
-              Green (14x)
-            </Button>
-          </div>
-
-          <div className="grid gap-2">
-            <Label htmlFor="betAmount">Bet Amount</Label>
-            <Input
-              id="betAmount"
-              type="number"
-              min="0"
-              step="0.01"
-              value={betAmount}
-              onChange={(e) => setBetAmount(e.target.value)}
-              placeholder="Enter amount..."
-              disabled={isSpinning}
+            <SpinningDisplay
+              isSpinning={isSpinning}
+              spinResult={spinResult}
+              currentSpinDisplay={currentSpinDisplay}
+              setCurrentSpinDisplay={setCurrentSpinDisplay}
             />
           </div>
 
-          <Button
-            onClick={handleBet}
-            disabled={isProcessing || !selectedColor || !betAmount || isSpinning}
-          >
-            {isProcessing ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Processing
-              </>
-            ) : (
-              `Place Bet on ${selectedColor || "..."}`
-            )}
-          </Button>
+          <GameHistory gameHistory={gameHistory} />
+
+          <BettingControls
+            selectedColor={selectedColor}
+            setSelectedColor={setSelectedColor}
+            betAmount={betAmount}
+            setBetAmount={setBetAmount}
+            isProcessing={isProcessing}
+            isSpinning={isSpinning}
+            handleBet={handleBet}
+          />
         </div>
       </DialogContent>
     </Dialog>
