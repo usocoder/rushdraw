@@ -6,9 +6,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "./ui/skeleton";
 import { Button } from "./ui/button";
 import { Swords } from "lucide-react";
+import { CaseOpeningModal } from "./CaseOpeningModal";
 
 export const CaseGrid = () => {
   const [activeFilter, setActiveFilter] = useState("all");
+  const [selectedCase, setSelectedCase] = useState<any>(null);
+  const [isBattleMode, setIsBattleMode] = useState(false);
 
   const { data: cases, isLoading, error } = useQuery({
     queryKey: ['cases'],
@@ -42,6 +45,19 @@ export const CaseGrid = () => {
     return case_.category === activeFilter;
   });
 
+  const handleCreateBattle = () => {
+    // Select the first available case for battle
+    if (cases && cases.length > 0) {
+      setSelectedCase(cases[0]);
+      setIsBattleMode(true);
+    }
+  };
+
+  const handleCloseModal = () => {
+    setSelectedCase(null);
+    setIsBattleMode(false);
+  };
+
   if (error) {
     return (
       <div className="py-12 px-6 lg:px-8 text-center">
@@ -58,7 +74,7 @@ export const CaseGrid = () => {
           variant="outline"
           size="lg"
           className="flex items-center gap-2"
-          onClick={() => {/* Battle functionality will be implemented later */}}
+          onClick={handleCreateBattle}
         >
           <Swords className="h-5 w-5" />
           Create Battle
@@ -97,6 +113,15 @@ export const CaseGrid = () => {
           ))
         )}
       </div>
+
+      {selectedCase && (
+        <CaseOpeningModal
+          isOpen={!!selectedCase}
+          onClose={handleCloseModal}
+          caseData={selectedCase}
+          isBattleMode={isBattleMode}
+        />
+      )}
     </div>
   );
 };
