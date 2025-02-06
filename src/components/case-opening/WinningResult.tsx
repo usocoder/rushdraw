@@ -5,11 +5,10 @@ import { Trophy, Sparkles } from "lucide-react";
 interface WinningResultProps {
   item: CaseItem;
   casePrice: number;
-  isFreePlay?: boolean;
   hasRushDraw?: boolean;
 }
 
-export const WinningResult = ({ item, casePrice, isFreePlay = false, hasRushDraw = false }: WinningResultProps) => {
+export const WinningResult = ({ item, casePrice, hasRushDraw = false }: WinningResultProps) => {
   const winAmount = casePrice * item.multiplier;
   
   return (
@@ -40,43 +39,27 @@ export const WinningResult = ({ item, casePrice, isFreePlay = false, hasRushDraw
                 : ''
             }`}
           />
-          {!isFreePlay && (
-            <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.5 }}
-              className="absolute -top-2 -right-2"
-            >
-              {hasRushDraw && item.rarity === 'legendary' ? (
-                <Sparkles className="w-8 h-8 text-yellow-500 animate-pulse" />
-              ) : (
-                <Trophy className="w-8 h-8 text-yellow-500" />
-              )}
-            </motion.div>
-          )}
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.5 }}
+            className="absolute -top-2 -right-2"
+          >
+            {hasRushDraw && item.rarity === 'legendary' ? (
+              <Sparkles className="w-8 h-8 text-yellow-500 animate-pulse" />
+            ) : (
+              <Trophy className="w-8 h-8 text-yellow-500" />
+            )}
+          </motion.div>
         </div>
       </motion.div>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.4 }}
+        className="text-2xl font-bold text-primary"
       >
-        <h3 className="text-xl font-bold mb-2">
-          {isFreePlay ? "You could have won: " : "You won: "}{item.name}!
-          {hasRushDraw && item.rarity === 'legendary' && (
-            <span className="ml-2 text-yellow-500">
-              (Rush Draw!)
-            </span>
-          )}
-        </h3>
-        <p className="text-lg text-primary">
-          Value: ${winAmount.toFixed(2)}
-        </p>
-        {isFreePlay && (
-          <p className="mt-2 text-muted-foreground">
-            This was just a simulation. Try opening the case for real to win!
-          </p>
-        )}
+        ${winAmount.toFixed(2)}
       </motion.div>
     </motion.div>
   );
