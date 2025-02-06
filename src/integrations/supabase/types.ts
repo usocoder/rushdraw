@@ -237,6 +237,7 @@ export type Database = {
           balance: number | null
           created_at: string
           id: string
+          referral_code_used: string | null
           updated_at: string
           username: string | null
         }
@@ -244,6 +245,7 @@ export type Database = {
           balance?: number | null
           created_at?: string
           id: string
+          referral_code_used?: string | null
           updated_at?: string
           username?: string | null
         }
@@ -251,8 +253,60 @@ export type Database = {
           balance?: number | null
           created_at?: string
           id?: string
+          referral_code_used?: string | null
           updated_at?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          times_used: number | null
+          total_earnings: number | null
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          times_used?: number | null
+          total_earnings?: number | null
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          times_used?: number | null
+          total_earnings?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          code_used: string
+          created_at: string
+          id: string
+          referred_user_id: string
+          referrer_id: string
+        }
+        Insert: {
+          code_used: string
+          created_at?: string
+          id?: string
+          referred_user_id: string
+          referrer_id: string
+        }
+        Update: {
+          code_used?: string
+          created_at?: string
+          id?: string
+          referred_user_id?: string
+          referrer_id?: string
         }
         Relationships: []
       }
