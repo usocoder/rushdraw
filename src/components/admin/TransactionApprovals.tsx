@@ -26,7 +26,6 @@ export const TransactionApprovals = () => {
     queryFn: async () => {
       console.log('Fetching pending transactions...');
       
-      // First, fetch transactions
       const { data: transactions, error: transactionError } = await supabase
         .from('transactions')
         .select('*')
@@ -42,7 +41,6 @@ export const TransactionApprovals = () => {
         return [];
       }
 
-      // Then, fetch profiles for these transactions
       const { data: profiles, error: profileError } = await supabase
         .from('profiles')
         .select('id, username')
@@ -53,7 +51,6 @@ export const TransactionApprovals = () => {
         throw profileError;
       }
 
-      // Combine the data
       const transformedData: TransactionWithProfile[] = transactions.map(transaction => ({
         ...transaction,
         username: profiles?.find(p => p.id === transaction.user_id)?.username || 'Unknown User'
@@ -64,7 +61,6 @@ export const TransactionApprovals = () => {
     },
   });
 
-  // Handle transaction approval or rejection
   const handleApproval = async (transactionId: string, approve: boolean) => {
     if (isProcessing) return;
     setIsProcessing(true);
@@ -84,31 +80,49 @@ export const TransactionApprovals = () => {
 
       // If approved, update the user's balance first
       if (approve) {
-        // First get current balance
+        // Get current balance
         const { data: profileData, error: profileFetchError } = await supabase
           .from('profiles')
-          .select('balance')
+          .select('balance, referral_code_used')
           .eq('id', transaction.user_id)
           .single();
 
         if (profileFetchError) throw profileFetchError;
 
         const currentBalance = profileData?.balance || 0;
-        const newBalance = currentBalance + transaction.amount;
+        let finalAmount = transaction.amount;
+
+        // If there's a referral code, apply the bonus
+        if (profileData?.referral_code_used) {
+          const { data: commissionRate } = await supabase.rpc(
+            'get_referral_commission_rate',
+            { user_id: transaction.user_id }
+          );
+          
+          // Apply referral bonus (default to 10% if no specific rate)
+          const bonusRate = commissionRate || 0.10;
+          finalAmount = finalAmount * (1 + bonusRate);
+        }
 
         // Update the balance
         const { error: profileUpdateError } = await supabase
           .from('profiles')
-          .update({ balance: newBalance })
+          .update({ balance: currentBalance + finalAmount })
           .eq('id', transaction.user_id);
 
         if (profileUpdateError) throw profileUpdateError;
+
+        // Update the transaction amount to include any bonuses
+        transaction.amount = finalAmount;
       }
       
       // Then update transaction status
       const { error: updateError } = await supabase
         .from("transactions")
-        .update({ status })
+        .update({ 
+          status,
+          amount: transaction.amount // Update with potentially modified amount
+        })
         .eq("id", transactionId);
 
       if (updateError) throw updateError;
