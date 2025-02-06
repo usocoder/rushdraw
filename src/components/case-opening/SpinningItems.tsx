@@ -66,10 +66,9 @@ export const SpinningItems = ({
             initial={{ x: 0 }}
             exit={{ 
               opacity: 0,
-              x: -240,
               transition: { 
-                duration: 0.5,
-                ease: "easeInOut"
+                duration: 0.1,
+                ease: "easeOut"
               }
             }}
             style={{
@@ -86,14 +85,9 @@ export const SpinningItems = ({
                   border border-accent/20
                 `}
                 initial={{ opacity: 1 }}
-                animate={{ 
-                  opacity: !isSpinning && finalItem?.id !== item.id ? 0 : 1,
-                  scale: !isSpinning && finalItem?.id === item.id ? 1.05 : 1,
-                }}
-                transition={{
-                  duration: 0.3,
-                  ease: "easeOut"
-                }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.1 }}
               >
                 <div className="flex flex-col h-full relative p-4">
                   <div className="flex-1 flex items-center justify-center">
