@@ -437,12 +437,6 @@ export type Database = {
           message: string
         }[]
       }
-      get_referral_commission_rate: {
-        Args: {
-          user_id: string
-        }
-        Returns: number
-      }
       increment_balance: {
         Args: {
           user_id: string
