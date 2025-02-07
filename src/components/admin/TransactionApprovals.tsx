@@ -53,7 +53,10 @@ export const TransactionApprovals = () => {
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'transactions' },
-        () => refetch()
+        (payload) => {
+          console.log('Transaction change detected:', payload);
+          refetch();
+        }
       )
       .subscribe();
 
@@ -68,8 +71,8 @@ export const TransactionApprovals = () => {
 
     try {
       const status = approve ? "completed" : "rejected";
+      console.log('Updating transaction status:', { transactionId, status });
       
-      // Update transaction status
       const { error: updateError } = await supabase
         .from("transactions")
         .update({ status })
@@ -77,6 +80,8 @@ export const TransactionApprovals = () => {
 
       if (updateError) throw updateError;
 
+      console.log('Transaction status updated successfully');
+      
       toast({
         title: `Transaction ${approve ? "Approved" : "Rejected"}`,
         description: `Transaction has been ${status}.`,

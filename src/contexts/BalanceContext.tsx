@@ -100,9 +100,9 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
       console.log('Setting up real-time listeners for user:', user.id);
       fetchBalance();
 
-      // Subscribe to real-time changes on profiles table for balance updates
-      const profilesChannel = supabase
-        .channel('profile-updates')
+      // Listen for both profile and transaction updates
+      const channel = supabase
+        .channel('db-changes')
         .on(
           'postgres_changes',
           {
@@ -116,11 +116,24 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
             fetchBalance();
           }
         )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'transactions',
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            console.log('Transaction updated:', payload);
+            fetchBalance();
+          }
+        )
         .subscribe();
 
       return () => {
         console.log('Cleaning up real-time listeners');
-        supabase.removeChannel(profilesChannel);
+        supabase.removeChannel(channel);
       };
     } else {
       setBalance(0);
