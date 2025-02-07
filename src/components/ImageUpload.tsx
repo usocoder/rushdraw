@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -38,20 +39,27 @@ export const ImageUpload = ({ onUploadComplete }: ImageUploadProps) => {
     setIsUploading(true);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const { data: functionData } = await supabase.functions.invoke('upload-case-image', {
-        body: formData,
-      });
-
-      if (functionData?.url) {
-        onUploadComplete(functionData.url);
-        toast({
-          title: "Success",
-          description: "Image uploaded successfully",
+      const fileName = `${crypto.randomUUID()}.${file.name.split('.').pop()}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('case-images')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
         });
-      }
+
+      if (uploadError) throw uploadError;
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('case-images')
+        .getPublicUrl(fileName);
+
+      onUploadComplete(publicUrl);
+      
+      toast({
+        title: "Success",
+        description: "Image uploaded successfully",
+      });
     } catch (error) {
       console.error('Upload error:', error);
       toast({

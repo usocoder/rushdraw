@@ -1,9 +1,8 @@
+
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { CryptoAddressList } from "./crypto/CryptoAddressList";
 import { DepositForm } from "./crypto/DepositForm";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
-import { Alert, AlertDescription } from "./ui/alert";
-import { Percent } from "lucide-react";
 
 const CRYPTO_ADDRESSES = [
   {
@@ -47,13 +46,6 @@ export const CryptoDeposit = ({ isOpen, onOpenChange }: Props) => {
             Send crypto to one of the addresses below, then click "I've sent the crypto" to initiate the deposit process.
           </DialogDescription>
         </DialogHeader>
-
-        <Alert className="my-2">
-          <Percent className="h-4 w-4" />
-          <AlertDescription>
-            Add a referral code to get a 10% bonus on your deposit!
-          </AlertDescription>
-        </Alert>
 
         <div className="grid gap-4 py-4">
           <CryptoAddressList addresses={CRYPTO_ADDRESSES} />

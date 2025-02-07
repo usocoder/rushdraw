@@ -1,7 +1,8 @@
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -13,7 +14,6 @@ interface DepositFormProps {
 
 export const DepositForm = ({ userId, onSuccess }: DepositFormProps) => {
   const [amount, setAmount] = useState("");
-  const [referralCode, setReferralCode] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
   const { toast } = useToast();
 
@@ -38,23 +38,6 @@ export const DepositForm = ({ userId, onSuccess }: DepositFormProps) => {
       return;
     }
 
-    if (referralCode) {
-      const { data: referralData, error: referralError } = await supabase
-        .from('referral_codes')
-        .select('code')
-        .eq('code', referralCode)
-        .maybeSingle();
-
-      if (referralError || !referralData) {
-        toast({
-          title: "Invalid referral code",
-          description: "The referral code you entered is not valid",
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-
     setIsProcessing(true);
     
     try {
@@ -62,10 +45,9 @@ export const DepositForm = ({ userId, onSuccess }: DepositFormProps) => {
         .from('transactions')
         .insert({
           user_id: userId,
-          type: referralCode || 'deposit',
+          type: 'deposit',
           amount: depositAmount,
-          status: 'pending',
-          pending_amount: depositAmount
+          status: 'pending'
         });
 
       if (error) throw error;
@@ -103,21 +85,6 @@ export const DepositForm = ({ userId, onSuccess }: DepositFormProps) => {
         />
       </div>
 
-      <div className="grid gap-2">
-        <Label htmlFor="referralCode">Referral Code (Optional - 10% Bonus)</Label>
-        <Input
-          id="referralCode"
-          value={referralCode}
-          onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
-          placeholder="Enter referral code..."
-        />
-      </div>
-
-      <div className="flex items-start gap-2 text-sm text-muted-foreground">
-        <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-        <p>Only Confirm after you have completed the transfer. Once clicked, please allow up to 10 minutes for the deposit to reflect in your account.</p>
-      </div>
-
       <Button 
         onClick={handleDeposit} 
         disabled={isProcessing || !amount}
@@ -126,7 +93,7 @@ export const DepositForm = ({ userId, onSuccess }: DepositFormProps) => {
         {isProcessing ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Processing Deposit
+            Processing
           </>
         ) : (
           "Click Here To Confirm Deposit"

@@ -1,3 +1,4 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -71,6 +72,7 @@ export const TransactionApprovals = () => {
     setIsProcessing(true);
 
     try {
+      // First fetch the transaction to get its details
       const { data: transaction, error: transactionError } = await supabase
         .from("transactions")
         .select("*")
@@ -80,10 +82,8 @@ export const TransactionApprovals = () => {
       if (transactionError) throw transactionError;
       if (!transaction) throw new Error("Transaction not found");
 
-      const status = approve ? "completed" : "rejected";
-
       if (approve && transaction.type === 'deposit') {
-        // For deposits, update balance first then mark transaction as completed
+        // For deposits, update balance first
         const { data: profile, error: profileError } = await supabase
           .from('profiles')
           .select('balance')
@@ -93,15 +93,20 @@ export const TransactionApprovals = () => {
         if (profileError) throw profileError;
 
         const newBalance = (profile?.balance || 0) + transaction.amount;
+        
+        // Update the balance
         const { error: updateBalanceError } = await supabase
           .from('profiles')
           .update({ balance: newBalance })
           .eq('id', transaction.user_id);
 
         if (updateBalanceError) throw updateBalanceError;
+
+        console.log('Balance updated successfully to:', newBalance);
       }
 
-      // Update transaction status
+      // Then update transaction status
+      const status = approve ? "completed" : "rejected";
       const { error: updateError } = await supabase
         .from("transactions")
         .update({ status })
