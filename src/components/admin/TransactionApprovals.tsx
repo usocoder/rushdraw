@@ -48,6 +48,7 @@ export const TransactionApprovals = () => {
   });
 
   useEffect(() => {
+    console.log('Setting up real-time subscription...');
     const channel = supabase
       .channel('db-changes')
       .on(
@@ -61,6 +62,7 @@ export const TransactionApprovals = () => {
       .subscribe();
 
     return () => {
+      console.log('Cleaning up real-time subscription...');
       supabase.removeChannel(channel);
     };
   }, [refetch]);
@@ -76,9 +78,14 @@ export const TransactionApprovals = () => {
       const { error: updateError } = await supabase
         .from("transactions")
         .update({ status })
-        .eq("id", transactionId);
+        .eq("id", transactionId)
+        .select()
+        .single();
 
-      if (updateError) throw updateError;
+      if (updateError) {
+        console.error('Error updating transaction:', updateError);
+        throw updateError;
+      }
 
       console.log('Transaction status updated successfully');
       
@@ -87,7 +94,7 @@ export const TransactionApprovals = () => {
         description: `Transaction has been ${status}.`,
       });
 
-      refetch();
+      await refetch();
     } catch (error) {
       console.error("Error updating transaction:", error);
       toast({
