@@ -44,7 +44,7 @@ export const Footer = () => {
             Items obtained have real-world value and can be shipped to you or withdrawn as cryptocurrency following our verification process.
           </p>
           <p>
-            © {new Date().getFullYear()} RushDrop. All rights reserved. Licensed Gaming Operator: Rushdraw.com.
+            © {new Date().getFullYear()} RushDraw. All rights reserved 2025. NZBN: 9429048849333
             All transactions are processed in accordance with international gaming regulations and anti-money laundering policies.
           </p>
         </div>
