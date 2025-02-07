@@ -23,7 +23,6 @@ interface FormData {
   name: string;
   value: number;
   odds: number;
-  multiplier: number;
   rarity: string;
   image_url: string;
   case_id: string;
@@ -37,7 +36,6 @@ const AdminEditItem = () => {
   const queryClient = useQueryClient();
   const { register, handleSubmit, control, setValue, formState: { errors } } = useForm<FormData>();
 
-  // Check if user is admin
   const { data: userRole, isLoading: isCheckingRole } = useQuery({
     queryKey: ['userRole', user?.id],
     queryFn: async () => {
@@ -53,7 +51,6 @@ const AdminEditItem = () => {
     enabled: !!user,
   });
 
-  // Fetch item data
   const { data: item, isLoading: isLoadingItem } = useQuery({
     queryKey: ['item', id],
     queryFn: async () => {
@@ -69,7 +66,6 @@ const AdminEditItem = () => {
     enabled: !!id,
   });
 
-  // Fetch cases for dropdown
   const { data: cases } = useQuery({
     queryKey: ['cases'],
     queryFn: async () => {
@@ -83,29 +79,28 @@ const AdminEditItem = () => {
     },
   });
 
-  // Set form values when item data is loaded
   useEffect(() => {
     if (item) {
       setValue('name', item.name);
       setValue('value', item.value);
-      setValue('odds', item.odds);
-      setValue('multiplier', item.multiplier);
+      setValue('odds', item.odds * 100); // Convert from decimal to percentage for display
       setValue('rarity', item.rarity);
       setValue('image_url', item.image_url);
       setValue('case_id', item.case_id);
     }
   }, [item, setValue]);
 
-  // Update mutation
   const updateMutation = useMutation({
     mutationFn: async (data: FormData) => {
+      // Convert odds from percentage to decimal
+      const oddsDecimal = Number(data.odds) / 100;
+
       const { error } = await supabase
         .from('case_items')
         .update({
           ...data,
           value: Number(data.value),
-          odds: Number(data.odds),
-          multiplier: Number(data.multiplier),
+          odds: oddsDecimal, // Store as decimal in database
         })
         .eq('id', id);
 
@@ -128,7 +123,6 @@ const AdminEditItem = () => {
     },
   });
 
-  // Redirect non-admin users
   useEffect(() => {
     if (!isCheckingRole && (!user || userRole?.role !== 'admin')) {
       navigate('/');
@@ -149,9 +143,6 @@ const AdminEditItem = () => {
         <Button variant="outline" onClick={() => navigate('/admin/items')}>
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Items
-        </Button>
-        <Button variant="ghost" size="icon" onClick={() => navigate('/admin')}>
-          <X className="h-4 w-4" />
         </Button>
       </div>
 
@@ -193,31 +184,15 @@ const AdminEditItem = () => {
               <Input 
                 id="odds"
                 type="number"
-                step="0.01"
+                step="0.00001"
                 {...register("odds", { 
                   required: "Odds are required",
-                  min: { value: 0, message: "Odds must be positive" },
+                  min: { value: 0.00001, message: "Odds must be at least 0.00001%" },
                   max: { value: 100, message: "Odds cannot exceed 100%" }
                 })}
               />
               {errors.odds && (
                 <p className="text-sm text-red-500">{errors.odds.message}</p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="multiplier">Multiplier</Label>
-              <Input 
-                id="multiplier"
-                type="number"
-                step="0.01"
-                {...register("multiplier", { 
-                  required: "Multiplier is required",
-                  min: { value: 0, message: "Multiplier must be positive" }
-                })}
-              />
-              {errors.multiplier && (
-                <p className="text-sm text-red-500">{errors.multiplier.message}</p>
               )}
             </div>
 

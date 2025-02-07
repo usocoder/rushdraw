@@ -26,7 +26,13 @@ export const BrowserAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   useEffect(() => {
     // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    supabase.auth.getSession().then(({ data: { session }, error }) => {
+      if (error) {
+        console.error('Session retrieval error:', error);
+        setUser(null);
+        return;
+      }
+      
       if (session?.user) {
         setUser({
           id: session.user.id,
@@ -39,6 +45,16 @@ export const BrowserAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state changed:", event, session);
+      
+      if (event === 'TOKEN_REFRESHED') {
+        console.log('Token refreshed successfully');
+      }
+      
+      if (event === 'SIGNED_OUT') {
+        setUser(null);
+        setError(null);
+      }
+      
       if (session?.user) {
         setUser({
           id: session.user.id,
@@ -46,7 +62,7 @@ export const BrowserAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
           username: session.user.user_metadata.username || session.user.email!,
         });
         setError(null);
-      } else {
+      } else if (event !== 'SIGNED_OUT') {
         setUser(null);
       }
     });
@@ -127,6 +143,13 @@ export const BrowserAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
     try {
       const { error: signOutError } = await supabase.auth.signOut();
       if (signOutError) {
+        // Handle specific error cases
+        if (signOutError.message.includes('session_not_found') || 
+            signOutError.message.includes('refresh_token_not_found')) {
+          setUser(null);
+          setError(null);
+          return;
+        }
         setError(signOutError.message);
       } else {
         setError(null);
@@ -134,6 +157,8 @@ export const BrowserAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
       }
     } catch (err) {
       console.error('Logout error:', err);
+      // Even if there's an error, clear the local state
+      setUser(null);
       setError('An unexpected error occurred during logout');
     }
   };

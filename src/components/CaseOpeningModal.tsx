@@ -4,12 +4,11 @@ import { Case, CaseItem } from "../types/case";
 import { useBalance } from "@/contexts/BalanceContext";
 import { useToast } from "./ui/use-toast";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
-import { WinningResult } from "./case-opening/WinningResult";
-import { OpeningHeader } from "./case-opening/OpeningHeader";
 import { X } from "lucide-react";
 import { Button } from "./ui/button";
 import { ModalControls } from "./case-opening/ModalControls";
-import { BattleModalContent } from "./case-opening/BattleModalContent";
+import { OpeningHeader } from "./case-opening/OpeningHeader";
+import { CaseOpeningContent } from "./case-opening/CaseOpeningContent";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CaseOpeningModalProps {
@@ -33,13 +32,34 @@ export const CaseOpeningModal = ({
   const [opponents, setOpponents] = useState<string[]>([]);
   const [hasRushDraw, setHasRushDraw] = useState(false);
   const [battleWinner, setBattleWinner] = useState<{ player: string; item: CaseItem } | null>(null);
+  const [isResetting, setIsResetting] = useState(false);
+  
   const { balance, createTransaction } = useBalance();
   const { user } = useBrowserAuth();
   const { toast } = useToast();
   const isMobile = useIsMobile();
 
+  const resetState = () => {
+    setIsSpinning(false);
+    setFinalItem(null);
+    setIsBattleMode(false);
+    setOpponents([]);
+    setBattleWinner(null);
+    setHasRushDraw(false);
+    setIsResetting(false);
+  };
+
   useEffect(() => {
-    if (isOpen && !isFreePlay) {
+    if (!isOpen) {
+      // Add a small delay before resetting state when modal closes
+      setIsResetting(true);
+      const timeout = setTimeout(() => {
+        resetState();
+      }, 300);
+      return () => clearTimeout(timeout);
+    }
+
+    if (!isFreePlay) {
       if (!user) {
         toast({
           title: "Registration required",
@@ -69,14 +89,8 @@ export const CaseOpeningModal = ({
         onOpenChange(false);
         return;
       }
-    } else if (!isOpen) {
-      setIsSpinning(false);
-      setFinalItem(null);
-      setIsBattleMode(false);
-      setOpponents([]);
-      setBattleWinner(null);
     }
-  }, [isOpen, balance, caseData.price, user, isFreePlay]);
+  }, [isOpen, balance, caseData.price, user, isFreePlay, onOpenChange, toast]);
 
   const handleSpinComplete = async (item: CaseItem, player: string) => {
     if (isBattleMode) {
@@ -97,9 +111,15 @@ export const CaseOpeningModal = ({
         await createTransaction('case_win', winAmount);
       }
     }
+    setIsSpinning(false);
   };
 
   const startSpinning = async () => {
+    if (isSpinning || isResetting) return;
+    
+    setFinalItem(null);
+    setBattleWinner(null);
+    
     if (!isFreePlay) {
       const success = await createTransaction('case_open', caseData.price);
       if (!success) {
@@ -111,6 +131,8 @@ export const CaseOpeningModal = ({
   };
 
   const startBattle = async (numOpponents: number) => {
+    if (isSpinning || isResetting) return;
+    
     const botNames = ["Bot_Alpha", "Bot_Beta", "Bot_Gamma", "Bot_Delta"];
     const selectedOpponents = botNames.slice(0, numOpponents);
     setOpponents(selectedOpponents);
@@ -167,24 +189,16 @@ export const CaseOpeningModal = ({
           onBattleStart={startBattle}
         />
 
-        {!isBattleMode && finalItem && !isSpinning && (
-          <WinningResult 
-            item={finalItem}
-            casePrice={caseData.price}
-            isFreePlay={isFreePlay}
-            hasRushDraw={hasRushDraw}
-          />
-        )}
-
-        <BattleModalContent 
+        <CaseOpeningContent 
           caseData={caseData}
           isSpinning={isSpinning}
           isBattleMode={isBattleMode}
+          finalItem={finalItem}
           opponents={opponents}
           battleWinner={battleWinner}
           onSpinComplete={handleSpinComplete}
           isFreePlay={isFreePlay}
-          casePrice={caseData.price}
+          hasRushDraw={hasRushDraw}
           onWin={handleWin}
         />
       </DialogContent>

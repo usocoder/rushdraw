@@ -111,6 +111,7 @@ export const Hero = () => {
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
             Experience the thrill of opening cases and winning incredible rewards. Weekly $10,000 jackpot. support@rushdraw.com
           </p>
+          
           <div className="flex justify-center gap-4">
             {user ? (
               <>

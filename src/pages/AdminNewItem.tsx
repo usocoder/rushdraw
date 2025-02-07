@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft, X } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -23,7 +23,6 @@ interface FormData {
   name: string;
   value: number;
   odds: number;
-  multiplier: number;
   rarity: string;
   image_url: string;
   case_id: string;
@@ -73,10 +72,12 @@ const AdminNewItem = () => {
     const { error } = await supabase
       .from('case_items')
       .insert({
-        ...data,
+        name: data.name,
         value: Number(data.value),
-        odds: Number(data.odds),
-        multiplier: Number(data.multiplier),
+        odds: Number(data.odds) / 100, // Convert from percentage to decimal
+        rarity: data.rarity,
+        image_url: data.image_url,
+        case_id: data.case_id,
       });
 
     if (error) {
@@ -101,22 +102,17 @@ const AdminNewItem = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <Button variant="outline" onClick={() => navigate('/admin/items')}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Items
-        </Button>
-        <Button variant="ghost" size="icon" onClick={() => navigate('/admin')}>
-          <X className="h-4 w-4" />
-        </Button>
-      </div>
+      <Button variant="outline" onClick={() => navigate('/admin/items')} className="mb-8">
+        <ArrowLeft className="mr-2 h-4 w-4" />
+        Back to Items
+      </Button>
 
       <Card>
         <CardHeader>
           <CardTitle>Create New Item</CardTitle>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
             <div>
               <Label htmlFor="name">Name</Label>
               <Input 
@@ -149,31 +145,15 @@ const AdminNewItem = () => {
               <Input 
                 id="odds"
                 type="number"
-                step="0.01"
+                step="0.00001"
                 {...register("odds", { 
                   required: "Odds are required",
-                  min: { value: 0, message: "Odds must be positive" },
+                  min: { value: 0.00001, message: "Odds must be at least 0.00001%" },
                   max: { value: 100, message: "Odds cannot exceed 100%" }
                 })}
               />
               {errors.odds && (
                 <p className="text-sm text-red-500">{errors.odds.message}</p>
-              )}
-            </div>
-
-            <div>
-              <Label htmlFor="multiplier">Multiplier</Label>
-              <Input 
-                id="multiplier"
-                type="number"
-                step="0.01"
-                {...register("multiplier", { 
-                  required: "Multiplier is required",
-                  min: { value: 0, message: "Multiplier must be positive" }
-                })}
-              />
-              {errors.multiplier && (
-                <p className="text-sm text-red-500">{errors.multiplier.message}</p>
               )}
             </div>
 
@@ -236,7 +216,9 @@ const AdminNewItem = () => {
               )}
             </div>
 
-            <Button type="submit">Create Item</Button>
+            <Button type="submit" className="w-full">
+              Create Item
+            </Button>
           </form>
         </CardContent>
       </Card>

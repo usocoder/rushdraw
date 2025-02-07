@@ -39,7 +39,7 @@ export type Database = {
           created_at: string
           id: string
           image_url: string
-          multiplier: number
+          multiplier: number | null
           name: string
           odds: number
           rarity: string
@@ -51,7 +51,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url: string
-          multiplier: number
+          multiplier?: number | null
           name: string
           odds: number
           rarity: string
@@ -63,7 +63,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string
-          multiplier?: number
+          multiplier?: number | null
           name?: string
           odds?: number
           rarity?: string
@@ -124,7 +124,7 @@ export type Database = {
       }
       cases: {
         Row: {
-          best_drop: string
+          best_drop: string | null
           category: string
           created_at: string
           id: string
@@ -134,7 +134,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          best_drop: string
+          best_drop?: string | null
           category: string
           created_at?: string
           id?: string
@@ -144,7 +144,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          best_drop?: string
+          best_drop?: string | null
           category?: string
           created_at?: string
           id?: string

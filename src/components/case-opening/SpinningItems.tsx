@@ -10,6 +10,7 @@ interface SpinningItemsProps {
   hasRushDraw?: boolean;
   isOpponent?: boolean;
   playerName?: string;
+  isRevealing?: boolean;
 }
 
 export const SpinningItems = ({ 
@@ -19,7 +20,8 @@ export const SpinningItems = ({
   finalItem, 
   hasRushDraw, 
   isOpponent,
-  playerName 
+  playerName,
+  isRevealing
 }: SpinningItemsProps) => {
   const isMobile = useIsMobile();
   
@@ -29,14 +31,14 @@ export const SpinningItems = ({
     const itemWidth = isMobile ? 160 : 200;
     const containerWidth = window.innerWidth;
     const centerPosition = (containerWidth / 2) - (itemWidth / 2);
-    const finalPosition = -8000;
+    const finalPosition = -((items.length - 1) * itemWidth);
     const adjustedPosition = finalPosition + centerPosition;
 
     return {
       x: [0, adjustedPosition],
       transition: {
         duration: spinSpeed * 0.5,
-        ease: [0.64, 0.0, 0.35, 1],
+        ease: isRevealing ? "easeOut" : "linear",
         times: [0, 1],
       }
     };
@@ -59,65 +61,52 @@ export const SpinningItems = ({
       </div>
 
       <AnimatePresence mode="wait">
-        {(isSpinning || !finalItem) && (
-          <motion.div
-            className="flex items-center absolute top-1/2 -translate-y-1/2"
-            animate={getSpinningAnimation()}
-            initial={{ x: 0 }}
-            exit={{ 
-              opacity: 0,
-              transition: { 
-                duration: 0.1,
-                ease: "easeOut"
-              }
-            }}
-            style={{
-              willChange: 'transform',
-              translateY: '-50%',
-            }}
-          >
-            {items.map((item, index) => (
-              <motion.div
-                key={`${item.id}-${index}`}
-                className={`
-                  flex-shrink-0 ${itemSize} mx-1 rounded-lg
-                  ${!isSpinning && finalItem?.id === item.id ? "bg-accent/10" : "bg-accent/5"}
-                  border border-accent/20
-                `}
-                initial={{ opacity: 1 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                transition={{ duration: 0.1 }}
-              >
-                <div className="flex flex-col h-full relative p-4">
-                  <div className="flex-1 flex items-center justify-center">
-                    <img 
-                      src={item.image}
-                      alt={item.name}
-                      className={`
-                        ${imageSize} object-contain
-                        ${!isSpinning && finalItem?.id === item.id ? 'scale-105' : ''}
-                      `}
-                      loading="eager"
-                      style={{ imageRendering: 'crisp-edges' }}
-                    />
-                  </div>
-                  
-                  <div className="mt-2 text-center">
-                    <h3 className="text-xs sm:text-sm font-semibold truncate">
-                      {item.name}
-                    </h3>
-                    <p className={`text-base sm:text-lg font-bold ${
-                      item.rarity === 'legendary' ? 'text-yellow-500' : 'text-primary'
-                    }`}>
-                      {item.multiplier}x
-                    </p>
-                  </div>
+        <motion.div
+          className="flex items-center absolute top-1/2 -translate-y-1/2"
+          animate={getSpinningAnimation()}
+          initial={{ x: 0 }}
+          style={{
+            willChange: 'transform',
+            translateY: '-50%',
+          }}
+        >
+          {items.map((item, index) => (
+            <motion.div
+              key={`${item.id}-${index}`}
+              className={`
+                flex-shrink-0 ${itemSize} mx-1 rounded-lg
+                ${!isSpinning && finalItem?.id === item.id ? "bg-accent/10" : "bg-accent/5"}
+                border border-accent/20
+              `}
+            >
+              <div className="flex flex-col h-full relative p-4">
+                <div className="flex-1 flex items-center justify-center">
+                  <img 
+                    src={item.image}
+                    alt={item.name}
+                    className={`
+                      ${imageSize} object-contain
+                      ${!isSpinning && finalItem?.id === item.id ? 'scale-105' : ''}
+                    `}
+                    loading="eager"
+                    style={{ imageRendering: 'crisp-edges' }}
+                  />
                 </div>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
+                
+                <div className="mt-2 text-center">
+                  <h3 className="text-xs sm:text-sm font-semibold truncate">
+                    {item.name}
+                  </h3>
+                  <p className={`text-base sm:text-lg font-bold ${
+                    item.rarity === 'legendary' ? 'text-yellow-500' : 'text-primary'
+                  }`}>
+                    {item.multiplier}x
+                  </p>
+                </div>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
       </AnimatePresence>
     </div>
   );
