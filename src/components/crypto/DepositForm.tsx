@@ -1,8 +1,7 @@
-
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -47,7 +46,8 @@ export const DepositForm = ({ userId, onSuccess }: DepositFormProps) => {
           user_id: userId,
           type: 'deposit',
           amount: depositAmount,
-          status: 'pending'
+          status: 'pending',
+          pending_amount: depositAmount
         });
 
       if (error) throw error;
@@ -85,6 +85,11 @@ export const DepositForm = ({ userId, onSuccess }: DepositFormProps) => {
         />
       </div>
 
+      <div className="flex items-start gap-2 text-sm text-muted-foreground">
+        <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
+        <p>Only Confirm after you have completed the transfer. Once clicked, please allow up to 10 minutes for the deposit to reflect in your account.</p>
+      </div>
+
       <Button 
         onClick={handleDeposit} 
         disabled={isProcessing || !amount}
@@ -93,7 +98,7 @@ export const DepositForm = ({ userId, onSuccess }: DepositFormProps) => {
         {isProcessing ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Processing
+            Processing Deposit
           </>
         ) : (
           "Click Here To Confirm Deposit"

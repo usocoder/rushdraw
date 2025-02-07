@@ -36,6 +36,7 @@ export const RewardsSection = () => {
   const { data: userProgress, refetch: refetchProgress } = useQuery({
     queryKey: ['userProgress', user?.id],
     queryFn: async () => {
+      // First try to get existing progress
       const { data, error } = await supabase
         .from('user_progress')
         .select('*')
@@ -44,6 +45,7 @@ export const RewardsSection = () => {
       
       if (error) throw error;
       
+      // If no progress exists, initialize it
       if (!data && user) {
         const { data: newProgress, error: insertError } = await supabase
           .from('user_progress')
@@ -95,10 +97,7 @@ export const RewardsSection = () => {
         .order('level_required', { ascending: true });
       
       if (error) throw error;
-      return (data || []).map(reward => ({
-        ...reward,
-        case: reward.case[0]
-      })) as DailyReward[];
+      return data as DailyReward[];
     },
   });
 

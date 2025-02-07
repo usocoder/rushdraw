@@ -5,23 +5,17 @@ import { Trophy, Sparkles } from "lucide-react";
 interface WinningResultProps {
   item: CaseItem;
   casePrice: number;
+  isFreePlay?: boolean;
   hasRushDraw?: boolean;
-  isCrazyMode?: boolean;
 }
 
-export const WinningResult = ({ 
-  item, 
-  hasRushDraw = false,
-  isCrazyMode = false 
-}: WinningResultProps) => {
-  const displayValue = isCrazyMode ? -item.value : item.value;
-  
+export const WinningResult = ({ item, casePrice, isFreePlay = false, hasRushDraw = false }: WinningResultProps) => {
   return (
     <motion.div
       className="mt-6 text-center"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 }}
+      transition={{ delay: 0.5 }}
     >
       <motion.div 
         className="flex items-center justify-center mb-4"
@@ -30,8 +24,7 @@ export const WinningResult = ({
         transition={{ 
           type: "spring",
           stiffness: 260,
-          damping: 20,
-          delay: 0.3
+          damping: 20 
         }}
       >
         <div className="relative">
@@ -44,27 +37,43 @@ export const WinningResult = ({
                 : ''
             }`}
           />
-          <motion.div
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.5 }}
-            className="absolute -top-2 -right-2"
-          >
-            {hasRushDraw && item.rarity === 'legendary' ? (
-              <Sparkles className="w-8 h-8 text-yellow-500 animate-pulse" />
-            ) : (
-              <Trophy className="w-8 h-8 text-yellow-500" />
-            )}
-          </motion.div>
+          {!isFreePlay && (
+            <motion.div
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              transition={{ delay: 1 }}
+              className="absolute -top-2 -right-2"
+            >
+              {hasRushDraw && item.rarity === 'legendary' ? (
+                <Sparkles className="w-8 h-8 text-yellow-500 animate-pulse" />
+              ) : (
+                <Trophy className="w-8 h-8 text-yellow-500" />
+              )}
+            </motion.div>
+          )}
         </div>
       </motion.div>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-        className="text-2xl font-bold text-primary"
+        transition={{ delay: 0.8 }}
       >
-        ${displayValue.toFixed(2)}
+        <h3 className="text-xl font-bold mb-2">
+          {isFreePlay ? "You could have won: " : "You won: "}{item.name}!
+          {hasRushDraw && item.rarity === 'legendary' && (
+            <span className="ml-2 text-yellow-500">
+              (Rush Draw!)
+            </span>
+          )}
+        </h3>
+        <p className="text-lg text-primary">
+          Value: ${(casePrice * item.multiplier).toFixed(2)}
+        </p>
+        {isFreePlay && (
+          <p className="mt-2 text-muted-foreground">
+            This was just a simulation. Try opening the case for real to win!
+          </p>
+        )}
       </motion.div>
     </motion.div>
   );

@@ -6,7 +6,6 @@ import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { useToast } from "./ui/use-toast";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Loader2 } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 
 interface RegisterModalProps {
   isOpen: boolean;
@@ -17,7 +16,6 @@ export const RegisterModal = ({ isOpen, onOpenChange }: RegisterModalProps) => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [referralCode, setReferralCode] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { register, error } = useBrowserAuth();
   const { toast } = useToast();
@@ -26,7 +24,7 @@ export const RegisterModal = ({ isOpen, onOpenChange }: RegisterModalProps) => {
     if (!username || !email || !password) {
       toast({
         title: "Missing fields",
-        description: "Please fill in all required fields",
+        description: "Please fill in all fields",
         variant: "destructive",
       });
       return;
@@ -59,36 +57,10 @@ export const RegisterModal = ({ isOpen, onOpenChange }: RegisterModalProps) => {
       return;
     }
 
-    if (referralCode) {
-      const { data: referralData, error: referralError } = await supabase
-        .from('referral_codes')
-        .select('code')
-        .eq('code', referralCode)
-        .maybeSingle();
-
-      if (referralError || !referralData) {
-        toast({
-          title: "Invalid referral code",
-          description: "The referral code you entered is not valid",
-          variant: "destructive",
-        });
-        return;
-      }
-    }
-
     setIsLoading(true);
     try {
       const success = await register(username, email, password);
       if (success) {
-        if (referralCode) {
-          const { error: updateError } = await supabase
-            .from('profiles')
-            .update({ referral_code_used: referralCode })
-            .eq('id', (await supabase.auth.getUser()).data.user?.id);
-
-          if (updateError) throw updateError;
-        }
-        
         onOpenChange(false);
         toast({
           title: "Welcome!",
@@ -148,13 +120,6 @@ export const RegisterModal = ({ isOpen, onOpenChange }: RegisterModalProps) => {
             placeholder="Enter password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            onKeyPress={handleKeyPress}
-            disabled={isLoading}
-          />
-          <Input
-            placeholder="Referral code (optional)"
-            value={referralCode}
-            onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
             onKeyPress={handleKeyPress}
             disabled={isLoading}
           />

@@ -39,7 +39,7 @@ export type Database = {
           created_at: string
           id: string
           image_url: string
-          multiplier: number | null
+          multiplier: number
           name: string
           odds: number
           rarity: string
@@ -51,7 +51,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url: string
-          multiplier?: number | null
+          multiplier: number
           name: string
           odds: number
           rarity: string
@@ -63,7 +63,7 @@ export type Database = {
           created_at?: string
           id?: string
           image_url?: string
-          multiplier?: number | null
+          multiplier?: number
           name?: string
           odds?: number
           rarity?: string
@@ -124,7 +124,7 @@ export type Database = {
       }
       cases: {
         Row: {
-          best_drop: string | null
+          best_drop: string
           category: string
           created_at: string
           id: string
@@ -134,7 +134,7 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          best_drop?: string | null
+          best_drop: string
           category: string
           created_at?: string
           id?: string
@@ -144,7 +144,7 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          best_drop?: string | null
+          best_drop?: string
           category?: string
           created_at?: string
           id?: string
@@ -173,27 +173,6 @@ export type Database = {
           id?: string
           message?: string
           user_id?: string
-        }
-        Relationships: []
-      }
-      commission_tiers: {
-        Row: {
-          commission_rate: number
-          created_at: string
-          id: string
-          wager_requirement: number
-        }
-        Insert: {
-          commission_rate: number
-          created_at?: string
-          id?: string
-          wager_requirement: number
-        }
-        Update: {
-          commission_rate?: number
-          created_at?: string
-          id?: string
-          wager_requirement?: number
         }
         Relationships: []
       }
@@ -258,8 +237,6 @@ export type Database = {
           balance: number | null
           created_at: string
           id: string
-          referral_code_used: string | null
-          total_wagered: number | null
           updated_at: string
           username: string | null
         }
@@ -267,8 +244,6 @@ export type Database = {
           balance?: number | null
           created_at?: string
           id: string
-          referral_code_used?: string | null
-          total_wagered?: number | null
           updated_at?: string
           username?: string | null
         }
@@ -276,61 +251,8 @@ export type Database = {
           balance?: number | null
           created_at?: string
           id?: string
-          referral_code_used?: string | null
-          total_wagered?: number | null
           updated_at?: string
           username?: string | null
-        }
-        Relationships: []
-      }
-      referral_codes: {
-        Row: {
-          code: string
-          created_at: string
-          id: string
-          times_used: number | null
-          total_earnings: number | null
-          user_id: string
-        }
-        Insert: {
-          code: string
-          created_at?: string
-          id?: string
-          times_used?: number | null
-          total_earnings?: number | null
-          user_id: string
-        }
-        Update: {
-          code?: string
-          created_at?: string
-          id?: string
-          times_used?: number | null
-          total_earnings?: number | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      referrals: {
-        Row: {
-          code_used: string
-          created_at: string
-          id: string
-          referred_user_id: string
-          referrer_id: string
-        }
-        Insert: {
-          code_used: string
-          created_at?: string
-          id?: string
-          referred_user_id: string
-          referrer_id: string
-        }
-        Update: {
-          code_used?: string
-          created_at?: string
-          id?: string
-          referred_user_id?: string
-          referrer_id?: string
         }
         Relationships: []
       }

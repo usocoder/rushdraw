@@ -2,10 +2,9 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { CryptoDeposit } from "./CryptoDeposit";
 import { WithdrawModal } from "./WithdrawModal";
-import { ArrowDown, ArrowUp, LogIn, LogOut, UserPlus, Wallet, Settings, Users } from "lucide-react";
+import { ArrowDown, ArrowUp, LogIn, LogOut, UserPlus, Wallet, Settings } from "lucide-react";
 import { RegisterModal } from "./RegisterModal";
 import { LoginModal } from "./LoginModal";
-import { ReferralStatsModal } from "./ReferralStatsModal";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { useBalance } from "@/contexts/BalanceContext";
 import { useQuery } from "@tanstack/react-query";
@@ -17,7 +16,6 @@ export const Hero = () => {
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
   const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [isReferralOpen, setIsReferralOpen] = useState(false);
   const { user, logout } = useBrowserAuth();
   const { balance } = useBalance();
   const navigate = useNavigate();
@@ -64,15 +62,6 @@ export const Hero = () => {
                 <Wallet className="h-4 w-4 text-primary shrink-0" />
                 <span className="text-lg font-semibold truncate">${balance.toFixed(2)}</span>
               </div>
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={() => setIsReferralOpen(true)}
-                className="shrink-0"
-              >
-                <Users className="mr-2 h-4 w-4" />
-                Referrals
-              </Button>
               {userProgress && (
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="text-sm">Level {userProgress.current_level}</span>
@@ -122,7 +111,6 @@ export const Hero = () => {
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
             Experience the thrill of opening cases and winning incredible rewards. Weekly $10,000 jackpot. support@rushdraw.com
           </p>
-          
           <div className="flex justify-center gap-4">
             {user ? (
               <>
@@ -162,11 +150,6 @@ export const Hero = () => {
         <LoginModal
           isOpen={isLoginOpen}
           onOpenChange={setIsLoginOpen}
-        />
-
-        <ReferralStatsModal
-          isOpen={isReferralOpen}
-          onOpenChange={setIsReferralOpen}
         />
       </div>
     </div>

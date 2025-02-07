@@ -19,14 +19,4 @@ export default defineConfig(({ mode }) => ({
       "@": path.resolve(__dirname, "./src"),
     },
   },
-  build: {
-    outDir: 'dist',
-    sourcemap: mode === 'development',
-    minify: mode === 'development' ? false : 'terser',
-    terserOptions: {
-      compress: {
-        drop_console: mode !== 'development',
-      },
-    },
-  }
 }));

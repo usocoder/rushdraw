@@ -16,6 +16,7 @@ interface FormData {
   name: string;
   price: number;
   image_url: string;
+  best_drop: string;
   category: string;
 }
 
@@ -25,6 +26,7 @@ const AdminNewCase = () => {
   const { toast } = useToast();
   const { register, handleSubmit, setValue, formState: { errors } } = useForm<FormData>();
 
+  // Check if user is admin
   const { data: userRole, isLoading } = useQuery({
     queryKey: ['userRole', user?.id],
     queryFn: async () => {
@@ -40,6 +42,7 @@ const AdminNewCase = () => {
     enabled: !!user,
   });
 
+  // Redirect non-admin users
   useEffect(() => {
     if (!isLoading && (!user || userRole?.role !== 'admin')) {
       navigate('/');
@@ -49,12 +52,7 @@ const AdminNewCase = () => {
   const onSubmit = async (data: FormData) => {
     const { error } = await supabase
       .from('cases')
-      .insert([{
-        name: data.name,
-        price: Number(data.price),
-        image_url: data.image_url,
-        category: data.category
-      }]);
+      .insert([data]);
 
     if (error) {
       toast({
@@ -127,6 +125,17 @@ const AdminNewCase = () => {
             {errors.image_url && (
               <p className="text-sm text-red-500">{errors.image_url.message}</p>
             )}
+
+            <div>
+              <Label htmlFor="best_drop">Best Drop</Label>
+              <Input 
+                id="best_drop"
+                {...register("best_drop", { required: "Best drop is required" })}
+              />
+              {errors.best_drop && (
+                <p className="text-sm text-red-500">{errors.best_drop.message}</p>
+              )}
+            </div>
 
             <div>
               <Label htmlFor="category">Category</Label>

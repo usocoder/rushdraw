@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBrowserAuth } from './BrowserAuthContext';
@@ -25,27 +24,22 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
   const { toast } = useToast();
 
   const fetchBalance = async () => {
-    if (!user) {
-      setBalance(0);
-      setLoading(false);
-      return;
-    }
+    if (!user) return;
     try {
       console.log('Fetching balance for user:', user.id);
-      const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('balance')
-        .eq('id', user.id)
-        .maybeSingle();
+      const { data, error } = await supabase
+        .from('balances')
+        .select('amount')
+        .eq('user_id', user.id)
+        .single();
 
-      if (profileError) {
-        console.error('Error fetching balance:', profileError);
-        throw profileError;
+      if (error) {
+        console.error('Error fetching balance:', error);
+        throw error;
       }
       
-      const newBalance = profileData?.balance || 0;
-      console.log('Fetched balance:', newBalance);
-      setBalance(newBalance);
+      console.log('Fetched balance:', data.amount);
+      setBalance(data.amount);
     } catch (error) {
       console.error('Error fetching balance:', error);
       toast({
@@ -68,7 +62,8 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
           user_id: user.id,
           type,
           amount,
-          status: type === 'deposit' ? 'pending' : 'completed'
+          status: type === 'deposit' ? 'pending' : 'completed',
+          pending_amount: type === 'deposit' ? amount : 0
         })
         .select();
 
@@ -100,22 +95,9 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
       console.log('Setting up real-time listeners for user:', user.id);
       fetchBalance();
 
-      // Listen for both profile and transaction updates
-      const channel = supabase
-        .channel('db-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'profiles',
-            filter: `id=eq.${user.id}`,
-          },
-          (payload) => {
-            console.log('Profile updated:', payload);
-            fetchBalance();
-          }
-        )
+      // Subscribe to real-time changes on transactions table
+      const transactionsChannel = supabase
+        .channel('transaction-updates')
         .on(
           'postgres_changes',
           {
@@ -131,13 +113,29 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
         )
         .subscribe();
 
+      // Subscribe to real-time changes on balances table
+      const balancesChannel = supabase
+        .channel('balance-updates')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'balances',
+            filter: `user_id=eq.${user.id}`,
+          },
+          (payload) => {
+            console.log('Balance updated:', payload);
+            fetchBalance();
+          }
+        )
+        .subscribe();
+
       return () => {
         console.log('Cleaning up real-time listeners');
-        supabase.removeChannel(channel);
+        supabase.removeChannel(transactionsChannel);
+        supabase.removeChannel(balancesChannel);
       };
-    } else {
-      setBalance(0);
-      setLoading(false);
     }
   }, [user]);
 

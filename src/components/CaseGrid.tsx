@@ -4,14 +4,9 @@ import { PriceFilter } from "./PriceFilter";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "./ui/skeleton";
-import { Button } from "./ui/button";
-import { Swords } from "lucide-react";
-import { CaseOpeningModal } from "./CaseOpeningModal";
 
 export const CaseGrid = () => {
   const [activeFilter, setActiveFilter] = useState("all");
-  const [selectedCase, setSelectedCase] = useState<any>(null);
-  const [isBattleMode, setIsBattleMode] = useState(false);
 
   const { data: cases, isLoading, error } = useQuery({
     queryKey: ['cases'],
@@ -32,20 +27,10 @@ export const CaseGrid = () => {
       console.log('Cases fetched:', data);
       return data?.map(case_ => ({
         ...case_,
-        image: case_.image_url,
         category: 
           case_.price < 50 ? 'budget' :
           case_.price < 500 ? 'mid' :
-          case_.price < 5000 ? 'high' : 'premium',
-        items: case_.case_items?.map(item => ({
-          id: item.id,
-          name: item.name,
-          value: item.value,
-          odds: item.odds,
-          multiplier: item.multiplier || 1,
-          rarity: item.rarity as 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary',
-          image: item.image_url
-        })) || []
+          case_.price < 5000 ? 'high' : 'premium'
       }));
     },
   });
@@ -54,20 +39,6 @@ export const CaseGrid = () => {
     if (activeFilter === "all") return true;
     return case_.category === activeFilter;
   });
-
-  const handleCreateBattle = () => {
-    if (cases && cases.length > 0) {
-      setSelectedCase(cases[0]);
-      setIsBattleMode(true);
-    }
-  };
-
-  const handleOpenChange = (open: boolean) => {
-    if (!open) {
-      setSelectedCase(null);
-      setIsBattleMode(false);
-    }
-  };
 
   if (error) {
     return (
@@ -79,20 +50,10 @@ export const CaseGrid = () => {
 
   return (
     <div className="py-12 px-6 lg:px-8">
-      <div className="flex justify-between items-center mb-6">
-        <PriceFilter activeFilter={activeFilter} onFilterChange={setActiveFilter} />
-        <Button 
-          variant="outline"
-          size="lg"
-          className="flex items-center gap-2"
-          onClick={handleCreateBattle}
-        >
-          <Swords className="h-5 w-5" />
-          Create Battle
-        </Button>
-      </div>
+      <PriceFilter activeFilter={activeFilter} onFilterChange={setActiveFilter} />
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {isLoading ? (
+          // Loading skeletons
           Array.from({ length: 8 }).map((_, index) => (
             <div key={index} className="space-y-4">
               <Skeleton className="h-[200px] w-full rounded-xl" />
@@ -110,20 +71,19 @@ export const CaseGrid = () => {
               image={case_.image_url}
               bestDrop={case_.best_drop}
               category={case_.category}
-              items={case_.items}
+              items={case_.case_items?.map(item => ({
+                id: item.id,
+                name: item.name,
+                value: item.value,
+                odds: item.odds,
+                multiplier: item.multiplier,
+                rarity: item.rarity as 'common' | 'uncommon' | 'rare' | 'epic' | 'legendary',
+                image: item.image_url
+              })) || []}
             />
           ))
         )}
       </div>
-
-      {selectedCase && (
-        <CaseOpeningModal
-          isOpen={!!selectedCase}
-          onOpenChange={handleOpenChange}
-          caseData={selectedCase}
-          isBattleMode={isBattleMode}
-        />
-      )}
     </div>
   );
 };

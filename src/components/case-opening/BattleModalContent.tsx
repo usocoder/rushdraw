@@ -1,7 +1,6 @@
 import { Case, CaseItem } from "@/types/case";
 import { BattleSpinner } from "./BattleSpinner";
 import { BattleResults } from "./BattleResults";
-import { useIsMobile } from "@/hooks/use-mobile";
 
 interface BattleModalContentProps {
   caseData: Case;
@@ -10,9 +9,9 @@ interface BattleModalContentProps {
   opponents: string[];
   battleWinner: { player: string; item: CaseItem } | null;
   onSpinComplete: (item: CaseItem, player: string) => void;
+  isFreePlay: boolean;
   casePrice: number;
   onWin: (amount: number) => Promise<void>;
-  isCrazyMode?: boolean;
 }
 
 export const BattleModalContent = ({
@@ -22,21 +21,13 @@ export const BattleModalContent = ({
   opponents,
   battleWinner,
   onSpinComplete,
+  isFreePlay,
   casePrice,
   onWin,
-  isCrazyMode = false,
 }: BattleModalContentProps) => {
-  const isMobile = useIsMobile();
-  
   return (
-    <div className={`
-      p-4 sm:p-6 
-      ${isBattleMode ? 'max-h-[80vh] overflow-y-auto' : ''}
-    `}>
-      <div className={`
-        grid grid-cols-1 gap-4
-        ${isBattleMode ? 'scale-[0.85] origin-top transform' : ''}
-      `}>
+    <div className="p-6">
+      <div className="grid grid-cols-1 gap-4">
         <BattleSpinner
           caseData={caseData}
           isSpinning={isSpinning}
@@ -58,6 +49,7 @@ export const BattleModalContent = ({
 
       <BattleResults
         winner={battleWinner}
+        isFreePlay={isFreePlay}
         casePrice={casePrice}
         onWin={onWin}
       />
