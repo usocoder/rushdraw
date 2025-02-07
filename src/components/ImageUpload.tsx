@@ -39,21 +39,28 @@ export const ImageUpload = ({ onUploadComplete }: ImageUploadProps) => {
     setIsUploading(true);
 
     try {
+      console.log('Starting file upload to case-images bucket...');
       const fileName = `${crypto.randomUUID()}.${file.name.split('.').pop()}`;
       
-      const { error: uploadError } = await supabase.storage
+      const { error: uploadError, data } = await supabase.storage
         .from('case-images')
         .upload(fileName, file, {
           cacheControl: '3600',
           upsert: false
         });
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
+
+      console.log('File uploaded successfully:', data);
 
       const { data: { publicUrl } } = supabase.storage
         .from('case-images')
         .getPublicUrl(fileName);
 
+      console.log('Generated public URL:', publicUrl);
       onUploadComplete(publicUrl);
       
       toast({
