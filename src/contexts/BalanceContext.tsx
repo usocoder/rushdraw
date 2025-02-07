@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBrowserAuth } from './BrowserAuthContext';
@@ -67,8 +68,7 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
           user_id: user.id,
           type,
           amount,
-          status: type === 'deposit' ? 'pending' : 'completed',
-          pending_amount: type === 'deposit' ? amount : 0
+          status: type === 'deposit' ? 'pending' : 'completed'
         })
         .select();
 
@@ -100,24 +100,6 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
       console.log('Setting up real-time listeners for user:', user.id);
       fetchBalance();
 
-      // Subscribe to real-time changes on transactions table
-      const transactionsChannel = supabase
-        .channel('transaction-updates')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'transactions',
-            filter: `user_id=eq.${user.id}`,
-          },
-          (payload) => {
-            console.log('Transaction updated:', payload);
-            fetchBalance();
-          }
-        )
-        .subscribe();
-
       // Subscribe to real-time changes on profiles table for balance updates
       const profilesChannel = supabase
         .channel('profile-updates')
@@ -138,7 +120,6 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
 
       return () => {
         console.log('Cleaning up real-time listeners');
-        supabase.removeChannel(transactionsChannel);
         supabase.removeChannel(profilesChannel);
       };
     } else {

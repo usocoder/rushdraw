@@ -55,11 +55,6 @@ export const TransactionApprovals = () => {
         { event: '*', schema: 'public', table: 'transactions' },
         () => refetch()
       )
-      .on(
-        'postgres_changes',
-        { event: '*', schema: 'public', table: 'profiles' },
-        () => refetch()
-      )
       .subscribe();
 
     return () => {
@@ -72,41 +67,9 @@ export const TransactionApprovals = () => {
     setIsProcessing(true);
 
     try {
-      // First fetch the transaction to get its details
-      const { data: transaction, error: transactionError } = await supabase
-        .from("transactions")
-        .select("*")
-        .eq("id", transactionId)
-        .single();
-
-      if (transactionError) throw transactionError;
-      if (!transaction) throw new Error("Transaction not found");
-
-      if (approve && transaction.type === 'deposit') {
-        // For deposits, update balance first
-        const { data: profile, error: profileError } = await supabase
-          .from('profiles')
-          .select('balance')
-          .eq('id', transaction.user_id)
-          .single();
-
-        if (profileError) throw profileError;
-
-        const newBalance = (profile?.balance || 0) + transaction.amount;
-        
-        // Update the balance
-        const { error: updateBalanceError } = await supabase
-          .from('profiles')
-          .update({ balance: newBalance })
-          .eq('id', transaction.user_id);
-
-        if (updateBalanceError) throw updateBalanceError;
-
-        console.log('Balance updated successfully to:', newBalance);
-      }
-
-      // Then update transaction status
       const status = approve ? "completed" : "rejected";
+      
+      // Update transaction status
       const { error: updateError } = await supabase
         .from("transactions")
         .update({ status })
