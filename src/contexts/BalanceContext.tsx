@@ -87,7 +87,7 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
         .from('profiles')
         .select('id')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (profileError || !profile) {
         // Create profile if it doesn't exist
@@ -116,15 +116,10 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
       
       console.log('Transaction created successfully:', data);
       
-      // For non-deposit transactions, update balance immediately
+      // For non-deposit transactions, wait for balance update
       if (type !== 'deposit') {
-        const balanceChange = type === 'case_open' ? -amount : amount;
-        const { error: updateError } = await supabase.rpc('increment_balance', {
-          user_id: user.id,
-          amount: balanceChange
-        });
-
-        if (updateError) throw updateError;
+        // Add a small delay to ensure the trigger has time to execute
+        await new Promise(resolve => setTimeout(resolve, 500));
         await fetchBalance();
       }
 
