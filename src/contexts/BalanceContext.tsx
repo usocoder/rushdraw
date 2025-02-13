@@ -30,18 +30,16 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
       setLoading(false);
       return;
     }
+
     try {
       console.log('Fetching balance for user:', user.id);
       const { data, error } = await supabase
         .from('profiles')
         .select('balance')
         .eq('id', user.id)
-        .maybeSingle();
+        .single();
 
-      if (error) {
-        console.error('Error fetching balance:', error);
-        throw error;
-      }
+      if (error) throw error;
       
       const newBalance = data?.balance || 0;
       console.log('Fetched balance:', newBalance);
@@ -82,105 +80,81 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
     }
 
     try {
-      // First, check if the profile exists
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('id', user.id)
-        .maybeSingle();
-
-      if (profileError || !profile) {
-        // Create profile if it doesn't exist
-        const { error: insertError } = await supabase
-          .from('profiles')
-          .insert([{ id: user.id, balance: 0 }]);
-
-        if (insertError) throw insertError;
-      }
-
-      console.log('Creating transaction:', { type, amount, user_id: user.id });
-      const { data, error } = await supabase
+      // Create the transaction
+      const { error: transactionError } = await supabase
         .from('transactions')
         .insert({
           user_id: user.id,
           type,
           amount,
+          // Set status based on transaction type
           status: type === 'deposit' ? 'pending' : 'completed'
-        })
-        .select();
+        });
 
-      if (error) {
-        console.error('Error creating transaction:', error);
-        throw error;
-      }
-      
-      console.log('Transaction created successfully:', data);
-      
-      // For non-deposit transactions, wait for balance update
+      if (transactionError) throw transactionError;
+
+      // For non-deposit transactions, trigger an immediate balance refresh
       if (type !== 'deposit') {
-        // Add a small delay to ensure the trigger has time to execute
-        await new Promise(resolve => setTimeout(resolve, 500));
         await fetchBalance();
       }
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error creating transaction:', error);
       toast({
         title: 'Error',
-        description: 'Failed to process transaction',
+        description: error.message || 'Failed to process transaction',
         variant: 'destructive',
       });
       return false;
     }
   };
 
+  // Set up real-time listeners when user changes
   useEffect(() => {
-    if (user) {
-      console.log('Setting up real-time listeners for user:', user.id);
-      fetchBalance();
-
-      // Create a single channel for all changes
-      const channel = supabase
-        .channel('db-changes')
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'transactions',
-            filter: `user_id=eq.${user.id}`,
-          },
-          (payload) => {
-            console.log('Transaction updated:', payload);
-            fetchBalance();
-          }
-        )
-        .on(
-          'postgres_changes',
-          {
-            event: '*',
-            schema: 'public',
-            table: 'profiles',
-            filter: `id=eq.${user.id}`,
-          },
-          (payload) => {
-            console.log('Profile updated:', payload);
-            fetchBalance();
-          }
-        )
-        .subscribe((status, err) => {
-          console.log('Subscription status:', status, err);
-        });
-
-      return () => {
-        console.log('Cleaning up real-time listeners');
-        supabase.removeChannel(channel);
-      };
-    } else {
+    if (!user) {
       setBalance(0);
       setLoading(false);
+      return;
     }
+
+    fetchBalance();
+
+    // Subscribe to both profile and transaction changes
+    const channel = supabase.channel('balance_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'profiles',
+          filter: `id=eq.${user.id}`,
+        },
+        () => {
+          console.log('Profile changed, refreshing balance');
+          fetchBalance();
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'transactions',
+          filter: `user_id=eq.${user.id}`,
+        },
+        (payload) => {
+          console.log('Transaction changed:', payload);
+          fetchBalance();
+        }
+      )
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+      });
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, [user]);
 
   return (
