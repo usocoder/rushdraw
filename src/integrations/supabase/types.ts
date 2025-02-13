@@ -176,6 +176,27 @@ export type Database = {
         }
         Relationships: []
       }
+      commission_tiers: {
+        Row: {
+          commission_rate: number
+          created_at: string
+          id: string
+          wager_requirement: number
+        }
+        Insert: {
+          commission_rate: number
+          created_at?: string
+          id?: string
+          wager_requirement: number
+        }
+        Update: {
+          commission_rate?: number
+          created_at?: string
+          id?: string
+          wager_requirement?: number
+        }
+        Relationships: []
+      }
       daily_rewards: {
         Row: {
           case_id: string | null
@@ -237,6 +258,8 @@ export type Database = {
           balance: number | null
           created_at: string
           id: string
+          referral_code_used: string | null
+          total_wagered: number | null
           updated_at: string
           username: string | null
         }
@@ -244,6 +267,8 @@ export type Database = {
           balance?: number | null
           created_at?: string
           id: string
+          referral_code_used?: string | null
+          total_wagered?: number | null
           updated_at?: string
           username?: string | null
         }
@@ -251,8 +276,61 @@ export type Database = {
           balance?: number | null
           created_at?: string
           id?: string
+          referral_code_used?: string | null
+          total_wagered?: number | null
           updated_at?: string
           username?: string | null
+        }
+        Relationships: []
+      }
+      referral_codes: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          times_used: number | null
+          total_earnings: number | null
+          user_id: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          times_used?: number | null
+          total_earnings?: number | null
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          times_used?: number | null
+          total_earnings?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referrals: {
+        Row: {
+          code_used: string
+          created_at: string
+          id: string
+          referred_user_id: string
+          referrer_id: string
+        }
+        Insert: {
+          code_used: string
+          created_at?: string
+          id?: string
+          referred_user_id: string
+          referrer_id: string
+        }
+        Update: {
+          code_used?: string
+          created_at?: string
+          id?: string
+          referred_user_id?: string
+          referrer_id?: string
         }
         Relationships: []
       }
