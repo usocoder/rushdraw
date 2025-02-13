@@ -36,7 +36,7 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
         .from('profiles')
         .select('balance')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
       if (error) {
         console.error('Error fetching balance:', error);
@@ -82,6 +82,22 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
     }
 
     try {
+      // First, check if the profile exists
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('id', user.id)
+        .single();
+
+      if (profileError || !profile) {
+        // Create profile if it doesn't exist
+        const { error: insertError } = await supabase
+          .from('profiles')
+          .insert([{ id: user.id, balance: 0 }]);
+
+        if (insertError) throw insertError;
+      }
+
       console.log('Creating transaction:', { type, amount, user_id: user.id });
       const { data, error } = await supabase
         .from('transactions')
@@ -100,10 +116,18 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
       
       console.log('Transaction created successfully:', data);
       
-      // Only fetch balance immediately for non-deposit transactions
+      // For non-deposit transactions, update balance immediately
       if (type !== 'deposit') {
+        const balanceChange = type === 'case_open' ? -amount : amount;
+        const { error: updateError } = await supabase.rpc('increment_balance', {
+          user_id: user.id,
+          amount: balanceChange
+        });
+
+        if (updateError) throw updateError;
         await fetchBalance();
       }
+
       return true;
     } catch (error) {
       console.error('Error creating transaction:', error);
@@ -121,9 +145,9 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
       console.log('Setting up real-time listeners for user:', user.id);
       fetchBalance();
 
-      // Subscribe to real-time changes on transactions table
-      const transactionsChannel = supabase
-        .channel('transaction-updates')
+      // Create a single channel for all changes
+      const channel = supabase
+        .channel('db-changes')
         .on(
           'postgres_changes',
           {
@@ -137,11 +161,6 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
             fetchBalance();
           }
         )
-        .subscribe();
-
-      // Subscribe to real-time changes on profiles table
-      const profilesChannel = supabase
-        .channel('profile-updates')
         .on(
           'postgres_changes',
           {
@@ -155,12 +174,13 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
             fetchBalance();
           }
         )
-        .subscribe();
+        .subscribe((status, err) => {
+          console.log('Subscription status:', status, err);
+        });
 
       return () => {
         console.log('Cleaning up real-time listeners');
-        supabase.removeChannel(transactionsChannel);
-        supabase.removeChannel(profilesChannel);
+        supabase.removeChannel(channel);
       };
     } else {
       setBalance(0);
