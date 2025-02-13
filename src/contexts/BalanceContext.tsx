@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBrowserAuth } from './BrowserAuthContext';
@@ -32,17 +33,17 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
     try {
       console.log('Fetching balance for user:', user.id);
       const { data, error } = await supabase
-        .from('balances')
-        .select('amount')
-        .eq('user_id', user.id)
-        .maybeSingle();
+        .from('profiles')
+        .select('balance')
+        .eq('id', user.id)
+        .single();
 
       if (error) {
         console.error('Error fetching balance:', error);
         throw error;
       }
       
-      const newBalance = data?.amount || 0;
+      const newBalance = data?.balance || 0;
       console.log('Fetched balance:', newBalance);
       setBalance(newBalance);
     } catch (error) {
@@ -59,6 +60,27 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
 
   const createTransaction = async (type: 'deposit' | 'case_open' | 'case_win', amount: number): Promise<boolean> => {
     if (!user) return false;
+    
+    // Validate amount
+    if (amount <= 0 || amount >= 100000000) {
+      toast({
+        title: 'Invalid amount',
+        description: 'Please enter a valid amount',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
+    // For case openings, check if user has enough balance
+    if (type === 'case_open' && balance < amount) {
+      toast({
+        title: 'Insufficient balance',
+        description: 'Please deposit more funds to open this case',
+        variant: 'destructive',
+      });
+      return false;
+    }
+
     try {
       console.log('Creating transaction:', { type, amount, user_id: user.id });
       const { data, error } = await supabase
@@ -67,8 +89,7 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
           user_id: user.id,
           type,
           amount,
-          status: type === 'deposit' ? 'pending' : 'completed',
-          pending_amount: type === 'deposit' ? amount : 0
+          status: type === 'deposit' ? 'pending' : 'completed'
         })
         .select();
 
@@ -118,19 +139,19 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
         )
         .subscribe();
 
-      // Subscribe to real-time changes on balances table
-      const balancesChannel = supabase
-        .channel('balance-updates')
+      // Subscribe to real-time changes on profiles table
+      const profilesChannel = supabase
+        .channel('profile-updates')
         .on(
           'postgres_changes',
           {
             event: '*',
             schema: 'public',
-            table: 'balances',
-            filter: `user_id=eq.${user.id}`,
+            table: 'profiles',
+            filter: `id=eq.${user.id}`,
           },
           (payload) => {
-            console.log('Balance updated:', payload);
+            console.log('Profile updated:', payload);
             fetchBalance();
           }
         )
@@ -139,7 +160,7 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
       return () => {
         console.log('Cleaning up real-time listeners');
         supabase.removeChannel(transactionsChannel);
-        supabase.removeChannel(balancesChannel);
+        supabase.removeChannel(profilesChannel);
       };
     } else {
       setBalance(0);
