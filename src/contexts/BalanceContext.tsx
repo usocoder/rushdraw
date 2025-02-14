@@ -37,18 +37,21 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
         .from('profiles')
         .select('balance')
         .eq('id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching balance:', error);
+        throw error;
+      }
       
-      const newBalance = data?.balance || 0;
+      const newBalance = data?.balance ?? 0;
       console.log('Fetched balance:', newBalance);
       setBalance(newBalance);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching balance:', error);
       toast({
         title: 'Error',
-        description: 'Failed to fetch balance',
+        description: 'Failed to fetch balance: ' + error.message,
         variant: 'destructive',
       });
     } finally {
@@ -57,13 +60,20 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
   };
 
   const createTransaction = async (type: 'deposit' | 'case_open' | 'case_win', amount: number): Promise<boolean> => {
-    if (!user) return false;
+    if (!user) {
+      toast({
+        title: 'Authentication required',
+        description: 'Please log in to perform transactions',
+        variant: 'destructive',
+      });
+      return false;
+    }
     
     // Validate amount
     if (amount <= 0 || amount >= 100000000) {
       toast({
         title: 'Invalid amount',
-        description: 'Please enter a valid amount',
+        description: 'Please enter a valid amount between 0 and 100,000,000',
         variant: 'destructive',
       });
       return false;
@@ -80,21 +90,34 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
     }
 
     try {
-      // Create the transaction
+      // Ensure the profile exists first
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert({ 
+          id: user.id,
+          balance: 0,
+          updated_at: new Date().toISOString()
+        });
+
+      if (profileError) throw profileError;
+
+      // Create the transaction with explicit timestamps
       const { error: transactionError } = await supabase
         .from('transactions')
         .insert({
           user_id: user.id,
           type,
           amount,
-          // Set status based on transaction type
-          status: type === 'deposit' ? 'pending' : 'completed'
+          status: type === 'deposit' ? 'pending' : 'completed',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
         });
 
       if (transactionError) throw transactionError;
 
-      // For non-deposit transactions, trigger an immediate balance refresh
+      // For non-deposit transactions, immediately fetch the new balance
       if (type !== 'deposit') {
+        await new Promise(resolve => setTimeout(resolve, 100)); // Small delay to ensure trigger runs
         await fetchBalance();
       }
 
@@ -102,7 +125,7 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
     } catch (error: any) {
       console.error('Error creating transaction:', error);
       toast({
-        title: 'Error',
+        title: 'Transaction failed',
         description: error.message || 'Failed to process transaction',
         variant: 'destructive',
       });
@@ -110,7 +133,6 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
     }
   };
 
-  // Set up real-time listeners when user changes
   useEffect(() => {
     if (!user) {
       setBalance(0);
@@ -120,7 +142,7 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
 
     fetchBalance();
 
-    // Subscribe to both profile and transaction changes
+    // Set up realtime subscriptions
     const channel = supabase.channel('balance_changes')
       .on(
         'postgres_changes',
@@ -130,8 +152,8 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
           table: 'profiles',
           filter: `id=eq.${user.id}`,
         },
-        () => {
-          console.log('Profile changed, refreshing balance');
+        (payload) => {
+          console.log('Profile changed:', payload);
           fetchBalance();
         }
       )
@@ -148,8 +170,11 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
           fetchBalance();
         }
       )
-      .subscribe((status) => {
+      .subscribe(async (status) => {
         console.log('Realtime subscription status:', status);
+        if (status === 'SUBSCRIBED') {
+          await fetchBalance(); // Fetch balance when subscription is confirmed
+        }
       });
 
     return () => {
