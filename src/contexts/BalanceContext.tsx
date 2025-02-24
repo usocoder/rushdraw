@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBrowserAuth } from './BrowserAuthContext';
@@ -13,13 +12,20 @@ interface BalanceContextType {
 }
 
 interface ProfileChanges {
+  id: string;
   balance: number;
-  [key: string]: any;
+  created_at: string;
+  updated_at: string;
 }
 
 interface TransactionChanges {
+  id: string;
+  user_id: string;
+  type: string;
+  amount: number;
   status: string;
-  [key: string]: any;
+  created_at: string;
+  updated_at: string;
 }
 
 const BalanceContext = createContext<BalanceContextType>({
@@ -99,7 +105,6 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
     }
 
     try {
-      // Create the transaction
       const { error: transactionError } = await supabase
         .from('transactions')
         .insert({
@@ -113,7 +118,6 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
 
       if (transactionError) throw transactionError;
 
-      // For non-deposit transactions, immediately fetch the new balance
       if (type !== 'deposit') {
         await fetchBalance();
       }
@@ -139,7 +143,6 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
 
     fetchBalance();
 
-    // Set up realtime subscriptions for both profiles and transactions
     const channel = supabase.channel('balance_changes')
       .on(
         'postgres_changes',
@@ -151,8 +154,9 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
         },
         (payload: RealtimePostgresChangesPayload<ProfileChanges>) => {
           console.log('Profile changed:', payload);
-          if (payload.new && typeof payload.new.balance === 'number') {
-            setBalance(payload.new.balance);
+          const newData = payload.new as ProfileChanges;
+          if (newData && typeof newData.balance === 'number') {
+            setBalance(newData.balance);
           }
         }
       )
@@ -166,7 +170,8 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
         },
         async (payload: RealtimePostgresChangesPayload<TransactionChanges>) => {
           console.log('Transaction changed:', payload);
-          if (payload.new && payload.new.status === 'completed') {
+          const newData = payload.new as TransactionChanges;
+          if (newData && newData.status === 'completed') {
             await fetchBalance();
           }
         }
