@@ -3,12 +3,23 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBrowserAuth } from './BrowserAuthContext';
 import { useToast } from '@/components/ui/use-toast';
+import { RealtimePostgresChangesPayload } from '@supabase/supabase-js';
 
 interface BalanceContextType {
   balance: number;
   loading: boolean;
   refreshBalance: () => Promise<void>;
   createTransaction: (type: 'deposit' | 'case_open' | 'case_win', amount: number) => Promise<boolean>;
+}
+
+interface ProfileChanges {
+  balance: number;
+  [key: string]: any;
+}
+
+interface TransactionChanges {
+  status: string;
+  [key: string]: any;
 }
 
 const BalanceContext = createContext<BalanceContextType>({
@@ -138,9 +149,9 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
           table: 'profiles',
           filter: `id=eq.${user.id}`,
         },
-        (payload) => {
+        (payload: RealtimePostgresChangesPayload<ProfileChanges>) => {
           console.log('Profile changed:', payload);
-          if (payload.new?.balance !== undefined) {
+          if (payload.new && typeof payload.new.balance === 'number') {
             setBalance(payload.new.balance);
           }
         }
@@ -153,9 +164,9 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
           table: 'transactions',
           filter: `user_id=eq.${user.id}`,
         },
-        async (payload) => {
+        async (payload: RealtimePostgresChangesPayload<TransactionChanges>) => {
           console.log('Transaction changed:', payload);
-          if (payload.new?.status === 'completed') {
+          if (payload.new && payload.new.status === 'completed') {
             await fetchBalance();
           }
         }
