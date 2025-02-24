@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -70,30 +71,9 @@ export const TransactionApprovals = () => {
     setIsProcessing(true);
 
     try {
-      // First get the transaction details
-      const { data: transaction, error: transactionError } = await supabase
-        .from("transactions")
-        .select("*")
-        .eq("id", transactionId)
-        .single();
-
-      if (transactionError) throw transactionError;
-      if (!transaction) throw new Error("Transaction not found");
-
       const status = approve ? "completed" : "rejected";
       
-      // If approved, update the user's balance first
-      if (approve) {
-        const { error: balanceError } = await supabase
-          .rpc('increment_balance', { 
-            user_id: transaction.user_id, 
-            amount: transaction.amount 
-          });
-
-        if (balanceError) throw balanceError;
-      }
-
-      // Then update transaction status
+      // Update transaction status only - the trigger will handle the balance update
       const { error: updateError } = await supabase
         .from("transactions")
         .update({ status })
@@ -172,7 +152,6 @@ export const TransactionApprovals = () => {
                   </div>
                 </div>
                 
-                {/* User Details Section */}
                 <div className="mt-2 space-y-1 text-sm">
                   <div className="flex items-center gap-2 text-muted-foreground">
                     <User className="w-4 h-4" />
