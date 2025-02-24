@@ -37,7 +37,7 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
         .from('profiles')
         .select('balance')
         .eq('id', user.id)
-        .maybeSingle();
+        .single();
 
       if (error) {
         console.error('Error fetching balance:', error);
@@ -69,7 +69,6 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
       return false;
     }
     
-    // Validate amount
     if (amount <= 0 || amount >= 100000000) {
       toast({
         title: 'Invalid amount',
@@ -79,7 +78,6 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
       return false;
     }
 
-    // For case openings, check if user has enough balance
     if (type === 'case_open' && balance < amount) {
       toast({
         title: 'Insufficient balance',
@@ -90,18 +88,7 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
     }
 
     try {
-      // Ensure the profile exists first
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .upsert({ 
-          id: user.id,
-          balance: 0,
-          updated_at: new Date().toISOString()
-        });
-
-      if (profileError) throw profileError;
-
-      // Create the transaction with explicit timestamps
+      // Create the transaction
       const { error: transactionError } = await supabase
         .from('transactions')
         .insert({
@@ -117,7 +104,6 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
 
       // For non-deposit transactions, immediately fetch the new balance
       if (type !== 'deposit') {
-        await new Promise(resolve => setTimeout(resolve, 100)); // Small delay to ensure trigger runs
         await fetchBalance();
       }
 
@@ -142,7 +128,7 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
 
     fetchBalance();
 
-    // Set up realtime subscriptions
+    // Set up realtime subscriptions for both profiles and transactions
     const channel = supabase.channel('balance_changes')
       .on(
         'postgres_changes',
@@ -154,7 +140,9 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
         },
         (payload) => {
           console.log('Profile changed:', payload);
-          fetchBalance();
+          if (payload.new?.balance !== undefined) {
+            setBalance(payload.new.balance);
+          }
         }
       )
       .on(
@@ -165,16 +153,15 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
           table: 'transactions',
           filter: `user_id=eq.${user.id}`,
         },
-        (payload) => {
+        async (payload) => {
           console.log('Transaction changed:', payload);
-          fetchBalance();
+          if (payload.new?.status === 'completed') {
+            await fetchBalance();
+          }
         }
       )
-      .subscribe(async (status) => {
+      .subscribe((status) => {
         console.log('Realtime subscription status:', status);
-        if (status === 'SUBSCRIBED') {
-          await fetchBalance(); // Fetch balance when subscription is confirmed
-        }
       });
 
     return () => {
