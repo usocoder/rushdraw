@@ -1,9 +1,12 @@
+
 import { useState, useEffect } from "react";
 import { CaseItem } from "@/types/case";
+import { generateClientSeed, calculateRoll, getItemFromRoll } from "@/utils/provablyFair";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onComplete: (item: CaseItem) => void) => {
   const [spinItems, setSpinItems] = useState<CaseItem[]>([]);
-  const [spinSpeed, setSpinSpeed] = useState(20);
+  const [rotation, setRotation] = useState(0);
   const [finalItem, setFinalItem] = useState<CaseItem | null>(null);
   const [isRevealing, setIsRevealing] = useState(false);
 
@@ -12,65 +15,74 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
       // Reset states
       setFinalItem(null);
       setIsRevealing(false);
+      setRotation(0);
       
-      // Determine winning item based on odds
-      const random = Math.random();
-      let cumulative = 0;
-      const winner = items.find((item) => {
-        cumulative += item.odds;
-        return random <= cumulative;
-      }) || items[0];
+      const setupProvablyFair = async () => {
+        try {
+          const clientSeed = generateClientSeed();
+          
+          // Get next nonce and server seed from database
+          const { data: openingData, error } = await supabase.rpc('create_case_opening', {
+            client_seed: clientSeed
+          });
 
-      // Calculate the number of items to show before the winner
-      const itemsBeforeWinner = Array(150)
-        .fill(null)
-        .map(() => items[Math.floor(Math.random() * items.length)]);
+          if (error) throw error;
 
-      // Add some items after the winner to ensure smooth animation
-      const itemsAfterWinner = Array(40)
-        .fill(null)
-        .map(() => items[Math.floor(Math.random() * items.length)]);
+          const { server_seed, nonce } = openingData;
+          const roll = calculateRoll(server_seed, clientSeed, nonce);
+          const winner = getItemFromRoll(roll, items);
 
-      // Combine all items with winner in the correct position
-      const allItems = [...itemsBeforeWinner, winner, ...itemsAfterWinner];
-      setSpinItems(allItems);
+          // Generate display items
+          const displayItems = Array(20)
+            .fill(null)
+            .map(() => items[Math.floor(Math.random() * items.length)]);
+          
+          setSpinItems(displayItems);
+          
+          // Animate rotation
+          let currentRotation = 0;
+          const totalRotations = 5; // Number of full rotations before stopping
+          const finalRotation = 360 * totalRotations;
+          
+          const startTime = performance.now();
+          const duration = 8000; // 8 seconds
+          
+          const animate = (currentTime: number) => {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Easing function for smooth deceleration
+            const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+            currentRotation = finalRotation * easeOut(progress);
+            
+            setRotation(currentRotation);
+            
+            if (progress < 1) {
+              requestAnimationFrame(animate);
+            } else {
+              setFinalItem(winner);
+              setIsRevealing(true);
+              setTimeout(() => {
+                onComplete(winner);
+              }, 500);
+            }
+          };
+          
+          requestAnimationFrame(animate);
+        } catch (error) {
+          console.error("Error in provably fair setup:", error);
+        }
+      };
 
-      // Animation speed pattern with smoother transitions
-      const speedPattern = [
-        { speed: 80, time: 0 },
-        { speed: 60, time: 1000 },
-        { speed: 40, time: 2000 },
-        { speed: 20, time: 4000 },
-        { speed: 10, time: 6000 },
-        { speed: 5, time: 7000 },
-        { speed: 2, time: 8000 }
-      ];
-
-      // Apply speed changes
-      speedPattern.forEach(({ speed, time }) => {
-        setTimeout(() => setSpinSpeed(speed), time);
-      });
-
-      // Set final item and trigger completion after animation ends
-      const spinDuration = 8500;
-      const revealDelay = 500;
-
-      setTimeout(() => {
-        setIsRevealing(true);
-        setFinalItem(winner);
-      }, spinDuration);
-
-      setTimeout(() => {
-        onComplete(winner);
-      }, spinDuration + revealDelay);
+      setupProvablyFair();
     } else {
       // Reset states when not spinning
       setSpinItems([]);
-      setSpinSpeed(20);
+      setRotation(0);
       setFinalItem(null);
       setIsRevealing(false);
     }
   }, [isSpinning, items, onComplete]);
 
-  return { spinItems, spinSpeed, finalItem, isRevealing };
+  return { spinItems, rotation, finalItem, isRevealing };
 };

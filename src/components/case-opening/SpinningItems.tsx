@@ -1,3 +1,4 @@
+
 import { motion, AnimatePresence } from "framer-motion";
 import { CaseItem } from "@/types/case";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -5,7 +6,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 interface SpinningItemsProps {
   items: CaseItem[];
   isSpinning: boolean;
-  spinSpeed: number;
+  rotation: number;
   finalItem: CaseItem | null;
   hasRushDraw?: boolean;
   isOpponent?: boolean;
@@ -16,7 +17,7 @@ interface SpinningItemsProps {
 export const SpinningItems = ({ 
   items, 
   isSpinning, 
-  spinSpeed, 
+  rotation,
   finalItem, 
   hasRushDraw, 
   isOpponent,
@@ -25,25 +26,6 @@ export const SpinningItems = ({
 }: SpinningItemsProps) => {
   const isMobile = useIsMobile();
   
-  const getSpinningAnimation = () => {
-    if (!isSpinning) return {};
-
-    const itemWidth = isMobile ? 160 : 200;
-    const containerWidth = window.innerWidth;
-    const centerPosition = (containerWidth / 2) - (itemWidth / 2);
-    const finalPosition = -((items.length - 1) * itemWidth);
-    const adjustedPosition = finalPosition + centerPosition;
-
-    return {
-      x: [0, adjustedPosition],
-      transition: {
-        duration: spinSpeed * 0.5,
-        ease: isRevealing ? "easeOut" : "linear",
-        times: [0, 1],
-      }
-    };
-  };
-
   const itemSize = isMobile ? "w-40 h-40" : "w-48 h-48";
   const imageSize = isMobile ? "w-24 h-24" : "w-32 h-32";
 
@@ -62,13 +44,12 @@ export const SpinningItems = ({
 
       <AnimatePresence mode="wait">
         <motion.div
-          className="flex items-center absolute top-1/2 -translate-y-1/2"
-          animate={getSpinningAnimation()}
-          initial={{ x: 0 }}
+          className="flex items-center justify-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"
           style={{
-            willChange: 'transform',
-            translateY: '-50%',
+            rotate: rotation,
+            transformOrigin: "center",
           }}
+          initial={false}
         >
           {items.map((item, index) => (
             <motion.div
@@ -77,7 +58,14 @@ export const SpinningItems = ({
                 flex-shrink-0 ${itemSize} mx-1 rounded-lg
                 ${!isSpinning && finalItem?.id === item.id ? "bg-accent/10" : "bg-accent/5"}
                 border border-accent/20
+                absolute
+                transform -translate-x-1/2 -translate-y-1/2
               `}
+              style={{
+                rotate: -rotation, // Counter-rotate items to keep them upright
+                left: "50%",
+                top: "50%",
+              }}
             >
               <div className="flex flex-col h-full relative p-4">
                 <div className="flex-1 flex items-center justify-center">

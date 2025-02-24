@@ -83,25 +83,37 @@ export type Database = {
       case_openings: {
         Row: {
           case_id: string
+          client_seed: string | null
           created_at: string
+          hash: string | null
           id: string
           item_won: string
+          nonce: number | null
+          server_seed: string | null
           user_id: string
           value_won: number
         }
         Insert: {
           case_id: string
+          client_seed?: string | null
           created_at?: string
+          hash?: string | null
           id?: string
           item_won: string
+          nonce?: number | null
+          server_seed?: string | null
           user_id: string
           value_won: number
         }
         Update: {
           case_id?: string
+          client_seed?: string | null
           created_at?: string
+          hash?: string | null
           id?: string
           item_won?: string
+          nonce?: number | null
+          server_seed?: string | null
           user_id?: string
           value_won?: number
         }
@@ -436,6 +448,10 @@ export type Database = {
           success: boolean
           message: string
         }[]
+      }
+      generate_server_seed: {
+        Args: Record<PropertyKey, never>
+        Returns: string
       }
       increment_balance: {
         Args: {
