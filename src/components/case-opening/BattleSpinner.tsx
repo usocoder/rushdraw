@@ -1,3 +1,4 @@
+
 import { Case, CaseItem } from "@/types/case";
 import { SpinningItems } from "./SpinningItems";
 import { useSpinningLogic } from "./SpinningLogic";
@@ -17,7 +18,7 @@ export const BattleSpinner = ({
   playerName,
   isOpponent
 }: BattleSpinnerProps) => {
-  const { spinItems, spinSpeed, finalItem, isRevealing } = useSpinningLogic(
+  const { spinItems, rotation, finalItem, isRevealing } = useSpinningLogic(
     caseData.items,
     isSpinning,
     onSpinComplete
@@ -28,7 +29,7 @@ export const BattleSpinner = ({
       <SpinningItems
         items={spinItems}
         isSpinning={isSpinning}
-        spinSpeed={spinSpeed}
+        rotation={rotation}
         finalItem={finalItem}
         hasRushDraw={false}
         isOpponent={isOpponent}
