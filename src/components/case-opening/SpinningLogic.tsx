@@ -4,6 +4,11 @@ import { CaseItem } from "@/types/case";
 import { generateClientSeed, calculateRoll, getItemFromRoll } from "@/utils/provablyFair";
 import { supabase } from "@/integrations/supabase/client";
 
+interface CaseOpeningResponse {
+  server_seed: string;
+  nonce: number;
+}
+
 export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onComplete: (item: CaseItem) => void) => {
   const [spinItems, setSpinItems] = useState<CaseItem[]>([]);
   const [rotation, setRotation] = useState(0);
@@ -22,13 +27,14 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
           const clientSeed = generateClientSeed();
           
           // Get next nonce and server seed from database
-          const { data: openingData, error } = await supabase.rpc('create_case_opening', {
-            client_seed: clientSeed
+          const { data, error } = await supabase.functions.invoke<CaseOpeningResponse>('create-case-opening', {
+            body: { client_seed: clientSeed }
           });
 
           if (error) throw error;
+          if (!data) throw new Error('No data returned from case opening');
 
-          const { server_seed, nonce } = openingData;
+          const { server_seed, nonce } = data;
           const roll = calculateRoll(server_seed, clientSeed, nonce);
           const winner = getItemFromRoll(roll, items);
 

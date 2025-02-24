@@ -449,6 +449,12 @@ export type Database = {
           message: string
         }[]
       }
+      create_case_opening: {
+        Args: {
+          client_seed: string
+        }
+        Returns: Json
+      }
       generate_server_seed: {
         Args: Record<PropertyKey, never>
         Returns: string
