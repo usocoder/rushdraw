@@ -21,11 +21,14 @@ export const BattleSpinner = ({
   const { spinItems, rotation, finalItem, isRevealing } = useSpinningLogic(
     caseData.items,
     isSpinning,
-    onSpinComplete
+    (item) => {
+      console.log(`Spin complete for ${playerName}:`, item);
+      onSpinComplete(item);
+    }
   );
 
   return (
-    <div className="relative h-48 overflow-hidden rounded-lg bg-muted">
+    <div className="relative overflow-hidden rounded-lg bg-muted">
       <SpinningItems
         items={spinItems}
         isSpinning={isSpinning}
