@@ -1,5 +1,4 @@
 
-import { createHash } from 'crypto-js';
 import SHA256 from 'crypto-js/sha256';
 import Hex from 'crypto-js/enc-hex';
 import { CaseItem } from '@/types/case';
@@ -16,6 +15,7 @@ export const calculateRoll = (serverSeed: string, clientSeed: string, nonce: num
   
   // Use first 8 characters of hash to generate a number between 0 and 1
   const roll = parseInt(hash.slice(0, 8), 16) / 0xffffffff;
+  console.log('Calculated roll:', roll);
   return roll;
 };
 
@@ -27,5 +27,19 @@ export const getItemFromRoll = (roll: number, items: CaseItem[]): CaseItem => {
       return item;
     }
   }
-  return items[0]; // Fallback to first item if no match (shouldn't happen with proper odds)
+  return items[0];
+};
+
+// Calculate the position for the spinning animation
+export const calculateSpinPosition = (roll: number, totalItems: number): number => {
+  // Ensure we do enough rotations for a satisfying spin (between 4-6 full rotations)
+  const baseRotations = 4;
+  const extraRotations = roll * 2; // Add 0-2 extra rotations based on roll
+  const totalRotations = baseRotations + extraRotations;
+  
+  // Calculate final position
+  const finalPosition = (roll * totalItems) | 0; // Integer position in the items array
+  
+  // Convert to degrees, adding full rotations
+  return (totalRotations * 360) + (finalPosition * (360 / totalItems));
 };

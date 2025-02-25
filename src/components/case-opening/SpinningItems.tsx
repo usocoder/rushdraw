@@ -65,6 +65,10 @@ export const SpinningItems = ({
                 rotate: -rotation, // Counter-rotate items to keep them upright
                 left: "50%",
                 top: "50%",
+                translateX: `${index * 100}%`, // Position items horizontally
+                filter: isRevealing && finalItem?.id !== item.id ? "blur(2px)" : "none",
+                opacity: isRevealing && finalItem?.id !== item.id ? 0.5 : 1,
+                transition: "filter 0.3s, opacity 0.3s",
               }}
             >
               <div className="flex flex-col h-full relative p-4">
@@ -74,7 +78,8 @@ export const SpinningItems = ({
                     alt={item.name}
                     className={`
                       ${imageSize} object-contain
-                      ${!isSpinning && finalItem?.id === item.id ? 'scale-105' : ''}
+                      ${!isSpinning && finalItem?.id === item.id ? 'scale-105 animate-pulse' : ''}
+                      transition-transform duration-300
                     `}
                     loading="eager"
                     style={{ imageRendering: 'crisp-edges' }}

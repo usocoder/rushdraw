@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from "react";
 import { CaseItem } from "@/types/case";
-import { generateClientSeed, calculateRoll, getItemFromRoll } from "@/utils/provablyFair";
+import { generateClientSeed, calculateRoll, getItemFromRoll, calculateSpinPosition } from "@/utils/provablyFair";
 import { supabase } from "@/integrations/supabase/client";
 
 interface CaseOpeningResponse {
@@ -25,6 +25,7 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
       const setupProvablyFair = async () => {
         try {
           const clientSeed = generateClientSeed();
+          console.log('Generated client seed:', clientSeed);
           
           // Get next nonce and server seed from database
           const { data, error } = await supabase.functions.invoke<CaseOpeningResponse>('create-case-opening', {
@@ -35,20 +36,30 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
           if (!data) throw new Error('No data returned from case opening');
 
           const { server_seed, nonce } = data;
+          console.log('Received server seed and nonce:', { server_seed, nonce });
+
           const roll = calculateRoll(server_seed, clientSeed, nonce);
           const winner = getItemFromRoll(roll, items);
+          console.log('Selected winner:', winner);
 
-          // Generate display items
-          const displayItems = Array(20)
+          // Generate display items array with winner guaranteed to appear
+          const displayCount = 100; // Larger number for smoother animation
+          const displayItems = Array(displayCount)
             .fill(null)
-            .map(() => items[Math.floor(Math.random() * items.length)]);
+            .map((_, index) => {
+              // Place the winner at a specific position
+              if (index === Math.floor(displayCount * 0.75)) {
+                return winner;
+              }
+              // Random items for the rest
+              return items[Math.floor(Math.random() * items.length)];
+            });
           
           setSpinItems(displayItems);
           
-          // Animate rotation
-          let currentRotation = 0;
-          const totalRotations = 5; // Number of full rotations before stopping
-          const finalRotation = 360 * totalRotations;
+          // Calculate final rotation based on the roll
+          const finalRotation = calculateSpinPosition(roll, displayCount);
+          console.log('Final rotation:', finalRotation);
           
           const startTime = performance.now();
           const duration = 8000; // 8 seconds
@@ -57,10 +68,17 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
             
-            // Easing function for smooth deceleration
-            const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
-            currentRotation = finalRotation * easeOut(progress);
+            // Easing function for realistic deceleration
+            const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+            const easeOutExpo = (t: number) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
             
+            // Combine easing functions for more natural movement
+            const combinedEase = progress < 0.7 
+              ? easeOutExpo(progress / 0.7) 
+              : easeOutCubic((progress - 0.7) / 0.3);
+            
+            // Apply rotation
+            const currentRotation = finalRotation * combinedEase;
             setRotation(currentRotation);
             
             if (progress < 1) {
