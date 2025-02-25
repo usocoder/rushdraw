@@ -10,6 +10,7 @@ export const generateClientSeed = () => {
 };
 
 export const calculateRoll = (serverSeed: string, clientSeed: string, nonce: number): number => {
+  // Combine seeds and nonce
   const combinedSeed = `${serverSeed}-${clientSeed}-${nonce}`;
   const hash = SHA256(combinedSeed).toString(Hex);
   
@@ -30,16 +31,31 @@ export const getItemFromRoll = (roll: number, items: CaseItem[]): CaseItem => {
   return items[0];
 };
 
-// Calculate the position for the spinning animation
-export const calculateSpinPosition = (roll: number, totalItems: number): number => {
-  // Ensure we do enough rotations for a satisfying spin (between 4-6 full rotations)
+export const calculateSpinPosition = (
+  roll: number, 
+  itemWidth: number,
+  visibleItems: number,
+  totalItems: number,
+  winningItemIndex: number
+): { 
+  finalOffset: number;
+  rotations: number;
+} => {
+  // Base rotations (4-6 full rotations)
   const baseRotations = 4;
-  const extraRotations = roll * 2; // Add 0-2 extra rotations based on roll
+  const extraRotations = roll * 2; // 0-2 extra rotations based on roll
   const totalRotations = baseRotations + extraRotations;
   
-  // Calculate final position
-  const finalPosition = (roll * totalItems) | 0; // Integer position in the items array
+  // Calculate the total distance needed to scroll
+  const totalWidth = itemWidth * totalItems;
+  const baseOffset = -(winningItemIndex * itemWidth) + ((visibleItems * itemWidth) / 2) - (itemWidth / 2);
+  const rotationOffset = totalWidth * totalRotations;
   
-  // Convert to degrees, adding full rotations
-  return (totalRotations * 360) + (finalPosition * (360 / totalItems));
+  // Final position calculation
+  const finalOffset = -(rotationOffset + Math.abs(baseOffset));
+  
+  return {
+    finalOffset,
+    rotations: totalRotations
+  };
 };

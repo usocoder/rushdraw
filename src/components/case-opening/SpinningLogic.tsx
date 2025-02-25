@@ -43,11 +43,11 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
           console.log('Selected winner:', winner);
 
           // Generate display items array with winner guaranteed to appear
-          const displayCount = 100; // Larger number for smoother animation
-          const displayItems = Array(displayCount)
+          const displayCount = 150; // More items for smoother animation
+          const extendedItems = Array(displayCount)
             .fill(null)
             .map((_, index) => {
-              // Place the winner at a specific position
+              // Place the winner at a calculated position
               if (index === Math.floor(displayCount * 0.75)) {
                 return winner;
               }
@@ -55,44 +55,34 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
               return items[Math.floor(Math.random() * items.length)];
             });
           
-          setSpinItems(displayItems);
+          setSpinItems(extendedItems);
           
-          // Calculate final rotation based on the roll
-          const finalRotation = calculateSpinPosition(roll, displayCount);
-          console.log('Final rotation:', finalRotation);
+          // Calculate final position
+          const itemWidth = window.innerWidth < 768 ? 160 : 192; // Matches Tailwind classes
+          const visibleItems = 5;
+          const winningIndex = Math.floor(displayCount * 0.75);
           
-          const startTime = performance.now();
-          const duration = 8000; // 8 seconds
+          const { finalOffset } = calculateSpinPosition(
+            roll,
+            itemWidth,
+            visibleItems,
+            displayCount,
+            winningIndex
+          );
           
-          const animate = (currentTime: number) => {
-            const elapsed = currentTime - startTime;
-            const progress = Math.min(elapsed / duration, 1);
+          // Start spinning animation
+          requestAnimationFrame(() => {
+            setRotation(finalOffset);
             
-            // Easing function for realistic deceleration
-            const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
-            const easeOutExpo = (t: number) => t === 1 ? 1 : 1 - Math.pow(2, -10 * t);
-            
-            // Combine easing functions for more natural movement
-            const combinedEase = progress < 0.7 
-              ? easeOutExpo(progress / 0.7) 
-              : easeOutCubic((progress - 0.7) / 0.3);
-            
-            // Apply rotation
-            const currentRotation = finalRotation * combinedEase;
-            setRotation(currentRotation);
-            
-            if (progress < 1) {
-              requestAnimationFrame(animate);
-            } else {
+            // Reveal winner after animation
+            setTimeout(() => {
               setFinalItem(winner);
               setIsRevealing(true);
               setTimeout(() => {
                 onComplete(winner);
               }, 500);
-            }
-          };
-          
-          requestAnimationFrame(animate);
+            }, 5000); // Match the animation duration
+          });
         } catch (error) {
           console.error("Error in provably fair setup:", error);
         }
