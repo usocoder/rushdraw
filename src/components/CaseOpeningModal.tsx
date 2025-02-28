@@ -20,6 +20,14 @@ interface CaseOpeningModalProps {
 
 const MAX_TRANSACTION_AMOUNT = 99999999.99;
 
+// Function to calculate multiplier from item value and case price
+const calculateMultiplier = (item: CaseItem, casePrice: number): number => {
+  if (item.multiplier !== null && item.multiplier !== undefined) {
+    return item.multiplier;
+  }
+  return item.value && casePrice > 0 ? item.value / casePrice : 1;
+};
+
 export const CaseOpeningModal = ({
   isOpen,
   onOpenChange,
@@ -51,7 +59,6 @@ export const CaseOpeningModal = ({
 
   useEffect(() => {
     if (!isOpen) {
-      // Add a small delay before resetting state when modal closes
       setIsResetting(true);
       const timeout = setTimeout(() => {
         resetState();
@@ -94,13 +101,16 @@ export const CaseOpeningModal = ({
 
   const handleSpinComplete = async (item: CaseItem, player: string) => {
     if (isBattleMode) {
-      if (!battleWinner || item.multiplier > battleWinner.item.multiplier) {
+      if (!battleWinner || calculateMultiplier(item, caseData.price) > calculateMultiplier(battleWinner.item, caseData.price)) {
         setBattleWinner({ player, item });
       }
     } else {
       setFinalItem(item);
       if (!isFreePlay) {
-        const winAmount = Math.min(caseData.price * item.multiplier, MAX_TRANSACTION_AMOUNT);
+        const effectiveMultiplier = calculateMultiplier(item, caseData.price);
+        const winAmount = Math.min(caseData.price * effectiveMultiplier, MAX_TRANSACTION_AMOUNT);
+        console.log(`Win calculation: ${caseData.price} × ${effectiveMultiplier} = ${winAmount}`);
+        
         if (winAmount >= MAX_TRANSACTION_AMOUNT) {
           toast({
             title: "Maximum win amount exceeded",

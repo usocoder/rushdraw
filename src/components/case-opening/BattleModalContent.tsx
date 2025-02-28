@@ -34,10 +34,21 @@ export const BattleModalContent = ({
     );
   }
 
+  // Ensure items have multiplier values by calculating them from value and case price
+  const processedItems = Array.isArray(caseData.items) ? caseData.items.map(item => {
+    if (item.multiplier === null || item.multiplier === undefined) {
+      return {
+        ...item,
+        multiplier: item.value && casePrice > 0 ? item.value / casePrice : 1
+      };
+    }
+    return item;
+  }) : [];
+
   // Ensure at least empty arrays are initialized for the case items
   const safeCase = {
     ...caseData,
-    items: Array.isArray(caseData.items) ? caseData.items : []
+    items: processedItems.length > 0 ? processedItems : []
   };
 
   // Make sure opponents is an array even if there's an issue

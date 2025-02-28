@@ -1,3 +1,4 @@
+
 import { CaseItem } from "@/types/case";
 import { toast } from "../ui/use-toast";
 import { useEffect } from "react";
@@ -14,13 +15,18 @@ export const BattleResults = ({ winner, isFreePlay, casePrice, onWin }: BattleRe
     if (!winner) return;
 
     const handleWin = async () => {
+      // Calculate multiplier if it's null by using the item value and case price
+      const effectiveMultiplier = winner.item.multiplier || 
+        (winner.item.value && casePrice > 0 ? winner.item.value / casePrice : 1);
+      
       if (winner.player === "You" && !isFreePlay) {
-        const winAmount = casePrice * winner.item.multiplier;
+        const winAmount = casePrice * effectiveMultiplier;
+        console.log(`Win calculation: ${casePrice} × ${effectiveMultiplier} = ${winAmount}`);
         await onWin(winAmount);
       } else if (winner.player !== "You") {
         toast({
           title: `${winner.player} won the battle!`,
-          description: `With ${winner.item.name} (${winner.item.multiplier}x)`,
+          description: `With ${winner.item.name} (${effectiveMultiplier.toFixed(2)}x)`,
           variant: "destructive",
         });
       }

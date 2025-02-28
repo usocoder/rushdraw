@@ -1,3 +1,4 @@
+
 import { motion } from "framer-motion";
 import { CaseItem } from "@/types/case";
 import { Trophy, Sparkles } from "lucide-react";
@@ -10,6 +11,13 @@ interface WinningResultProps {
 }
 
 export const WinningResult = ({ item, casePrice, isFreePlay = false, hasRushDraw = false }: WinningResultProps) => {
+  // Calculate multiplier if it's null by using the item value and case price
+  const effectiveMultiplier = item.multiplier || 
+    (item.value && casePrice > 0 ? item.value / casePrice : 1);
+  
+  // Calculate the win amount
+  const winAmount = casePrice * effectiveMultiplier;
+
   return (
     <motion.div
       className="mt-6 text-center"
@@ -68,7 +76,7 @@ export const WinningResult = ({ item, casePrice, isFreePlay = false, hasRushDraw
           )}
         </h3>
         <p className="text-lg text-primary">
-          Value: ${(casePrice * item.multiplier).toFixed(2)}
+          Value: ${winAmount.toFixed(2)} ({effectiveMultiplier.toFixed(2)}x)
         </p>
         {isFreePlay && (
           <p className="mt-2 text-muted-foreground">

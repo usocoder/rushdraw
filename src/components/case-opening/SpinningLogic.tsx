@@ -55,7 +55,20 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
 
           // Calculate the winning item
           const roll = calculateRoll(server_seed, clientSeed, nonce);
-          const winner = getItemFromRoll(roll, items);
+          let winner = getItemFromRoll(roll, items);
+          
+          // Ensure the winner has a multiplier
+          if (winner.multiplier === null || winner.multiplier === undefined) {
+            // Find the case price to calculate multiplier
+            const caseValue = items.reduce((sum, item) => sum + (item.value || 0), 0) / items.length;
+            const estimatedCasePrice = caseValue / 1.5; // This is a rough estimate
+            
+            winner = {
+              ...winner,
+              multiplier: winner.value && estimatedCasePrice > 0 ? winner.value / estimatedCasePrice : 1
+            };
+          }
+          
           console.log('Selected winner:', winner);
 
           // Create extended items array with at least 1 item (avoid empty array errors)
@@ -115,8 +128,16 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
           if (items.length > 0) {
             // If we have items, pick a random one to complete
             const fallbackItem = items[Math.floor(Math.random() * items.length)];
+            // Ensure fallback item has a multiplier
+            const fallbackItemWithMultiplier = fallbackItem.multiplier !== null && fallbackItem.multiplier !== undefined
+              ? fallbackItem
+              : {
+                  ...fallbackItem,
+                  multiplier: fallbackItem.value ? fallbackItem.value / 100 : 1 // Rough estimate
+                };
+                
             setTimeout(() => {
-              onComplete(fallbackItem);
+              onComplete(fallbackItemWithMultiplier);
             }, 500);
           }
         }
