@@ -33,7 +33,7 @@ export const BattleSpinner = ({
   const displayItems = spinItems && spinItems.length > 0 
     ? spinItems 
     : caseData.items && caseData.items.length > 0 
-      ? Array(20).fill(null).map(() => caseData.items[Math.floor(Math.random() * caseData.items.length)])
+      ? Array(10).fill(null).map(() => caseData.items[Math.floor(Math.random() * caseData.items.length)])
       : [];
 
   // If we're playing as an opponent, add a delay to simulate realistic battle behavior

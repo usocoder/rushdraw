@@ -1,9 +1,10 @@
 
 import { useState, useEffect, useRef } from "react";
 import { CaseItem } from "@/types/case";
-import { generateClientSeed, calculateRoll, getItemFromRoll, calculateSpinPosition } from "@/utils/provablyFair";
+import { generateClientSeed, calculateRoll, getItemFromRoll } from "@/utils/provablyFair";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CaseOpeningResponse {
   server_seed: string;
@@ -16,6 +17,8 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
   const [finalItem, setFinalItem] = useState<CaseItem | null>(null);
   const [isRevealing, setIsRevealing] = useState(false);
   const animationRef = useRef<number | null>(null);
+  const isMobile = useIsMobile();
+  const { toast } = useToast();
   
   // Store game data for provably fair verification
   const [gameData, setGameData] = useState<{
@@ -24,6 +27,11 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
     nonce: number;
     roll: number;
   } | null>(null);
+
+  // Calculate item height based on mobile status
+  const getItemHeight = () => {
+    return isMobile ? 160 : 192; // height in pixels (matching the h-40/h-48 classes)
+  };
 
   useEffect(() => {
     // Clean up any existing animation frame
@@ -98,69 +106,58 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
             roll
           });
 
-          // Generate display items
-          const displayCount = 150;
-          const winningIndex = Math.floor(displayCount * 0.75); // Place winning item at 75% mark
+          // Generate spinner items with duplicated sequences for smooth looping
+          const displayCount = 50; // Total number of items to display
+          const extraSpins = 4; // Number of full cycles before showing the winner
+          const itemHeight = getItemHeight();
           
-          // Create extended items array
-          const extendedItems = Array.from({ length: displayCount }, (_, index) => {
-            if (index === winningIndex) {
-              return winner;
-            }
-            return items[Math.floor(Math.random() * items.length)];
-          });
+          // Create a pool of random items (excluding the winner to avoid duplicates)
+          const itemPool = items.filter(item => item.id !== winner.id);
           
-          setSpinItems(extendedItems);
+          // Create sequence of items with winner placed at a predetermined position
+          const fullSequence: CaseItem[] = [];
           
-          // Calculate dimensions for spinner
-          const itemWidth = window.innerWidth < 768 ? 160 : 192;
-          const visibleItems = 5;
-          
-          // Calculate spin position
-          const { finalOffset } = calculateSpinPosition(
-            roll,
-            itemWidth,
-            visibleItems,
-            displayCount,
-            winningIndex
-          );
-          
-          // Use smooth animation with requestAnimationFrame
-          let startTimestamp: number | null = null;
-          const duration = 5000; // 5 seconds spin
-          const startRotation = 0;
-          const targetRotation = finalOffset;
-          
-          const animateSpinner = (timestamp: number) => {
-            if (!startTimestamp) startTimestamp = timestamp;
-            
-            const elapsed = timestamp - startTimestamp;
-            const progress = Math.min(elapsed / duration, 1);
-            
-            // Easing function - cubic ease out for smooth deceleration
-            const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
-            const currentProgress = easeOutCubic(progress);
-            
-            const currentRotation = startRotation + (targetRotation - startRotation) * currentProgress;
-            setRotation(currentRotation);
-            
-            // Continue animation until complete
-            if (progress < 1) {
-              animationRef.current = requestAnimationFrame(animateSpinner);
+          // Add enough random items to fill the sequence
+          for (let i = 0; i < displayCount; i++) {
+            // Winner at 75% through the sequence
+            if (i === Math.floor(displayCount * 0.75)) {
+              fullSequence.push(winner);
             } else {
-              // Animation complete
+              // Random item from pool
+              const randomItem = itemPool[Math.floor(Math.random() * itemPool.length)];
+              fullSequence.push(randomItem);
+            }
+          }
+          
+          setSpinItems(fullSequence);
+          
+          // Calculate final position to center the winning item
+          const winnerIndex = Math.floor(displayCount * 0.75);
+          const centerOffset = Math.floor(itemHeight / 2);
+          const finalPosition = -(winnerIndex * itemHeight) + centerOffset;
+          
+          // Calculate total spin distance including extra spins
+          const totalDistance = (extraSpins * displayCount * itemHeight) + Math.abs(finalPosition);
+          
+          // Set up the spin animation
+          // Start by instantly moving up (negative value)
+          setRotation(0);
+          
+          // Set a small timeout to ensure the initial position is rendered
+          setTimeout(() => {
+            // Then animate down to the final position
+            setRotation(-totalDistance);
+            
+            // Set timeout for when animation completes
+            setTimeout(() => {
               setFinalItem(winner);
               setIsRevealing(true);
               
               setTimeout(() => {
                 onComplete(winner);
-              }, 500);
-            }
-          };
-          
-          // Start the animation
-          animationRef.current = requestAnimationFrame(animateSpinner);
-          
+              }, 1000); // Delay before calling onComplete
+            }, 5000); // Match the CSS transition duration (5s)
+          }, 50); 
         } catch (error) {
           console.error("Error in provably fair setup:", error);
           toast({
@@ -193,18 +190,18 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
       // Not spinning, reset states
       if (spinItems.length === 0 && items.length > 0) {
         // Initialize with some items to avoid showing empty spinner
-        setSpinItems(Array(20).fill(null).map(() => items[Math.floor(Math.random() * items.length)]));
+        const initialItems = Array(10).fill(null).map(() => items[Math.floor(Math.random() * items.length)]);
+        setSpinItems(initialItems);
       }
     }
     
-    // Cleanup function to cancel animation frame when component unmounts or dependencies change
     return () => {
       if (animationRef.current !== null) {
         cancelAnimationFrame(animationRef.current);
         animationRef.current = null;
       }
     };
-  }, [isSpinning, items, onComplete]);
+  }, [isSpinning, items, onComplete, isMobile, toast]);
 
   return { 
     spinItems, 

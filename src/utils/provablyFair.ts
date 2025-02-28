@@ -47,7 +47,7 @@ export const getItemFromRoll = (roll: number, items: CaseItem[]): CaseItem => {
 // Calculate the spinner position based on the roll and selected item
 export const calculateSpinPosition = (
   roll: number, 
-  itemWidth: number,
+  itemHeight: number,
   visibleItems: number,
   totalItems: number,
   winningItemIndex: number
@@ -60,14 +60,15 @@ export const calculateSpinPosition = (
   const extraRotations = roll * 2; // 0-2 extra rotations based on roll value
   const totalRotations = baseRotations + extraRotations;
   
-  // Calculate the total spinner width
-  const totalWidth = itemWidth * totalItems;
+  // Calculate the total spinner height
+  const totalHeight = itemHeight * totalItems;
   
   // Calculate the base offset to center the winning item
-  const baseOffset = -(winningItemIndex * itemWidth) + ((visibleItems * itemWidth) / 2) - (itemWidth / 2);
+  const centerOffset = Math.floor(itemHeight / 2);
+  const baseOffset = -(winningItemIndex * itemHeight) + centerOffset;
   
   // Calculate the rotation offset
-  const rotationOffset = totalWidth * totalRotations;
+  const rotationOffset = totalHeight * totalRotations;
   
   // Calculate the final position
   const finalOffset = -(rotationOffset + Math.abs(baseOffset));
