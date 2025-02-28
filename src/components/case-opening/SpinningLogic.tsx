@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { CaseItem } from "@/types/case";
 import { generateClientSeed, calculateRoll, getItemFromRoll, calculateSpinPosition } from "@/utils/provablyFair";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,6 +15,24 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
   const [rotation, setRotation] = useState(0);
   const [finalItem, setFinalItem] = useState<CaseItem | null>(null);
   const [isRevealing, setIsRevealing] = useState(false);
+  const animationRef = useRef<number | null>(null);
+  
+  // Store game data for provably fair verification
+  const [gameData, setGameData] = useState<{
+    clientSeed: string;
+    serverSeed: string;
+    nonce: number;
+    roll: number;
+  } | null>(null);
+
+  useEffect(() => {
+    // Clean up any existing animation frame
+    return () => {
+      if (animationRef.current !== null) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (isSpinning && items.length > 0) {
@@ -23,16 +41,17 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
       setIsRevealing(false);
       setRotation(0);
       
-      const setupProvablyFair = async () => {
+      const setupSpinningProcess = async () => {
         try {
-          // For free play or when the Edge Function is failing, use a client-side fallback
-          let server_seed: string;
-          let nonce: number;
+          // Generate client seed for provably fair algorithm
           let clientSeed = generateClientSeed();
+          let serverSeed: string;
+          let nonce: number;
           
           try {
             console.log('Generated client seed:', clientSeed);
             
+            // Get server seed and nonce from edge function
             const { data, error } = await supabase.functions.invoke<CaseOpeningResponse>('create-case-opening', {
               body: { client_seed: clientSeed }
             });
@@ -41,20 +60,20 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
               throw new Error(error?.message || "No data returned from case opening");
             }
 
-            server_seed = data.server_seed;
+            serverSeed = data.server_seed;
             nonce = data.nonce;
-            console.log('Received server seed and nonce:', { server_seed, nonce });
+            console.log('Received server seed and nonce:', { serverSeed, nonce });
           } catch (invokeError) {
             console.warn("Edge function failed, using client-side fallback:", invokeError);
             // Client-side fallback when the Edge Function fails
-            server_seed = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+            serverSeed = Array.from(crypto.getRandomValues(new Uint8Array(16)))
               .map(b => b.toString(16).padStart(2, '0'))
               .join('');
             nonce = Date.now();
           }
 
-          // Calculate the winning item
-          const roll = calculateRoll(server_seed, clientSeed, nonce);
+          // Calculate the roll and determine the winning item
+          const roll = calculateRoll(serverSeed, clientSeed, nonce);
           let winner = getItemFromRoll(roll, items);
           
           // Ensure the winner has a multiplier
@@ -70,15 +89,18 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
           }
           
           console.log('Selected winner:', winner);
-
-          // Create extended items array with at least 1 item (avoid empty array errors)
-          if (items.length === 0) {
-            throw new Error("No items available");
-          }
+          
+          // Store game data for provably fair verification
+          setGameData({
+            clientSeed,
+            serverSeed,
+            nonce,
+            roll
+          });
 
           // Generate display items
           const displayCount = 150;
-          const winningIndex = Math.floor(displayCount * 0.75);
+          const winningIndex = Math.floor(displayCount * 0.75); // Place winning item at 75% mark
           
           // Create extended items array
           const extendedItems = Array.from({ length: displayCount }, (_, index) => {
@@ -90,10 +112,11 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
           
           setSpinItems(extendedItems);
           
-          // Calculate dimensions
+          // Calculate dimensions for spinner
           const itemWidth = window.innerWidth < 768 ? 160 : 192;
           const visibleItems = 5;
           
+          // Calculate spin position
           const { finalOffset } = calculateSpinPosition(
             roll,
             itemWidth,
@@ -102,20 +125,42 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
             winningIndex
           );
           
-          // Start animation
-          requestAnimationFrame(() => {
-            setRotation(finalOffset);
+          // Use smooth animation with requestAnimationFrame
+          let startTimestamp: number | null = null;
+          const duration = 5000; // 5 seconds spin
+          const startRotation = 0;
+          const targetRotation = finalOffset;
+          
+          const animateSpinner = (timestamp: number) => {
+            if (!startTimestamp) startTimestamp = timestamp;
             
-            setTimeout(() => {
+            const elapsed = timestamp - startTimestamp;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // Easing function - cubic ease out for smooth deceleration
+            const easeOutCubic = (t: number) => 1 - Math.pow(1 - t, 3);
+            const currentProgress = easeOutCubic(progress);
+            
+            const currentRotation = startRotation + (targetRotation - startRotation) * currentProgress;
+            setRotation(currentRotation);
+            
+            // Continue animation until complete
+            if (progress < 1) {
+              animationRef.current = requestAnimationFrame(animateSpinner);
+            } else {
+              // Animation complete
               setFinalItem(winner);
               setIsRevealing(true);
               
               setTimeout(() => {
                 onComplete(winner);
               }, 500);
-            }, 5000);
-          });
-
+            }
+          };
+          
+          // Start the animation
+          animationRef.current = requestAnimationFrame(animateSpinner);
+          
         } catch (error) {
           console.error("Error in provably fair setup:", error);
           toast({
@@ -143,7 +188,7 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
         }
       };
 
-      setupProvablyFair();
+      setupSpinningProcess();
     } else {
       // Not spinning, reset states
       if (spinItems.length === 0 && items.length > 0) {
@@ -151,7 +196,21 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
         setSpinItems(Array(20).fill(null).map(() => items[Math.floor(Math.random() * items.length)]));
       }
     }
+    
+    // Cleanup function to cancel animation frame when component unmounts or dependencies change
+    return () => {
+      if (animationRef.current !== null) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
+      }
+    };
   }, [isSpinning, items, onComplete]);
 
-  return { spinItems, rotation, finalItem, isRevealing };
+  return { 
+    spinItems, 
+    rotation, 
+    finalItem, 
+    isRevealing,
+    gameData // Expose game data for verification
+  };
 };
