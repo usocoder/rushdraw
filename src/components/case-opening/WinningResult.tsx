@@ -76,7 +76,7 @@ export const WinningResult = ({ item, casePrice, isFreePlay = false, hasRushDraw
           )}
         </h3>
         <p className="text-lg text-primary">
-          Value: ${winAmount.toFixed(2)} ({effectiveMultiplier.toFixed(2)}x)
+          Value: ${Math.round(winAmount)} ({Math.floor(effectiveMultiplier)}x)
         </p>
         {isFreePlay && (
           <p className="mt-2 text-muted-foreground">

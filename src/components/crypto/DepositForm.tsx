@@ -1,3 +1,4 @@
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -40,6 +41,7 @@ export const DepositForm = ({ userId, onSuccess }: DepositFormProps) => {
     setIsProcessing(true);
     
     try {
+      // Create deposit transaction as pending
       const { error } = await supabase
         .from('transactions')
         .insert({
@@ -57,6 +59,7 @@ export const DepositForm = ({ userId, onSuccess }: DepositFormProps) => {
         description: "Your deposit is pending approval. Please wait for admin confirmation.",
       });
       onSuccess();
+      setAmount(""); // Clear the form field after successful submission
     } catch (error: any) {
       console.error('Error creating transaction:', error);
       toast({
@@ -82,6 +85,7 @@ export const DepositForm = ({ userId, onSuccess }: DepositFormProps) => {
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           placeholder="Enter amount..."
+          className="bg-background/50 border-accent/30 focus:border-accent/60"
         />
       </div>
 
@@ -93,7 +97,7 @@ export const DepositForm = ({ userId, onSuccess }: DepositFormProps) => {
       <Button 
         onClick={handleDeposit} 
         disabled={isProcessing || !amount}
-        className="w-full"
+        className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
       >
         {isProcessing ? (
           <>

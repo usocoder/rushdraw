@@ -110,7 +110,8 @@ export const SpinningItems = ({
                   item?.rarity === 'rare' ? 'text-blue-500' : 
                   item?.rarity === 'epic' ? 'text-purple-500' : 'text-primary'
                 }`}>
-                  {item?.multiplier || 0}x
+                  {/* Remove decimal places from the multiplier value */}
+                  {Math.floor(item?.multiplier || 0)}x
                 </p>
               </div>
             </div>

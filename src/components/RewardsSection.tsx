@@ -1,11 +1,13 @@
+
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Gift, Trophy, Star } from "lucide-react";
+import { Gift, Trophy, Star, Clock } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
 interface UserProgress {
   current_level: number;
@@ -30,8 +32,10 @@ interface DailyReward {
 export const RewardsSection = () => {
   const { user } = useBrowserAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [nextLevelXp, setNextLevelXp] = useState<number>(0);
   const [xpProgress, setXpProgress] = useState<number>(0);
+  const [timeRemaining, setTimeRemaining] = useState<string | null>(null);
 
   const { data: userProgress, refetch: refetchProgress } = useQuery({
     queryKey: ['userProgress', user?.id],
@@ -97,24 +101,57 @@ export const RewardsSection = () => {
       if (error) throw error;
       return (data || []).map(reward => ({
         ...reward,
-        case: reward.case[0] // Fix the array issue by taking the first item
+        case: reward.case || { name: "Unknown", image_url: "/placeholder.svg" }
       })) as DailyReward[];
     },
   });
 
   useEffect(() => {
-    if (userProgress && levels) {
+    if (userProgress && levels && levels.length > 0) {
       const currentLevel = levels.find(l => l.level_number === userProgress.current_level);
-      const nextLevel = levels.find(l => l.level_number > userProgress.current_level);
+      const nextLevel = levels.find(l => l.level_number === userProgress.current_level + 1);
       
       if (currentLevel && nextLevel) {
         const xpNeeded = nextLevel.xp_required - currentLevel.xp_required;
-        const xpProgress = userProgress.current_xp - currentLevel.xp_required;
+        const xpGained = userProgress.current_xp - currentLevel.xp_required;
+        const calculatedProgress = (xpGained / xpNeeded) * 100;
+        
         setNextLevelXp(xpNeeded);
-        setXpProgress((xpProgress / xpNeeded) * 100);
+        setXpProgress(Math.max(0, Math.min(100, calculatedProgress))); // Ensure between 0-100
       }
     }
   }, [userProgress, levels]);
+
+  // Update time remaining every second for the cooldown timer
+  useEffect(() => {
+    if (!userProgress?.last_reward_claim) {
+      setTimeRemaining(null);
+      return;
+    }
+
+    const calculateTimeRemaining = () => {
+      const lastClaim = new Date(userProgress.last_reward_claim as string);
+      const nextClaim = new Date(lastClaim.getTime() + 25 * 60 * 60 * 1000); // 25 hours
+      const now = new Date();
+      
+      if (now >= nextClaim) {
+        setTimeRemaining(null);
+        return;
+      }
+      
+      const diffMs = nextClaim.getTime() - now.getTime();
+      const hours = Math.floor(diffMs / (1000 * 60 * 60));
+      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+      
+      setTimeRemaining(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
+    };
+
+    calculateTimeRemaining();
+    const intervalId = setInterval(calculateTimeRemaining, 1000);
+    
+    return () => clearInterval(intervalId);
+  }, [userProgress?.last_reward_claim]);
 
   const handleClaimReward = async () => {
     if (!user) return;
@@ -158,33 +195,88 @@ export const RewardsSection = () => {
     );
   }
 
+  // Find eligible reward based on user level
+  const eligibleReward = dailyRewards?.find(reward => 
+    reward.level_required <= (userProgress?.current_level || 1)
+  );
+
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex flex-col items-center mb-8">
-        <div className="flex items-center gap-2 mb-4">
-          <Trophy className="h-6 w-6 text-primary" />
-          <h2 className="text-2xl font-bold">Level {userProgress?.current_level || 1}</h2>
+      <div className="flex flex-col md:flex-row items-center justify-between mb-8">
+        <div className="flex flex-col items-center mb-4 md:mb-0">
+          <div className="flex items-center gap-2 mb-4">
+            <Trophy className="h-6 w-6 text-primary" />
+            <h2 className="text-2xl font-bold">Level {userProgress?.current_level || 1}</h2>
+          </div>
+          <div className="w-full max-w-md mb-2">
+            <Progress value={xpProgress} className="h-2" />
+          </div>
+          <p className="text-sm text-muted-foreground">
+            {userProgress?.current_xp || 0} / {userProgress?.current_xp + nextLevelXp} XP to next level
+          </p>
         </div>
-        <div className="w-full max-w-md mb-2">
-          <Progress value={xpProgress} className="h-2" />
+
+        <div className="flex flex-col items-center">
+          <Button 
+            onClick={() => navigate('/rewards')} 
+            className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900"
+          >
+            <Gift className="h-5 w-5" /> Daily Rewards
+          </Button>
+          {timeRemaining && (
+            <div className="mt-2 flex items-center gap-1 text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              <span>Next claim in: {timeRemaining}</span>
+            </div>
+          )}
         </div>
-        <p className="text-sm text-muted-foreground">
-          {userProgress?.current_xp || 0} / {nextLevelXp} XP to next level
-        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {eligibleReward && (
+        <div className="bg-card rounded-lg p-6 border border-accent/20 shadow-lg">
+          <div className="flex flex-col md:flex-row items-center">
+            <div className="mb-4 md:mb-0 md:mr-6">
+              <img
+                src={eligibleReward.case.image_url}
+                alt={eligibleReward.case.name}
+                className="w-32 h-32 object-contain"
+              />
+            </div>
+            <div className="flex-1 text-center md:text-left">
+              <h3 className="text-lg font-semibold mb-2">Today's Reward: {eligibleReward.case.name}</h3>
+              <div className="flex items-center gap-2 mb-4 justify-center md:justify-start">
+                <Star className="h-4 w-4 text-yellow-500" />
+                <span>Unlocked at Level {eligibleReward.level_required}</span>
+              </div>
+              <Button
+                onClick={handleClaimReward}
+                disabled={!!timeRemaining}
+                className="w-full md:w-auto"
+              >
+                {timeRemaining ? `Cooldown: ${timeRemaining}` : "Claim Daily Reward"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
         {dailyRewards?.map((reward) => (
           <div
             key={reward.case_id}
-            className="bg-card rounded-lg p-6 flex flex-col items-center"
+            className="bg-card rounded-lg p-6 flex flex-col items-center border border-accent/20 hover:border-accent/40 transition-colors"
           >
-            <div className="mb-4">
+            <div className="mb-4 relative">
               <img
                 src={reward.case.image_url}
                 alt={reward.case.name}
                 className="w-32 h-32 object-contain"
               />
+              {(userProgress?.current_level || 0) < reward.level_required && (
+                <div className="absolute inset-0 bg-black/70 rounded-lg flex items-center justify-center">
+                  <Lock className="h-12 w-12 text-muted-foreground" />
+                </div>
+              )}
             </div>
             <h3 className="text-lg font-semibold mb-2">{reward.case.name}</h3>
             <div className="flex items-center gap-2 mb-4">
@@ -193,10 +285,13 @@ export const RewardsSection = () => {
             </div>
             <Button
               onClick={handleClaimReward}
-              disabled={userProgress?.current_level < reward.level_required}
+              disabled={(userProgress?.current_level || 0) < reward.level_required || !!timeRemaining}
+              variant={(userProgress?.current_level || 0) < reward.level_required ? "outline" : "default"}
             >
               <Gift className="mr-2" />
-              Claim Daily Reward
+              {(userProgress?.current_level || 0) < reward.level_required 
+                ? `Unlock at Level ${reward.level_required}` 
+                : "Claim Daily Reward"}
             </Button>
           </div>
         ))}
@@ -204,3 +299,24 @@ export const RewardsSection = () => {
     </div>
   );
 };
+
+// Missing import
+function Lock(props: any) {
+  return (
+    <svg 
+      xmlns="http://www.w3.org/2000/svg" 
+      width="24" 
+      height="24" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      stroke="currentColor" 
+      strokeWidth="2" 
+      strokeLinecap="round" 
+      strokeLinejoin="round" 
+      {...props}
+    >
+      <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+    </svg>
+  );
+}

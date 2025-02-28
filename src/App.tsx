@@ -1,3 +1,4 @@
+
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import Index from "@/pages/Index";
@@ -8,6 +9,7 @@ import AdminItems from "@/pages/AdminItems";
 import AdminNewItem from "@/pages/AdminNewItem";
 import AdminEditItem from "@/pages/AdminEditItem";
 import AdminRewards from "@/pages/AdminRewards";
+import DailyRewards from "@/pages/DailyRewards";
 
 function App() {
   return (
@@ -21,6 +23,7 @@ function App() {
         <Route path="/admin/items/new" element={<AdminNewItem />} />
         <Route path="/admin/items/:id/edit" element={<AdminEditItem />} />
         <Route path="/admin/rewards" element={<AdminRewards />} />
+        <Route path="/rewards" element={<DailyRewards />} />
       </Routes>
       <Toaster />
     </BrowserRouter>
