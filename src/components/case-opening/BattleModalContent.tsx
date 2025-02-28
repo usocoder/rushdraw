@@ -26,7 +26,7 @@ export const BattleModalContent = ({
   casePrice,
   onWin,
 }: BattleModalContentProps) => {
-  if (!caseData || !caseData.items || caseData.items.length === 0) {
+  if (!caseData || !caseData.items) {
     return (
       <div className="p-4 text-center">
         <p>Error loading case data</p>
@@ -34,20 +34,29 @@ export const BattleModalContent = ({
     );
   }
 
+  // Ensure at least empty arrays are initialized for the case items
+  const safeCase = {
+    ...caseData,
+    items: Array.isArray(caseData.items) ? caseData.items : []
+  };
+
+  // Make sure opponents is an array even if there's an issue
+  const safeOpponents = Array.isArray(opponents) ? opponents : [];
+
   return (
     <div className="p-4 sm:p-6">
       <div className="grid grid-cols-1 gap-4">
         <BattleSpinner
-          caseData={caseData}
+          caseData={safeCase}
           isSpinning={isSpinning}
           onSpinComplete={(item) => onSpinComplete(item, "You")}
           playerName="You"
         />
 
-        {isBattleMode && opponents.map((opponent, index) => (
+        {isBattleMode && safeOpponents.map((opponent, index) => (
           <BattleSpinner
             key={index}
-            caseData={caseData}
+            caseData={safeCase}
             isSpinning={isSpinning}
             onSpinComplete={(item) => onSpinComplete(item, opponent)}
             playerName={opponent}

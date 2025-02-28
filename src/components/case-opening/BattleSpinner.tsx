@@ -27,10 +27,17 @@ export const BattleSpinner = ({
     }
   );
 
+  // Make sure we have items to display - fallback to caseData items if spinItems is empty
+  const displayItems = spinItems && spinItems.length > 0 
+    ? spinItems 
+    : caseData.items && caseData.items.length > 0 
+      ? Array(20).fill(null).map(() => caseData.items[Math.floor(Math.random() * caseData.items.length)])
+      : [];
+
   return (
     <div className="relative overflow-hidden rounded-lg bg-muted">
       <SpinningItems
-        items={spinItems}
+        items={displayItems}
         isSpinning={isSpinning}
         rotation={rotation}
         finalItem={finalItem}

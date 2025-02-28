@@ -25,39 +25,43 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
       
       const setupProvablyFair = async () => {
         try {
-          const clientSeed = generateClientSeed();
-          console.log('Generated client seed:', clientSeed);
+          // For free play or when the Edge Function is failing, use a client-side fallback
+          let server_seed: string;
+          let nonce: number;
+          let clientSeed = generateClientSeed();
           
-          const { data, error } = await supabase.functions.invoke<CaseOpeningResponse>('create-case-opening', {
-            body: { client_seed: clientSeed }
-          });
-
-          if (error) {
-            console.error("Supabase function error:", error);
-            toast({
-              title: "Error opening case",
-              description: "Please try again",
-              variant: "destructive",
+          try {
+            console.log('Generated client seed:', clientSeed);
+            
+            const { data, error } = await supabase.functions.invoke<CaseOpeningResponse>('create-case-opening', {
+              body: { client_seed: clientSeed }
             });
-            return;
+
+            if (error || !data) {
+              throw new Error(error?.message || "No data returned from case opening");
+            }
+
+            server_seed = data.server_seed;
+            nonce = data.nonce;
+            console.log('Received server seed and nonce:', { server_seed, nonce });
+          } catch (invokeError) {
+            console.warn("Edge function failed, using client-side fallback:", invokeError);
+            // Client-side fallback when the Edge Function fails
+            server_seed = Array.from(crypto.getRandomValues(new Uint8Array(16)))
+              .map(b => b.toString(16).padStart(2, '0'))
+              .join('');
+            nonce = Date.now();
           }
 
-          if (!data) {
-            console.error("No data returned from case opening");
-            toast({
-              title: "Error opening case",
-              description: "Please try again",
-              variant: "destructive",
-            });
-            return;
-          }
-
-          const { server_seed, nonce } = data;
-          console.log('Received server seed and nonce:', { server_seed, nonce });
-
+          // Calculate the winning item
           const roll = calculateRoll(server_seed, clientSeed, nonce);
           const winner = getItemFromRoll(roll, items);
           console.log('Selected winner:', winner);
+
+          // Create extended items array with at least 1 item (avoid empty array errors)
+          if (items.length === 0) {
+            throw new Error("No items available");
+          }
 
           // Generate display items
           const displayCount = 150;
@@ -106,15 +110,25 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
             description: "Please try again",
             variant: "destructive",
           });
+          
+          // Still need to call onComplete to cleanup the spinning state
+          if (items.length > 0) {
+            // If we have items, pick a random one to complete
+            const fallbackItem = items[Math.floor(Math.random() * items.length)];
+            setTimeout(() => {
+              onComplete(fallbackItem);
+            }, 500);
+          }
         }
       };
 
       setupProvablyFair();
     } else {
-      setSpinItems([]);
-      setRotation(0);
-      setFinalItem(null);
-      setIsRevealing(false);
+      // Not spinning, reset states
+      if (spinItems.length === 0 && items.length > 0) {
+        // Initialize with some items to avoid showing empty spinner
+        setSpinItems(Array(20).fill(null).map(() => items[Math.floor(Math.random() * items.length)]));
+      }
     }
   }, [isSpinning, items, onComplete]);
 

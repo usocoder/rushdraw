@@ -69,24 +69,25 @@ export const SpinningItems = ({
             duration: 5,
             ease: [0.25, 0.1, 0.25, 1],
           }}
+          key={`spinner-${isSpinning ? 'spinning' : 'idle'}-${rotation}`}
         >
           {items.map((item, index) => (
             <motion.div
-              key={`${item.id}-${index}`}
+              key={`${item?.id || index}-${index}`}
               className={`
                 flex-shrink-0 ${itemSize} p-2
-                ${!isSpinning && finalItem?.id === item.id ? "bg-accent/10" : "bg-accent/5"}
+                ${!isSpinning && finalItem?.id === item?.id ? "bg-accent/10" : "bg-accent/5"}
                 border border-accent/20 mx-1 rounded-lg
               `}
             >
               <div className="flex flex-col h-full justify-between">
                 <div className="flex-1 flex items-center justify-center">
                   <img 
-                    src={item.image}
-                    alt={item.name}
+                    src={item?.image || "/placeholder.svg"}
+                    alt={item?.name || "Loading..."}
                     className={`
                       ${imageSize} object-contain
-                      ${!isSpinning && finalItem?.id === item.id ? 'scale-105 animate-pulse' : ''}
+                      ${!isSpinning && finalItem?.id === item?.id ? 'scale-105 animate-pulse' : ''}
                     `}
                     loading="eager"
                   />
@@ -94,12 +95,12 @@ export const SpinningItems = ({
                 
                 <div className="text-center mt-2">
                   <h3 className="text-xs sm:text-sm font-semibold truncate">
-                    {item.name}
+                    {item?.name || "Loading..."}
                   </h3>
                   <p className={`text-base sm:text-lg font-bold ${
-                    item.rarity === 'legendary' ? 'text-yellow-500' : 'text-primary'
+                    item?.rarity === 'legendary' ? 'text-yellow-500' : 'text-primary'
                   }`}>
-                    {item.multiplier}x
+                    {item?.multiplier || 0}x
                   </p>
                 </div>
               </div>
