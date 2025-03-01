@@ -7,27 +7,27 @@ import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 const CRYPTO_ADDRESSES = [
   {
     currency: "BTC",
-    address: "bc1ql2y75kpm8lp5yw2ny6qm5wdzmrmq5yxyvsknht",
+    address: "bc1qhl5rsa5yhpqhh8du47579k2fd96erj2htyjn25",
     icon: "₿"
   },
   {
     currency: "ETH/USDT (ERC20)",
-    address: "0xea1024aE4f1f0aa6709bec64eA2d0d30DfFfFE48",
+    address: "0xe5052AE7cA12bd144362cB33ca6BB7a0C2c5Cf4F",
     icon: "Ξ"
   },
   {
     currency: "SOL",
-    address: "HiP98Dh4GqadE1SQeB9RDgrSrckCApzfcVQDpb2nE9nj",
+    address: "AswWDkR1mXoC1ZhYaJx8yQvv6f8hfz2ZJD6fyJ81Mmxb",
     icon: "◎"
   },
   {
     currency: "LTC",
-    address: "ltc1qh6cgtv3tmtjxmcf50z3yc8jux9dgnee4wumrue",
+    address: "ltc1q3efa77t36fhvln7kv0cukxdwum582k9atkm0ur",
     icon: "Ł"
   },
   {
     currency: "USDT (TRC20)",
-    address: "TFYnctUvXTFRVftMS5ifXLTp3UHxtrVd2v",
+    address: "TVCLzRUkSnjWEZnYGNJorz1sSyNoJCJ5BE",
     icon: "₮"
   },
   {
