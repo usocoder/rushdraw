@@ -11,7 +11,19 @@ interface CaseOpeningResponse {
   nonce: number;
 }
 
-export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onComplete: (item: CaseItem) => void) => {
+interface SpinningLogicProps {
+  items: CaseItem[];
+  isSpinning: boolean;
+  onComplete: (item: CaseItem) => void;
+  customClientSeed?: string | null;
+}
+
+export const useSpinningLogic = ({ 
+  items, 
+  isSpinning, 
+  onComplete,
+  customClientSeed = null 
+}: SpinningLogicProps) => {
   const [spinItems, setSpinItems] = useState<CaseItem[]>([]);
   const [rotation, setRotation] = useState(0);
   const [finalItem, setFinalItem] = useState<CaseItem | null>(null);
@@ -27,6 +39,16 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
     nonce: number;
     roll: number;
   } | null>(null);
+
+  // Store the current client seed
+  const [clientSeed, setClientSeed] = useState<string | null>(customClientSeed);
+
+  // Update client seed when customClientSeed changes
+  useEffect(() => {
+    if (customClientSeed !== null) {
+      setClientSeed(customClientSeed);
+    }
+  }, [customClientSeed]);
 
   // Calculate item height based on mobile status
   const getItemHeight = () => {
@@ -51,17 +73,21 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
       
       const setupSpinningProcess = async () => {
         try {
-          // Generate client seed for provably fair algorithm
-          let clientSeed = generateClientSeed();
+          // Use provided client seed or generate a new one
+          let usedClientSeed = clientSeed || generateClientSeed();
+          if (!clientSeed) {
+            setClientSeed(usedClientSeed);
+          }
+          
           let serverSeed: string;
           let nonce: number;
           
           try {
-            console.log('Generated client seed:', clientSeed);
+            console.log('Using client seed:', usedClientSeed);
             
             // Get server seed and nonce from edge function
             const { data, error } = await supabase.functions.invoke<CaseOpeningResponse>('create-case-opening', {
-              body: { client_seed: clientSeed }
+              body: { client_seed: usedClientSeed }
             });
 
             if (error || !data) {
@@ -81,7 +107,7 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
           }
 
           // Calculate the roll and determine the winning item
-          const roll = calculateRoll(serverSeed, clientSeed, nonce);
+          const roll = calculateRoll(serverSeed, usedClientSeed, nonce);
           let winner = getItemFromRoll(roll, items);
           
           // Ensure the winner has a multiplier
@@ -100,7 +126,7 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
           
           // Store game data for provably fair verification
           setGameData({
-            clientSeed,
+            clientSeed: usedClientSeed,
             serverSeed,
             nonce,
             roll
@@ -201,13 +227,15 @@ export const useSpinningLogic = (items: CaseItem[], isSpinning: boolean, onCompl
         animationRef.current = null;
       }
     };
-  }, [isSpinning, items, onComplete, isMobile, toast]);
+  }, [isSpinning, items, onComplete, isMobile, toast, clientSeed]);
 
   return { 
     spinItems, 
     rotation, 
     finalItem, 
     isRevealing,
-    gameData // Expose game data for verification
+    gameData, // Expose game data for verification
+    clientSeed, // Expose current client seed
+    setClientSeed // Allow updating the client seed
   };
 };
