@@ -2,12 +2,13 @@
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Gift, Trophy, Star, Clock } from "lucide-react";
+import { Gift, Trophy, Star, Clock, Package, DollarSign, Lock } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
+import { useBalance } from "@/contexts/BalanceContext";
 
 interface UserProgress {
   current_level: number;
@@ -29,13 +30,34 @@ interface DailyReward {
   };
 }
 
+interface ItemReward {
+  level: number;
+  minAmount: number;
+  maxAmount: number;
+  description: string;
+}
+
 export const RewardsSection = () => {
   const { user } = useBrowserAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { refreshBalance } = useBalance();
   const [nextLevelXp, setNextLevelXp] = useState<number>(0);
   const [xpProgress, setXpProgress] = useState<number>(0);
   const [timeRemaining, setTimeRemaining] = useState<string | null>(null);
+
+  // Define item rewards with increasing value by level
+  const itemRewards: ItemReward[] = [
+    { level: 5, minAmount: 0.1, maxAmount: 10, description: "Basic Reward" },
+    { level: 10, minAmount: 0.5, maxAmount: 15, description: "Bronze Reward" },
+    { level: 20, minAmount: 1, maxAmount: 25, description: "Silver Reward" },
+    { level: 30, minAmount: 3, maxAmount: 40, description: "Gold Reward" },
+    { level: 50, minAmount: 5, maxAmount: 60, description: "Platinum Reward" },
+    { level: 70, minAmount: 10, maxAmount: 100, description: "Diamond Reward" },
+    { level: 80, minAmount: 15, maxAmount: 150, description: "Master Reward" },
+    { level: 90, minAmount: 25, maxAmount: 200, description: "Elite Reward" },
+    { level: 100, minAmount: 50, maxAmount: 300, description: "Legendary Reward" },
+  ];
 
   const { data: userProgress, refetch: refetchProgress } = useQuery({
     queryKey: ['userProgress', user?.id],
@@ -187,6 +209,45 @@ export const RewardsSection = () => {
     }
   };
 
+  const handleClaimItemReward = async (reward: ItemReward) => {
+    if (!user) return;
+    
+    try {
+      // Generate a random reward amount between min and max
+      const rewardAmount = Math.random() * (reward.maxAmount - reward.minAmount) + reward.minAmount;
+      const roundedAmount = Math.round(rewardAmount * 100) / 100; // Round to 2 decimal places
+      
+      // Create a transaction to add the reward to user's balance
+      const { error } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: user.id,
+          type: 'level_reward',
+          amount: roundedAmount,
+          status: 'completed',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+
+      if (error) throw error;
+      
+      // Refresh the user's balance
+      await refreshBalance();
+      
+      toast({
+        title: "Reward Claimed!",
+        description: `You received $${roundedAmount.toFixed(2)} for reaching Level ${reward.level}!`,
+      });
+    } catch (error) {
+      console.error('Error claiming item reward:', error);
+      toast({
+        title: "Error",
+        description: "Failed to claim level reward",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (!user) {
     return (
       <div className="text-center py-8">
@@ -212,7 +273,7 @@ export const RewardsSection = () => {
             <Progress value={xpProgress} className="h-2" />
           </div>
           <p className="text-sm text-muted-foreground">
-            {userProgress?.current_xp || 0} / {userProgress?.current_xp + nextLevelXp} XP to next level
+            {userProgress?.current_xp || 0} / {(userProgress?.current_xp || 0) + nextLevelXp} XP to next level
           </p>
         </div>
 
@@ -260,63 +321,86 @@ export const RewardsSection = () => {
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-        {dailyRewards?.map((reward) => (
-          <div
-            key={reward.case_id}
-            className="bg-card rounded-lg p-6 flex flex-col items-center border border-accent/20 hover:border-accent/40 transition-colors"
-          >
-            <div className="mb-4 relative">
-              <img
-                src={reward.case.image_url}
-                alt={reward.case.name}
-                className="w-32 h-32 object-contain"
-              />
-              {(userProgress?.current_level || 0) < reward.level_required && (
-                <div className="absolute inset-0 bg-black/70 rounded-lg flex items-center justify-center">
-                  <Lock className="h-12 w-12 text-muted-foreground" />
-                </div>
-              )}
-            </div>
-            <h3 className="text-lg font-semibold mb-2">{reward.case.name}</h3>
-            <div className="flex items-center gap-2 mb-4">
-              <Star className="h-4 w-4 text-primary" />
-              <span>Level {reward.level_required} Required</span>
-            </div>
-            <Button
-              onClick={handleClaimReward}
-              disabled={(userProgress?.current_level || 0) < reward.level_required || !!timeRemaining}
-              variant={(userProgress?.current_level || 0) < reward.level_required ? "outline" : "default"}
+      <h2 className="text-2xl font-bold mt-10 mb-6 text-center">Level Rewards</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        {itemRewards.map((reward) => {
+          const isUnlocked = (userProgress?.current_level || 0) >= reward.level;
+          return (
+            <div
+              key={reward.level}
+              className="bg-card rounded-lg p-6 flex flex-col items-center border border-accent/20 hover:border-accent/40 transition-colors shadow-md"
             >
-              <Gift className="mr-2" />
-              {(userProgress?.current_level || 0) < reward.level_required 
-                ? `Unlock at Level ${reward.level_required}` 
-                : "Claim Daily Reward"}
-            </Button>
-          </div>
-        ))}
+              <div className="mb-4 relative w-24 h-24 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20">
+                {isUnlocked ? (
+                  <DollarSign className="h-12 w-12 text-green-500" />
+                ) : (
+                  <Lock className="h-12 w-12 text-muted-foreground" />
+                )}
+              </div>
+              <h3 className="text-lg font-semibold mb-2">{reward.description}</h3>
+              <div className="flex items-center gap-2 mb-2">
+                <Star className="h-4 w-4 text-primary" />
+                <span>Level {reward.level} Required</span>
+              </div>
+              <p className="text-center text-muted-foreground mb-4">
+                ${reward.minAmount.toFixed(2)} - ${reward.maxAmount.toFixed(2)} Cash Reward
+              </p>
+              <Button
+                onClick={() => handleClaimItemReward(reward)}
+                disabled={!isUnlocked}
+                variant={isUnlocked ? "default" : "outline"}
+                className={isUnlocked ? "bg-gradient-to-r from-green-500 to-emerald-600" : ""}
+              >
+                <DollarSign className="mr-2 h-4 w-4" />
+                {isUnlocked ? "Claim Cash Reward" : `Unlock at Level ${reward.level}`}
+              </Button>
+            </div>
+          );
+        })}
+      </div>
+
+      <h2 className="text-2xl font-bold mt-10 mb-6 text-center">Daily Case Rewards</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
+        {dailyRewards?.map((reward) => {
+          const isUnlocked = (userProgress?.current_level || 0) >= reward.level_required;
+          return (
+            <div
+              key={reward.case_id}
+              className="bg-card rounded-lg p-6 flex flex-col items-center border border-accent/20 hover:border-accent/40 transition-colors"
+            >
+              <div className="mb-4 relative">
+                <img
+                  src={reward.case.image_url}
+                  alt={reward.case.name}
+                  className="w-32 h-32 object-contain"
+                />
+                {!isUnlocked && (
+                  <div className="absolute inset-0 bg-black/70 rounded-lg flex items-center justify-center">
+                    <Lock className="h-12 w-12 text-muted-foreground" />
+                  </div>
+                )}
+              </div>
+              <h3 className="text-lg font-semibold mb-2">{reward.case.name}</h3>
+              <div className="flex items-center gap-2 mb-4">
+                <Star className="h-4 w-4 text-primary" />
+                <span>Level {reward.level_required} Required</span>
+              </div>
+              <Button
+                onClick={handleClaimReward}
+                disabled={!isUnlocked || !!timeRemaining}
+                variant={isUnlocked ? "default" : "outline"}
+              >
+                <Gift className="mr-2 h-4 w-4" />
+                {!isUnlocked 
+                  ? `Unlock at Level ${reward.level_required}` 
+                  : timeRemaining 
+                    ? `Cooldown: ${timeRemaining}` 
+                    : "Claim Daily Reward"}
+              </Button>
+            </div>
+          );
+        })}
       </div>
     </div>
   );
 };
-
-// Missing import
-function Lock(props: any) {
-  return (
-    <svg 
-      xmlns="http://www.w3.org/2000/svg" 
-      width="24" 
-      height="24" 
-      viewBox="0 0 24 24" 
-      fill="none" 
-      stroke="currentColor" 
-      strokeWidth="2" 
-      strokeLinecap="round" 
-      strokeLinejoin="round" 
-      {...props}
-    >
-      <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
-      <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
-    </svg>
-  );
-}

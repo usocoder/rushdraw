@@ -1,25 +1,34 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "./ui/dialog";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { useToast } from "./ui/use-toast";
-import { Loader2 } from "lucide-react";
+import { Loader2, DollarSign, Package, CreditCard } from "lucide-react";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useBalance } from "@/contexts/BalanceContext";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import { Textarea } from "./ui/textarea";
 
 interface Props {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+type WithdrawalType = 'crypto' | 'item-request';
+
 export const WithdrawModal = ({ isOpen, onOpenChange }: Props) => {
   const { toast } = useToast();
   const { user } = useBrowserAuth();
   const { balance } = useBalance();
+  const [withdrawalType, setWithdrawalType] = useState<WithdrawalType>('crypto');
   const [amount, setAmount] = useState("");
   const [address, setAddress] = useState("");
+  const [itemDescription, setItemDescription] = useState("");
+  const [shippingAddress, setShippingAddress] = useState("");
+  const [contactInfo, setContactInfo] = useState("");
   const [isProcessing, setIsProcessing] = useState(false);
 
   const handleWithdraw = async () => {
@@ -53,13 +62,42 @@ export const WithdrawModal = ({ isOpen, onOpenChange }: Props) => {
       return;
     }
 
-    if (!address) {
+    if (withdrawalType === 'crypto' && !address) {
       toast({
         title: "Missing address",
         description: "Please enter a crypto address for withdrawal.",
         variant: "destructive",
       });
       return;
+    }
+
+    if (withdrawalType === 'item-request') {
+      if (!itemDescription) {
+        toast({
+          title: "Missing item description",
+          description: "Please describe the item you want to request.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!shippingAddress) {
+        toast({
+          title: "Missing shipping address",
+          description: "Please enter your shipping address.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      if (!contactInfo) {
+        toast({
+          title: "Missing contact information",
+          description: "Please enter your contact information.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setIsProcessing(true);
@@ -69,24 +107,31 @@ export const WithdrawModal = ({ isOpen, onOpenChange }: Props) => {
         .from('transactions')
         .insert({
           user_id: user?.id,
-          type: 'withdraw',
+          type: withdrawalType === 'crypto' ? 'withdraw' : 'item_request',
           amount: withdrawAmount,
           status: 'pending',
           pending_amount: withdrawAmount,
-          crypto_address: address // Store the crypto address
+          crypto_address: withdrawalType === 'crypto' ? address : null,
+          item_details: withdrawalType === 'item-request' ? {
+            description: itemDescription,
+            shipping_address: shippingAddress,
+            contact_info: contactInfo
+          } : null
         });
 
       if (error) throw error;
 
       toast({
-        title: "Withdrawal submitted",
-        description: "Your withdrawal request is pending approval. Please wait for admin confirmation.",
+        title: withdrawalType === 'crypto' ? "Withdrawal submitted" : "Item request submitted",
+        description: withdrawalType === 'crypto' 
+          ? "Your withdrawal request is pending approval. Please wait for admin confirmation."
+          : "Your item request is pending approval. We'll contact you with shipping details soon.",
       });
       onOpenChange(false);
     } catch (error: any) {
-      console.error('Error processing withdrawal:', error);
+      console.error('Error processing request:', error);
       toast({
-        title: "Error processing withdrawal",
+        title: "Error processing request",
         description: error.message || "Please try again later.",
         variant: "destructive",
       });
@@ -97,48 +142,119 @@ export const WithdrawModal = ({ isOpen, onOpenChange }: Props) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
           <DialogTitle>Withdraw Funds</DialogTitle>
           <DialogDescription>
-            Enter the amount you want to withdraw and your crypto address.
+            Choose a withdrawal method below.
           </DialogDescription>
         </DialogHeader>
 
-        <div className="grid gap-4 py-4">
-          <div className="grid gap-2">
-            <Label htmlFor="amount">Withdrawal Amount (USD)</Label>
-            <Input
-              id="amount"
-              type="number"
-              min="0"
-              max="99999999.99"
-              step="0.01"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="Enter amount..."
-            />
-            <p className="text-sm text-muted-foreground">
-              Available balance: ${balance.toFixed(2)}
-            </p>
-          </div>
+        <Tabs 
+          defaultValue="crypto" 
+          value={withdrawalType}
+          onValueChange={(value) => setWithdrawalType(value as WithdrawalType)}
+          className="w-full"
+        >
+          <TabsList className="grid grid-cols-2 mb-4">
+            <TabsTrigger value="crypto" className="flex items-center gap-2">
+              <CreditCard className="h-4 w-4" />
+              Crypto Withdrawal
+            </TabsTrigger>
+            <TabsTrigger value="item-request" className="flex items-center gap-2">
+              <Package className="h-4 w-4" />
+              Request Item
+            </TabsTrigger>
+          </TabsList>
 
-          <div className="grid gap-2">
-            <Label htmlFor="address">Crypto Address</Label>
-            <Input
-              id="address"
-              type="text"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              placeholder="Enter your crypto address..."
-            />
-          </div>
-        </div>
+          <TabsContent value="crypto" className="space-y-4">
+            <div className="grid gap-2">
+              <Label htmlFor="amount">Withdrawal Amount (USD)</Label>
+              <Input
+                id="amount"
+                type="number"
+                min="0"
+                max="99999999.99"
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter amount..."
+              />
+              <p className="text-sm text-muted-foreground">
+                Available balance: ${balance.toFixed(2)}
+              </p>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="address">Crypto Address</Label>
+              <Input
+                id="address"
+                type="text"
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
+                placeholder="Enter your crypto address..."
+              />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="item-request" className="space-y-4">
+            <div className="grid gap-2">
+              <Label htmlFor="amount-item">Item Value (USD)</Label>
+              <Input
+                id="amount-item"
+                type="number"
+                min="0"
+                max="99999999.99"
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                placeholder="Enter item value..."
+              />
+              <p className="text-sm text-muted-foreground">
+                Available balance: ${balance.toFixed(2)}
+              </p>
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="item-description">Item Description</Label>
+              <Textarea
+                id="item-description"
+                value={itemDescription}
+                onChange={(e) => setItemDescription(e.target.value)}
+                placeholder="Describe the item you want (brand, model, specifications, etc.)..."
+                rows={3}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="shipping-address">Shipping Address</Label>
+              <Textarea
+                id="shipping-address"
+                value={shippingAddress}
+                onChange={(e) => setShippingAddress(e.target.value)}
+                placeholder="Enter your complete shipping address..."
+                rows={3}
+              />
+            </div>
+
+            <div className="grid gap-2">
+              <Label htmlFor="contact-info">Contact Information</Label>
+              <Input
+                id="contact-info"
+                type="text"
+                value={contactInfo}
+                onChange={(e) => setContactInfo(e.target.value)}
+                placeholder="Phone number or alternative contact method..."
+              />
+            </div>
+          </TabsContent>
+        </Tabs>
 
         <div className="flex justify-end">
           <Button 
             onClick={handleWithdraw} 
-            disabled={isProcessing || !amount || !address}
+            disabled={isProcessing || !amount || (withdrawalType === 'crypto' && !address) || (withdrawalType === 'item-request' && (!itemDescription || !shippingAddress || !contactInfo))}
+            className="w-full sm:w-auto"
           >
             {isProcessing ? (
               <>
@@ -146,7 +262,19 @@ export const WithdrawModal = ({ isOpen, onOpenChange }: Props) => {
                 Processing
               </>
             ) : (
-              "Withdraw"
+              <>
+                {withdrawalType === 'crypto' ? (
+                  <>
+                    <DollarSign className="mr-2 h-4 w-4" />
+                    Withdraw
+                  </>
+                ) : (
+                  <>
+                    <Package className="mr-2 h-4 w-4" />
+                    Request Item
+                  </>
+                )}
+              </>
             )}
           </Button>
         </div>
