@@ -1,4 +1,3 @@
-
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBrowserAuth } from './BrowserAuthContext';
@@ -99,7 +98,7 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
       return false;
     }
 
-    if ((type === 'case_open' || type === 'withdraw') && balance < amount) {
+    if ((type === 'case_open') && balance < amount) {
       toast({
         title: 'Insufficient balance',
         description: 'Please deposit more funds to continue',
@@ -109,8 +108,6 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
     }
 
     try {
-      // Important: For deposit transactions, we don't want to immediately update the balance
-      // We'll let the admin approval process handle that through the triggers
       const { error: transactionError } = await supabase
         .from('transactions')
         .insert({
@@ -124,8 +121,6 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
 
       if (transactionError) throw transactionError;
 
-      // We only need to refresh balance for non-deposit transactions 
-      // as deposit transactions require admin approval
       if (type !== 'deposit') {
         await fetchBalance();
       }
