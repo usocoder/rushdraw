@@ -45,6 +45,7 @@ export const RewardsSection = () => {
   const [nextLevelXp, setNextLevelXp] = useState<number>(0);
   const [xpProgress, setXpProgress] = useState<number>(0);
   const [timeRemaining, setTimeRemaining] = useState<string | null>(null);
+  const [claimedRewards, setClaimedRewards] = useState<Set<number>>(new Set());
 
   // Define item rewards with increasing value by level
   const itemRewards: ItemReward[] = [
@@ -91,6 +92,21 @@ export const RewardsSection = () => {
     },
     enabled: !!user,
   });
+
+  // Load claimed rewards from localStorage to persist between sessions
+  useEffect(() => {
+    if (user) {
+      const savedClaims = localStorage.getItem(`claimed_rewards_${user.id}`);
+      if (savedClaims) {
+        try {
+          const parsed = JSON.parse(savedClaims);
+          setClaimedRewards(new Set(parsed));
+        } catch (e) {
+          console.error("Error parsing claimed rewards from localStorage:", e);
+        }
+      }
+    }
+  }, [user]);
 
   const { data: levels } = useQuery({
     queryKey: ['levels'],
@@ -212,6 +228,16 @@ export const RewardsSection = () => {
   const handleClaimItemReward = async (reward: ItemReward) => {
     if (!user) return;
     
+    // Check if already claimed
+    if (claimedRewards.has(reward.level)) {
+      toast({
+        title: "Already Claimed",
+        description: `You've already claimed the Level ${reward.level} reward.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
       // Generate a random reward amount between min and max
       const rewardAmount = Math.random() * (reward.maxAmount - reward.minAmount) + reward.minAmount;
@@ -230,6 +256,16 @@ export const RewardsSection = () => {
         });
 
       if (error) throw error;
+      
+      // Mark as claimed in local state and localStorage
+      const newClaimedSet = new Set(claimedRewards);
+      newClaimedSet.add(reward.level);
+      setClaimedRewards(newClaimedSet);
+      
+      localStorage.setItem(
+        `claimed_rewards_${user.id}`, 
+        JSON.stringify([...newClaimedSet])
+      );
       
       // Refresh the user's balance
       await refreshBalance();
@@ -325,14 +361,16 @@ export const RewardsSection = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         {itemRewards.map((reward) => {
           const isUnlocked = (userProgress?.current_level || 0) >= reward.level;
+          const isClaimed = claimedRewards.has(reward.level);
+          
           return (
             <div
               key={reward.level}
-              className="bg-card rounded-lg p-6 flex flex-col items-center border border-accent/20 hover:border-accent/40 transition-colors shadow-md"
+              className={`bg-card rounded-lg p-6 flex flex-col items-center border border-accent/20 ${isUnlocked ? 'hover:border-accent/40' : ''} transition-colors shadow-md ${isClaimed ? 'opacity-70' : ''}`}
             >
               <div className="mb-4 relative w-24 h-24 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20">
                 {isUnlocked ? (
-                  <DollarSign className="h-12 w-12 text-green-500" />
+                  <DollarSign className={`h-12 w-12 ${isClaimed ? 'text-gray-400' : 'text-green-500'}`} />
                 ) : (
                   <Lock className="h-12 w-12 text-muted-foreground" />
                 )}
@@ -343,16 +381,20 @@ export const RewardsSection = () => {
                 <span>Level {reward.level} Required</span>
               </div>
               <p className="text-center text-muted-foreground mb-4">
-                ${reward.minAmount.toFixed(2)} - ${reward.maxAmount.toFixed(2)} Cash Reward
+                ${reward.minAmount.toFixed(2)} - ${reward.maxAmount.toFixed(0)} Cash Reward
               </p>
               <Button
                 onClick={() => handleClaimItemReward(reward)}
-                disabled={!isUnlocked}
-                variant={isUnlocked ? "default" : "outline"}
-                className={isUnlocked ? "bg-gradient-to-r from-green-500 to-emerald-600" : ""}
+                disabled={!isUnlocked || isClaimed}
+                variant={isUnlocked && !isClaimed ? "default" : "outline"}
+                className={isUnlocked && !isClaimed ? "bg-gradient-to-r from-green-500 to-emerald-600" : ""}
               >
                 <DollarSign className="mr-2 h-4 w-4" />
-                {isUnlocked ? "Claim Cash Reward" : `Unlock at Level ${reward.level}`}
+                {!isUnlocked 
+                  ? `Unlock at Level ${reward.level}` 
+                  : isClaimed 
+                    ? "Already Claimed" 
+                    : "Claim Cash Reward"}
               </Button>
             </div>
           );

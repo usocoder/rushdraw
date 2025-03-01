@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useNavigate } from "react-router-dom";
 import { Gift, Trophy, Star, Clock, ArrowLeft, Lock } from "lucide-react";
+import { useBalance } from "@/contexts/BalanceContext";
 
 interface UserProgress {
   current_level: number;
@@ -29,15 +30,52 @@ interface DailyReward {
   };
 }
 
+interface ItemReward {
+  level: number;
+  minAmount: number;
+  maxAmount: number;
+  description: string;
+}
+
 const REWARD_LEVELS = [5, 10, 20, 30, 50, 70, 80, 90, 100];
 
 const DailyRewards = () => {
   const { user } = useBrowserAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { refreshBalance } = useBalance();
   const [timeRemaining, setTimeRemaining] = useState<string | null>(null);
   const [nextLevelXp, setNextLevelXp] = useState<number>(0);
   const [xpProgress, setXpProgress] = useState<number>(0);
+  const [claimedRewards, setClaimedRewards] = useState<Set<number>>(new Set());
+  
+  // Define item rewards with increasing value by level
+  const itemRewards: ItemReward[] = [
+    { level: 5, minAmount: 0.1, maxAmount: 10, description: "Basic Reward" },
+    { level: 10, minAmount: 0.5, maxAmount: 15, description: "Bronze Reward" },
+    { level: 20, minAmount: 1, maxAmount: 25, description: "Silver Reward" },
+    { level: 30, minAmount: 3, maxAmount: 40, description: "Gold Reward" },
+    { level: 50, minAmount: 5, maxAmount: 60, description: "Platinum Reward" },
+    { level: 70, minAmount: 10, maxAmount: 100, description: "Diamond Reward" },
+    { level: 80, minAmount: 15, maxAmount: 150, description: "Master Reward" },
+    { level: 90, minAmount: 25, maxAmount: 200, description: "Elite Reward" },
+    { level: 100, minAmount: 50, maxAmount: 300, description: "Legendary Reward" },
+  ];
+  
+  // Load claimed rewards from localStorage to persist between sessions
+  useEffect(() => {
+    if (user) {
+      const savedClaims = localStorage.getItem(`claimed_rewards_${user.id}`);
+      if (savedClaims) {
+        try {
+          const parsed = JSON.parse(savedClaims);
+          setClaimedRewards(new Set(parsed));
+        } catch (e) {
+          console.error("Error parsing claimed rewards from localStorage:", e);
+        }
+      }
+    }
+  }, [user]);
   
   const { data: userProgress, refetch: refetchProgress } = useQuery({
     queryKey: ['userProgress', user?.id],
@@ -189,10 +227,64 @@ const DailyRewards = () => {
     }
   };
 
-  // Find eligible reward based on user level
-  const eligibleReward = dailyRewards?.find(reward => 
-    reward.level_required <= (userProgress?.current_level || 1)
-  );
+  const handleClaimItemReward = async (reward: ItemReward) => {
+    if (!user) return;
+    
+    // Check if already claimed
+    if (claimedRewards.has(reward.level)) {
+      toast({
+        title: "Already Claimed",
+        description: `You've already claimed the Level ${reward.level} reward.`,
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      // Generate a random reward amount between min and max
+      const rewardAmount = Math.random() * (reward.maxAmount - reward.minAmount) + reward.minAmount;
+      const roundedAmount = Math.round(rewardAmount * 100) / 100; // Round to 2 decimal places
+      
+      // Create a transaction to add the reward to user's balance
+      const { error } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: user.id,
+          type: 'level_reward',
+          amount: roundedAmount,
+          status: 'completed',
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        });
+
+      if (error) throw error;
+      
+      // Mark as claimed in local state and localStorage
+      const newClaimedSet = new Set(claimedRewards);
+      newClaimedSet.add(reward.level);
+      setClaimedRewards(newClaimedSet);
+      
+      localStorage.setItem(
+        `claimed_rewards_${user.id}`, 
+        JSON.stringify([...newClaimedSet])
+      );
+      
+      // Refresh the user's balance
+      await refreshBalance();
+      
+      toast({
+        title: "Reward Claimed!",
+        description: `You received $${roundedAmount.toFixed(2)} for reaching Level ${reward.level}!`,
+      });
+    } catch (error) {
+      console.error('Error claiming item reward:', error);
+      toast({
+        title: "Error",
+        description: "Failed to claim level reward",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (!user) {
     return (
@@ -240,22 +332,26 @@ const DailyRewards = () => {
           </div>
         </div>
         
-        {eligibleReward && (
+        {/* Display today's reward */}
+        {dailyRewards?.find(reward => reward.level_required <= (userProgress?.current_level || 1)) && (
           <div className="bg-card rounded-lg p-6 border border-accent/20 shadow-lg mb-8">
             <h2 className="text-xl font-bold mb-4 text-center">Today's Reward</h2>
             <div className="flex flex-col md:flex-row items-center">
               <div className="mb-4 md:mb-0 md:mr-6">
                 <img
-                  src={eligibleReward.case.image_url}
-                  alt={eligibleReward.case.name}
+                  src={dailyRewards.find(reward => reward.level_required <= (userProgress?.current_level || 1))?.case.image_url}
+                  alt={dailyRewards.find(reward => reward.level_required <= (userProgress?.current_level || 1))?.case.name}
                   className="w-40 h-40 object-contain"
                 />
               </div>
               <div className="flex-1 text-center md:text-left">
-                <h3 className="text-lg font-semibold mb-2">{eligibleReward.case.name}</h3>
+                <h3 className="text-lg font-semibold mb-2">
+                  {dailyRewards.find(reward => reward.level_required <= (userProgress?.current_level || 1))?.case.name}
+                </h3>
                 <div className="flex items-center gap-2 mb-4 justify-center md:justify-start">
                   <Star className="h-4 w-4 text-yellow-500" />
-                  <span>Unlocked at Level {eligibleReward.level_required}</span>
+                  <span>Unlocked at Level {dailyRewards.find(reward => 
+                    reward.level_required <= (userProgress?.current_level || 1))?.level_required}</span>
                 </div>
                 <Button
                   onClick={handleClaimReward}
@@ -271,31 +367,73 @@ const DailyRewards = () => {
           </div>
         )}
         
-        <h2 className="text-2xl font-bold mb-6 text-center">Reward Tiers</h2>
+        <h2 className="text-2xl font-bold mb-6 text-center">Level Rewards</h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {REWARD_LEVELS.map((level) => {
-            const reward = dailyRewards?.find(r => r.level_required === level);
-            const isUnlocked = (userProgress?.current_level || 1) >= level;
+          {itemRewards.map((reward) => {
+            const isUnlocked = (userProgress?.current_level || 1) >= reward.level;
+            const isClaimed = claimedRewards.has(reward.level);
             
             return (
               <div
-                key={level}
+                key={reward.level}
+                className={`bg-card rounded-lg p-6 flex flex-col items-center border transition-all ${
+                  isUnlocked ? 'border-accent/40 hover:border-accent/60 shadow-md' : 'border-accent/10 opacity-80'
+                } ${isClaimed ? 'opacity-70' : ''}`}
+              >
+                <div className="mb-4 relative">
+                  <div className="w-32 h-32 bg-gradient-to-br from-emerald-500/20 to-blue-500/20 rounded-lg flex items-center justify-center">
+                    <Star className={`h-16 w-16 ${isClaimed ? 'text-gray-400' : 'text-yellow-500'}`} />
+                  </div>
+                  {!isUnlocked && (
+                    <div className="absolute inset-0 bg-black/70 rounded-lg flex items-center justify-center">
+                      <Lock className="h-12 w-12 text-muted-foreground" />
+                    </div>
+                  )}
+                </div>
+                <h3 className="text-lg font-semibold mb-2">{reward.description}</h3>
+                <div className="flex items-center gap-2 mb-2">
+                  <Star className="h-4 w-4 text-primary" />
+                  <span>Level {reward.level} Required</span>
+                </div>
+                <p className="text-center text-muted-foreground mb-4">
+                  ${reward.minAmount.toFixed(2)} - ${reward.maxAmount.toFixed(0)} Cash Reward
+                </p>
+                <Button
+                  onClick={() => handleClaimItemReward(reward)}
+                  disabled={!isUnlocked || isClaimed}
+                  variant={isUnlocked && !isClaimed ? "default" : "outline"}
+                  className={isUnlocked && !isClaimed ? "bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700" : ""}
+                >
+                  <Gift className="mr-2 h-4 w-4" />
+                  {!isUnlocked 
+                    ? `Unlock at Level ${reward.level}` 
+                    : isClaimed 
+                      ? "Already Claimed" 
+                      : "Claim Cash Reward"}
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+        
+        <h2 className="text-2xl font-bold mb-6 text-center">Daily Case Rewards</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+          {dailyRewards?.map((reward) => {
+            const isUnlocked = (userProgress?.current_level || 1) >= reward.level_required;
+            
+            return (
+              <div
+                key={reward.level_required}
                 className={`bg-card rounded-lg p-6 flex flex-col items-center border transition-all ${
                   isUnlocked ? 'border-accent/40 hover:border-accent/60 shadow-md' : 'border-accent/10 opacity-80'
                 }`}
               >
                 <div className="mb-4 relative">
-                  {reward ? (
-                    <img
-                      src={reward.case.image_url}
-                      alt={reward.case.name}
-                      className="w-32 h-32 object-contain"
-                    />
-                  ) : (
-                    <div className="w-32 h-32 bg-accent/10 rounded-lg flex items-center justify-center">
-                      <Gift className="h-12 w-12 text-muted-foreground" />
-                    </div>
-                  )}
+                  <img
+                    src={reward.case.image_url}
+                    alt={reward.case.name}
+                    className="w-32 h-32 object-contain"
+                  />
                   {!isUnlocked && (
                     <div className="absolute inset-0 bg-black/70 rounded-lg flex items-center justify-center">
                       <Lock className="h-12 w-12 text-muted-foreground" />
@@ -303,11 +441,11 @@ const DailyRewards = () => {
                   )}
                 </div>
                 <h3 className="text-lg font-semibold mb-2">
-                  {reward ? reward.case.name : `Level ${level} Reward`}
+                  {reward.case.name}
                 </h3>
                 <div className="flex items-center gap-2 mb-4">
                   <Star className="h-4 w-4 text-primary" />
-                  <span>Level {level} Required</span>
+                  <span>Level {reward.level_required} Required</span>
                 </div>
                 <Button
                   onClick={handleClaimReward}
@@ -317,7 +455,7 @@ const DailyRewards = () => {
                 >
                   <Gift className="mr-2 h-4 w-4" />
                   {!isUnlocked 
-                    ? `Unlock at Level ${level}` 
+                    ? `Unlock at Level ${reward.level_required}` 
                     : timeRemaining 
                       ? "Cooldown Active" 
                       : "Claim Reward"}
