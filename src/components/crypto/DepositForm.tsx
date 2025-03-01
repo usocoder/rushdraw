@@ -2,7 +2,7 @@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { AlertCircle, Loader2, Clock8 } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,7 +41,8 @@ export const DepositForm = ({ userId, onSuccess }: DepositFormProps) => {
     setIsProcessing(true);
     
     try {
-      // Create deposit transaction as pending
+      // Important: We create only one pending transaction
+      // The admin approval process will update this to completed
       const { error } = await supabase
         .from('transactions')
         .insert({
@@ -91,7 +92,7 @@ export const DepositForm = ({ userId, onSuccess }: DepositFormProps) => {
 
       <div className="flex items-start gap-2 text-sm text-muted-foreground">
         <AlertCircle className="h-4 w-4 mt-0.5 flex-shrink-0" />
-        <p>Only Confirm after you have completed the transfer. Once clicked, please allow up to 10 minutes for the deposit to reflect in your account.</p>
+        <p>Only confirm after you have completed the transfer. Once clicked, please allow up to 10 minutes for the deposit to reflect in your account.</p>
       </div>
 
       <Button 

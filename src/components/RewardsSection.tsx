@@ -2,13 +2,21 @@
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Gift, Trophy, Star, Clock, Package, DollarSign, Lock } from "lucide-react";
+import { 
+  Gift, Trophy, Star, Clock, Calendar, 
+  DollarSign, Lock, ChevronDown, ChevronUp, Info
+} from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
 import { useBalance } from "@/contexts/BalanceContext";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 interface UserProgress {
   current_level: number;
@@ -35,6 +43,7 @@ interface ItemReward {
   minAmount: number;
   maxAmount: number;
   description: string;
+  colorClass: string;
 }
 
 export const RewardsSection = () => {
@@ -46,19 +55,35 @@ export const RewardsSection = () => {
   const [xpProgress, setXpProgress] = useState<number>(0);
   const [timeRemaining, setTimeRemaining] = useState<string | null>(null);
   const [claimedRewards, setClaimedRewards] = useState<Set<number>>(new Set());
+  const [isRewardsOpen, setIsRewardsOpen] = useState(false);
 
-  // Define item rewards with increasing value by level
+  // Define item rewards with increasing value by level and color coding
   const itemRewards: ItemReward[] = [
-    { level: 5, minAmount: 0.1, maxAmount: 10, description: "Basic Reward" },
-    { level: 10, minAmount: 0.5, maxAmount: 15, description: "Bronze Reward" },
-    { level: 20, minAmount: 1, maxAmount: 25, description: "Silver Reward" },
-    { level: 30, minAmount: 3, maxAmount: 40, description: "Gold Reward" },
-    { level: 50, minAmount: 5, maxAmount: 60, description: "Platinum Reward" },
-    { level: 70, minAmount: 10, maxAmount: 100, description: "Diamond Reward" },
-    { level: 80, minAmount: 15, maxAmount: 150, description: "Master Reward" },
-    { level: 90, minAmount: 25, maxAmount: 200, description: "Elite Reward" },
-    { level: 100, minAmount: 50, maxAmount: 300, description: "Legendary Reward" },
+    { level: 5, minAmount: 0.1, maxAmount: 10, description: "Basic Reward", colorClass: "from-slate-400 to-slate-500" },
+    { level: 10, minAmount: 0.5, maxAmount: 15, description: "Bronze Reward", colorClass: "from-amber-600 to-amber-700" },
+    { level: 20, minAmount: 1, maxAmount: 25, description: "Silver Reward", colorClass: "from-gray-300 to-gray-400" },
+    { level: 30, minAmount: 3, maxAmount: 40, description: "Gold Reward", colorClass: "from-yellow-400 to-yellow-500" },
+    { level: 50, minAmount: 5, maxAmount: 60, description: "Platinum Reward", colorClass: "from-blue-400 to-blue-500" },
+    { level: 70, minAmount: 10, maxAmount: 100, description: "Diamond Reward", colorClass: "from-cyan-400 to-cyan-500" },
+    { level: 80, minAmount: 15, maxAmount: 150, description: "Master Reward", colorClass: "from-purple-500 to-purple-600" },
+    { level: 90, minAmount: 25, maxAmount: 200, description: "Elite Reward", colorClass: "from-red-500 to-red-600" },
+    { level: 100, minAmount: 50, maxAmount: 300, description: "Legendary Reward", colorClass: "from-amber-500 to-red-500" },
   ];
+
+  // Load claimed rewards from localStorage to persist between sessions
+  useEffect(() => {
+    if (user) {
+      const savedClaims = localStorage.getItem(`claimed_rewards_${user.id}`);
+      if (savedClaims) {
+        try {
+          const parsed = JSON.parse(savedClaims);
+          setClaimedRewards(new Set(parsed));
+        } catch (e) {
+          console.error("Error parsing claimed rewards from localStorage:", e);
+        }
+      }
+    }
+  }, [user]);
 
   const { data: userProgress, refetch: refetchProgress } = useQuery({
     queryKey: ['userProgress', user?.id],
@@ -92,21 +117,6 @@ export const RewardsSection = () => {
     },
     enabled: !!user,
   });
-
-  // Load claimed rewards from localStorage to persist between sessions
-  useEffect(() => {
-    if (user) {
-      const savedClaims = localStorage.getItem(`claimed_rewards_${user.id}`);
-      if (savedClaims) {
-        try {
-          const parsed = JSON.parse(savedClaims);
-          setClaimedRewards(new Set(parsed));
-        } catch (e) {
-          console.error("Error parsing claimed rewards from localStorage:", e);
-        }
-      }
-    }
-  }, [user]);
 
   const { data: levels } = useQuery({
     queryKey: ['levels'],
@@ -313,15 +323,21 @@ export const RewardsSection = () => {
           </p>
         </div>
 
-        <div className="flex flex-col items-center">
+        <div className="flex flex-col items-center gap-2">
           <Button 
             onClick={() => navigate('/rewards')} 
             className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900"
           >
             <Gift className="h-5 w-5" /> Daily Rewards
           </Button>
+          
+          <div className="text-sm text-amber-500 flex items-center gap-1">
+            <Calendar className="h-4 w-4" />
+            <span>New rewards every 24 hours</span>
+          </div>
+          
           {timeRemaining && (
-            <div className="mt-2 flex items-center gap-1 text-muted-foreground">
+            <div className="flex items-center gap-1 text-muted-foreground text-sm">
               <Clock className="h-4 w-4" />
               <span>Next claim in: {timeRemaining}</span>
             </div>
@@ -330,7 +346,7 @@ export const RewardsSection = () => {
       </div>
 
       {eligibleReward && (
-        <div className="bg-card rounded-lg p-6 border border-accent/20 shadow-lg">
+        <div className="bg-card rounded-lg p-6 border border-accent/20 shadow-lg mb-8">
           <div className="flex flex-col md:flex-row items-center">
             <div className="mb-4 md:mb-0 md:mr-6">
               <img
@@ -341,9 +357,13 @@ export const RewardsSection = () => {
             </div>
             <div className="flex-1 text-center md:text-left">
               <h3 className="text-lg font-semibold mb-2">Today's Reward: {eligibleReward.case.name}</h3>
-              <div className="flex items-center gap-2 mb-4 justify-center md:justify-start">
+              <div className="flex items-center gap-2 mb-2 justify-center md:justify-start">
                 <Star className="h-4 w-4 text-yellow-500" />
                 <span>Unlocked at Level {eligibleReward.level_required}</span>
+              </div>
+              <div className="flex items-center gap-2 mb-4 justify-center md:justify-start text-amber-500">
+                <Calendar className="h-4 w-4" />
+                <span>Available once every 24 hours</span>
               </div>
               <Button
                 onClick={handleClaimReward}
@@ -357,58 +377,91 @@ export const RewardsSection = () => {
         </div>
       )}
 
-      <h2 className="text-2xl font-bold mt-10 mb-6 text-center">Level Rewards</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {itemRewards.map((reward) => {
-          const isUnlocked = (userProgress?.current_level || 0) >= reward.level;
-          const isClaimed = claimedRewards.has(reward.level);
+      {/* Level Rewards Collapsible Section */}
+      <Collapsible
+        open={isRewardsOpen}
+        onOpenChange={setIsRewardsOpen}
+        className="w-full mb-8"
+      >
+        <div className="flex items-center justify-between py-4">
+          <h2 className="text-2xl font-bold">Level Rewards</h2>
+          <CollapsibleTrigger asChild>
+            <Button variant="outline" size="sm" className="w-9 p-0">
+              {isRewardsOpen ? (
+                <ChevronUp className="h-4 w-4" />
+              ) : (
+                <ChevronDown className="h-4 w-4" />
+              )}
+              <span className="sr-only">Toggle level rewards</span>
+            </Button>
+          </CollapsibleTrigger>
+        </div>
+        
+        <CollapsibleContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {itemRewards.map((reward) => {
+              const isUnlocked = (userProgress?.current_level || 0) >= reward.level;
+              const isClaimed = claimedRewards.has(reward.level);
+              
+              return (
+                <div
+                  key={reward.level}
+                  className={`bg-card rounded-lg p-6 flex flex-col items-center border transition-all ${
+                    isUnlocked ? 'border-accent/40 hover:border-accent/60 shadow-md' : 'border-accent/10 opacity-80'
+                  } ${isClaimed ? 'opacity-70' : ''}`}
+                >
+                  <div className="mb-4 relative">
+                    <div className={`w-24 h-24 bg-gradient-to-br ${reward.colorClass} opacity-20 rounded-full flex items-center justify-center`}>
+                      <DollarSign className={`h-12 w-12 ${isClaimed ? 'text-gray-400' : 'text-green-500'}`} />
+                    </div>
+                    {!isUnlocked && (
+                      <div className="absolute inset-0 bg-black/70 rounded-full flex items-center justify-center">
+                        <Lock className="h-12 w-12 text-muted-foreground" />
+                      </div>
+                    )}
+                  </div>
+                  <h3 className={`text-lg font-semibold mb-2 bg-gradient-to-r ${reward.colorClass} bg-clip-text text-transparent`}>
+                    {reward.description}
+                  </h3>
+                  <div className="flex items-center gap-2 mb-2">
+                    <Star className="h-4 w-4 text-primary" />
+                    <span>Level {reward.level} Required</span>
+                  </div>
+                  <p className="text-center text-muted-foreground mb-4">
+                    ${reward.minAmount.toFixed(2)} - ${reward.maxAmount.toFixed(0)} Cash Reward
+                  </p>
+                  <Button
+                    onClick={() => handleClaimItemReward(reward)}
+                    disabled={!isUnlocked || isClaimed}
+                    variant={isUnlocked && !isClaimed ? "default" : "outline"}
+                    className={isUnlocked && !isClaimed ? `bg-gradient-to-r ${reward.colorClass} hover:opacity-90` : ""}
+                  >
+                    {!isUnlocked 
+                      ? `Unlock at Level ${reward.level}` 
+                      : isClaimed 
+                        ? "Already Claimed" 
+                        : "Claim Cash Reward"}
+                  </Button>
+                </div>
+              );
+            })}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+
+      <h2 className="text-2xl font-bold mb-6 text-center">Daily Case Rewards</h2>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-4">
+        {dailyRewards?.map((reward) => {
+          const isUnlocked = (userProgress?.current_level || 0) >= reward.level_required;
+          const levelReward = itemRewards.find(item => item.level <= reward.level_required);
+          const colorClass = levelReward?.colorClass || "from-blue-500 to-purple-600";
           
           return (
             <div
-              key={reward.level}
-              className={`bg-card rounded-lg p-6 flex flex-col items-center border border-accent/20 ${isUnlocked ? 'hover:border-accent/40' : ''} transition-colors shadow-md ${isClaimed ? 'opacity-70' : ''}`}
-            >
-              <div className="mb-4 relative w-24 h-24 flex items-center justify-center rounded-full bg-gradient-to-br from-purple-500/20 to-blue-500/20">
-                {isUnlocked ? (
-                  <DollarSign className={`h-12 w-12 ${isClaimed ? 'text-gray-400' : 'text-green-500'}`} />
-                ) : (
-                  <Lock className="h-12 w-12 text-muted-foreground" />
-                )}
-              </div>
-              <h3 className="text-lg font-semibold mb-2">{reward.description}</h3>
-              <div className="flex items-center gap-2 mb-2">
-                <Star className="h-4 w-4 text-primary" />
-                <span>Level {reward.level} Required</span>
-              </div>
-              <p className="text-center text-muted-foreground mb-4">
-                ${reward.minAmount.toFixed(2)} - ${reward.maxAmount.toFixed(0)} Cash Reward
-              </p>
-              <Button
-                onClick={() => handleClaimItemReward(reward)}
-                disabled={!isUnlocked || isClaimed}
-                variant={isUnlocked && !isClaimed ? "default" : "outline"}
-                className={isUnlocked && !isClaimed ? "bg-gradient-to-r from-green-500 to-emerald-600" : ""}
-              >
-                <DollarSign className="mr-2 h-4 w-4" />
-                {!isUnlocked 
-                  ? `Unlock at Level ${reward.level}` 
-                  : isClaimed 
-                    ? "Already Claimed" 
-                    : "Claim Cash Reward"}
-              </Button>
-            </div>
-          );
-        })}
-      </div>
-
-      <h2 className="text-2xl font-bold mt-10 mb-6 text-center">Daily Case Rewards</h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-8">
-        {dailyRewards?.map((reward) => {
-          const isUnlocked = (userProgress?.current_level || 0) >= reward.level_required;
-          return (
-            <div
               key={reward.case_id}
-              className="bg-card rounded-lg p-6 flex flex-col items-center border border-accent/20 hover:border-accent/40 transition-colors"
+              className={`bg-card rounded-lg p-6 flex flex-col items-center border transition-all ${
+                isUnlocked ? 'border-accent/40 hover:border-accent/60 shadow-md' : 'border-accent/10 opacity-80'
+              }`}
             >
               <div className="mb-4 relative">
                 <img
@@ -422,17 +475,23 @@ export const RewardsSection = () => {
                   </div>
                 )}
               </div>
-              <h3 className="text-lg font-semibold mb-2">{reward.case.name}</h3>
-              <div className="flex items-center gap-2 mb-4">
+              <h3 className={`text-lg font-semibold mb-2 bg-gradient-to-r ${colorClass} bg-clip-text text-transparent`}>
+                {reward.case.name}
+              </h3>
+              <div className="flex items-center gap-2 mb-2">
                 <Star className="h-4 w-4 text-primary" />
                 <span>Level {reward.level_required} Required</span>
+              </div>
+              <div className="flex items-center gap-2 mb-4 text-amber-500">
+                <Calendar className="h-4 w-4" />
+                <span>Every 24 hours</span>
               </div>
               <Button
                 onClick={handleClaimReward}
                 disabled={!isUnlocked || !!timeRemaining}
                 variant={isUnlocked ? "default" : "outline"}
+                className={isUnlocked ? `bg-gradient-to-r ${colorClass} hover:opacity-90` : ""}
               >
-                <Gift className="mr-2 h-4 w-4" />
                 {!isUnlocked 
                   ? `Unlock at Level ${reward.level_required}` 
                   : timeRemaining 

@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useBrowserAuth } from './BrowserAuthContext';
@@ -8,7 +9,7 @@ interface BalanceContextType {
   balance: number;
   loading: boolean;
   refreshBalance: () => Promise<void>;
-  createTransaction: (type: 'deposit' | 'case_open' | 'case_win', amount: number) => Promise<boolean>;
+  createTransaction: (type: 'deposit' | 'case_open' | 'case_win' | 'level_reward', amount: number) => Promise<boolean>;
 }
 
 interface ProfileChanges {
@@ -76,7 +77,10 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
     }
   };
 
-  const createTransaction = async (type: 'deposit' | 'case_open' | 'case_win', amount: number): Promise<boolean> => {
+  const createTransaction = async (
+    type: 'deposit' | 'case_open' | 'case_win' | 'level_reward', 
+    amount: number
+  ): Promise<boolean> => {
     if (!user) {
       toast({
         title: 'Authentication required',
@@ -95,16 +99,18 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
       return false;
     }
 
-    if (type === 'case_open' && balance < amount) {
+    if ((type === 'case_open' || type === 'withdraw') && balance < amount) {
       toast({
         title: 'Insufficient balance',
-        description: 'Please deposit more funds to open this case',
+        description: 'Please deposit more funds to continue',
         variant: 'destructive',
       });
       return false;
     }
 
     try {
+      // Important: For deposit transactions, we don't want to immediately update the balance
+      // We'll let the admin approval process handle that through the triggers
       const { error: transactionError } = await supabase
         .from('transactions')
         .insert({
@@ -118,6 +124,8 @@ export const BalanceProvider = ({ children }: { children: React.ReactNode }) => 
 
       if (transactionError) throw transactionError;
 
+      // We only need to refresh balance for non-deposit transactions 
+      // as deposit transactions require admin approval
       if (type !== 'deposit') {
         await fetchBalance();
       }
