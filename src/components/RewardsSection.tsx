@@ -1,8 +1,9 @@
+
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { 
-  Gift, Trophy, Star, Clock, Calendar
+  Gift, Trophy, Star, Clock, Calendar, ChevronRight
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -199,13 +200,24 @@ export const RewardsSection = () => {
     reward.level_required <= (userProgress?.current_level || 1)
   );
 
+  // Get the color for the level based on user's current level
+  const getLevelColor = (level: number) => {
+    if (level >= 90) return "text-amber-500 font-bold"; // Legendary
+    if (level >= 70) return "text-purple-500 font-bold"; // Epic
+    if (level >= 50) return "text-blue-500 font-bold"; // Rare
+    if (level >= 30) return "text-green-500 font-bold"; // Uncommon
+    return "text-gray-300 font-bold"; // Common
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row items-center justify-between mb-8">
         <div className="flex flex-col items-center mb-4 md:mb-0">
           <div className="flex items-center gap-2 mb-4">
             <Trophy className="h-6 w-6 text-primary" />
-            <h2 className="text-2xl font-bold">Level {userProgress?.current_level || 1}</h2>
+            <h2 className={`text-2xl font-bold ${getLevelColor(userProgress?.current_level || 1)}`}>
+              Level {userProgress?.current_level || 1}
+            </h2>
           </div>
           <div className="w-full max-w-md mb-2">
             <Progress value={xpProgress} className="h-2" />
@@ -220,7 +232,7 @@ export const RewardsSection = () => {
             onClick={() => navigate('/rewards')} 
             className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900"
           >
-            <Gift className="h-5 w-5" /> Claim Daily Rewards
+            <Gift className="h-5 w-5" /> Claim Daily Rewards <ChevronRight className="h-4 w-4" />
           </Button>
           
           <div className="text-sm text-amber-500 flex items-center gap-1">
@@ -236,38 +248,6 @@ export const RewardsSection = () => {
           )}
         </div>
       </div>
-
-      {eligibleReward && (
-        <div className="bg-card rounded-lg p-6 border border-accent/20 shadow-lg mb-8">
-          <div className="flex flex-col md:flex-row items-center">
-            <div className="mb-4 md:mb-0 md:mr-6">
-              <img
-                src={eligibleReward.case.image_url}
-                alt={eligibleReward.case.name}
-                className="w-32 h-32 object-contain"
-              />
-            </div>
-            <div className="flex-1 text-center md:text-left">
-              <h3 className="text-lg font-semibold mb-2">Today's Reward: {eligibleReward.case.name}</h3>
-              <div className="flex items-center gap-2 mb-2 justify-center md:justify-start">
-                <Star className="h-4 w-4 text-yellow-500" />
-                <span>Unlocked at Level {eligibleReward.level_required}</span>
-              </div>
-              <div className="flex items-center gap-2 mb-4 justify-center md:justify-start text-amber-500">
-                <Calendar className="h-4 w-4" />
-                <span>Available once every 24 hours</span>
-              </div>
-              <Button
-                onClick={handleClaimReward}
-                disabled={!!timeRemaining}
-                className="w-full md:w-auto"
-              >
-                {timeRemaining ? `Cooldown: ${timeRemaining}` : "Claim Daily Reward"}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };

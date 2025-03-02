@@ -1,9 +1,10 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { X } from "lucide-react";
+import { X, TrendingUp, Award } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const AdminRewards = () => {
@@ -118,6 +119,25 @@ const AdminRewards = () => {
     }
   };
 
+  // Helper function to determine reward value based on level
+  const getRewardValue = (level: number) => {
+    if (level >= 90) return "$80,000";
+    if (level >= 70) return "$70,000";
+    if (level >= 50) return "$50,000";
+    if (level >= 30) return "$30,000";
+    if (level >= 10) return "$10,000";
+    return "$1,000";
+  };
+
+  // Helper function to determine reward class based on level
+  const getRewardClass = (level: number) => {
+    if (level >= 90) return "text-amber-500 font-bold"; // Legendary
+    if (level >= 70) return "text-purple-500 font-bold"; // Epic
+    if (level >= 50) return "text-blue-500 font-bold"; // Rare
+    if (level >= 30) return "text-green-500 font-bold"; // Uncommon
+    return "text-gray-300 font-bold"; // Common
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
@@ -160,15 +180,79 @@ const AdminRewards = () => {
 
         <div className="bg-card rounded-lg p-6">
           <h2 className="text-xl font-semibold mb-4">Current Daily Rewards</h2>
+          
+          <div className="mb-6 p-4 bg-gray-800 rounded-lg border border-amber-500/30">
+            <div className="flex items-center gap-2 mb-2">
+              <Award className="h-5 w-5 text-amber-500" />
+              <h3 className="text-lg font-semibold">Legendary Reward System</h3>
+            </div>
+            <p className="text-sm text-muted-foreground mb-4">
+              Rewards scale with user level. Higher levels unlock more valuable rewards.
+            </p>
+            
+            <div className="space-y-2">
+              <div className="flex justify-between items-center p-2 bg-gray-900 rounded">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-amber-500" />
+                  <span className="text-amber-500 font-bold">Level 90+</span>
+                </div>
+                <span className="text-amber-500 font-bold">Up to $80,000</span>
+              </div>
+              
+              <div className="flex justify-between items-center p-2 bg-gray-900 rounded">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-purple-500" />
+                  <span className="text-purple-500 font-bold">Level 70-89</span>
+                </div>
+                <span className="text-purple-500 font-bold">Up to $70,000</span>
+              </div>
+              
+              <div className="flex justify-between items-center p-2 bg-gray-900 rounded">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-blue-500" />
+                  <span className="text-blue-500 font-bold">Level 50-69</span>
+                </div>
+                <span className="text-blue-500 font-bold">Up to $50,000</span>
+              </div>
+              
+              <div className="flex justify-between items-center p-2 bg-gray-900 rounded">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-green-500" />
+                  <span className="text-green-500 font-bold">Level 30-49</span>
+                </div>
+                <span className="text-green-500 font-bold">Up to $30,000</span>
+              </div>
+              
+              <div className="flex justify-between items-center p-2 bg-gray-900 rounded">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-gray-300" />
+                  <span className="text-gray-300 font-bold">Level 10-29</span>
+                </div>
+                <span className="text-gray-300 font-bold">Up to $10,000</span>
+              </div>
+              
+              <div className="flex justify-between items-center p-2 bg-gray-900 rounded">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-4 w-4 text-gray-400" />
+                  <span className="text-gray-400">Level 1-9</span>
+                </div>
+                <span className="text-gray-400">Up to $1,000</span>
+              </div>
+            </div>
+          </div>
+          
           <div className="space-y-4">
             {dailyRewards?.map((reward) => (
               <div
                 key={reward.id}
                 className="flex justify-between items-center p-4 bg-background rounded"
               >
-                <div>
-                  <span className="font-medium">Level {reward.level_required}:</span>{" "}
+                <div className="flex items-center gap-2">
+                  <span className={getRewardClass(reward.level_required)}>Level {reward.level_required}:</span>{" "}
                   {reward.case.name}
+                  <span className="ml-2 text-sm text-muted-foreground">
+                    ({getRewardValue(reward.level_required)} potential value)
+                  </span>
                 </div>
                 <Button
                   variant="destructive"
