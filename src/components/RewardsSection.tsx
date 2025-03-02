@@ -3,43 +3,24 @@ import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { 
-  Gift, Trophy, Star, Clock, Calendar, ChevronRight
+  Gift, Trophy, Star, Clock, Calendar, ChevronRight, Droplets, Check, X
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-
-interface UserProgress {
-  current_level: number;
-  current_xp: number;
-  last_reward_claim: string | null;
-}
-
-interface Level {
-  level_number: number;
-  xp_required: number;
-}
-
-interface DailyReward {
-  level_required: number;
-  case_id: string;
-  case: {
-    name: string;
-    image_url: string;
-  };
-}
+import { getLevelColor } from "@/utils/rewardUtils";
+import { LiveDropsModal } from "@/components/LiveDropsModal";
 
 export const RewardsSection = () => {
   const { user } = useBrowserAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
-  const [nextLevelXp, setNextLevelXp] = useState<number>(0);
-  const [xpProgress, setXpProgress] = useState<number>(0);
-  const [timeRemaining, setTimeRemaining] = useState<string | null>(null);
+  const [showLiveDrops, setShowLiveDrops] = useState(false);
+  const [isRewardsVisible, setIsRewardsVisible] = useState(false);
 
-  const { data: userProgress, refetch: refetchProgress } = useQuery({
+  const { data: userProgress } = useQuery({
     queryKey: ['userProgress', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -64,129 +45,30 @@ export const RewardsSection = () => {
           .single();
           
         if (insertError) throw insertError;
-        return newProgress as UserProgress;
+        return newProgress;
       }
       
-      return data as UserProgress;
+      return data;
     },
     enabled: !!user,
   });
 
-  const { data: levels } = useQuery({
-    queryKey: ['levels'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('levels')
-        .select('*')
-        .order('level_number', { ascending: true });
-      
-      if (error) throw error;
-      return data as Level[];
-    },
-  });
-
-  const { data: dailyRewards } = useQuery({
-    queryKey: ['dailyRewards'],
-    queryFn: async () => {
-      const { data, error } = await supabase
-        .from('daily_rewards')
-        .select(`
-          level_required,
-          case_id,
-          case:cases (
-            name,
-            image_url
-          )
-        `)
-        .order('level_required', { ascending: true });
-      
-      if (error) throw error;
-      return (data || []).map(reward => ({
-        ...reward,
-        case: reward.case || { name: "Unknown", image_url: "/placeholder.svg" }
-      })) as DailyReward[];
-    },
-  });
-
-  useEffect(() => {
-    if (userProgress && levels && levels.length > 0) {
-      const currentLevel = levels.find(l => l.level_number === userProgress.current_level);
-      const nextLevel = levels.find(l => l.level_number === userProgress.current_level + 1);
-      
-      if (currentLevel && nextLevel) {
-        const xpNeeded = nextLevel.xp_required - currentLevel.xp_required;
-        const xpGained = userProgress.current_xp - currentLevel.xp_required;
-        const calculatedProgress = (xpGained / xpNeeded) * 100;
-        
-        setNextLevelXp(xpNeeded);
-        setXpProgress(Math.max(0, Math.min(100, calculatedProgress))); // Ensure between 0-100
-      }
-    }
-  }, [userProgress, levels]);
-
-  useEffect(() => {
-    if (!userProgress?.last_reward_claim) {
-      setTimeRemaining(null);
-      return;
-    }
-
-    const calculateTimeRemaining = () => {
-      const lastClaim = new Date(userProgress.last_reward_claim as string);
-      const nextClaim = new Date(lastClaim.getTime() + 25 * 60 * 60 * 1000); // 25 hours
-      const now = new Date();
-      
-      if (now >= nextClaim) {
-        setTimeRemaining(null);
-        return;
-      }
-      
-      const diffMs = nextClaim.getTime() - now.getTime();
-      const hours = Math.floor(diffMs / (1000 * 60 * 60));
-      const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-      const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
-      
-      setTimeRemaining(`${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`);
-    };
-
-    calculateTimeRemaining();
-    const intervalId = setInterval(calculateTimeRemaining, 1000);
-    
-    return () => clearInterval(intervalId);
-  }, [userProgress?.last_reward_claim]);
-
-  const handleClaimReward = async () => {
-    if (!user) return;
-
-    try {
-      const { data, error } = await supabase
-        .rpc('claim_daily_reward', {
-          user_id: user.id
-        });
-
-      if (error) throw error;
-
-      if (data[0].success) {
-        toast({
-          title: "Success!",
-          description: data[0].message,
-        });
-        refetchProgress();
-      } else {
-        toast({
-          title: "Cannot claim reward",
-          description: data[0].message,
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error('Error claiming reward:', error);
-      toast({
-        title: "Error",
-        description: "Failed to claim daily reward",
-        variant: "destructive",
-      });
-    }
+  const toggleRewards = () => {
+    setIsRewardsVisible(!isRewardsVisible);
   };
+
+  const handleOpenLiveDrops = () => {
+    setShowLiveDrops(true);
+  };
+
+  const rewardTiers = [
+    { name: "Legendary", level: 90, maxAmount: 80000, color: "text-amber-500" },
+    { name: "Epic", level: 70, maxAmount: 70000, color: "text-purple-500" },
+    { name: "Rare", level: 50, maxAmount: 50000, color: "text-blue-500" },
+    { name: "Uncommon", level: 30, maxAmount: 30000, color: "text-green-500" },
+    { name: "Common", level: 10, maxAmount: 10000, color: "text-gray-300" },
+    { name: "Starter", level: 1, maxAmount: 1000, color: "text-gray-400" }
+  ];
 
   if (!user) {
     return (
@@ -196,58 +78,102 @@ export const RewardsSection = () => {
     );
   }
 
-  const eligibleReward = dailyRewards?.find(reward => 
-    reward.level_required <= (userProgress?.current_level || 1)
-  );
-
-  // Get the color for the level based on user's current level
-  const getLevelColor = (level: number) => {
-    if (level >= 90) return "text-amber-500 font-bold"; // Legendary
-    if (level >= 70) return "text-purple-500 font-bold"; // Epic
-    if (level >= 50) return "text-blue-500 font-bold"; // Rare
-    if (level >= 30) return "text-green-500 font-bold"; // Uncommon
-    return "text-gray-300 font-bold"; // Common
-  };
+  const currentLevel = userProgress?.current_level || 1;
+  const canClaimReward = !userProgress?.last_reward_claim || 
+    new Date(userProgress.last_reward_claim).getTime() + 24 * 60 * 60 * 1000 < Date.now();
 
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row items-center justify-between mb-8">
-        <div className="flex flex-col items-center mb-4 md:mb-0">
-          <div className="flex items-center gap-2 mb-4">
-            <Trophy className="h-6 w-6 text-primary" />
-            <h2 className={`text-2xl font-bold ${getLevelColor(userProgress?.current_level || 1)}`}>
-              Level {userProgress?.current_level || 1}
-            </h2>
-          </div>
-          <div className="w-full max-w-md mb-2">
-            <Progress value={xpProgress} className="h-2" />
-          </div>
-          <p className="text-sm text-muted-foreground">
-            {userProgress?.current_xp || 0} / {(userProgress?.current_xp || 0) + nextLevelXp} XP to next level
-          </p>
-        </div>
-
-        <div className="flex flex-col items-center gap-2">
-          <Button 
-            onClick={() => navigate('/rewards')} 
+        <div className="w-full flex justify-between">
+          <Button
+            onClick={toggleRewards}
             className="flex items-center gap-2 bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900"
           >
-            <Gift className="h-5 w-5" /> Claim Daily Rewards <ChevronRight className="h-4 w-4" />
+            <Gift className="h-5 w-5" /> Daily Rewards <ChevronRight className="h-4 w-4" />
           </Button>
           
-          <div className="text-sm text-amber-500 flex items-center gap-1">
-            <Calendar className="h-4 w-4" />
-            <span>New rewards every 24 hours</span>
-          </div>
-          
-          {timeRemaining && (
-            <div className="flex items-center gap-1 text-muted-foreground text-sm">
-              <Clock className="h-4 w-4" />
-              <span>Next claim in: {timeRemaining}</span>
-            </div>
-          )}
+          <Button
+            onClick={handleOpenLiveDrops}
+            variant="outline"
+            className="flex items-center gap-2 border-teal-500 text-teal-500 hover:bg-teal-500/10"
+          >
+            <Droplets className="h-5 w-5" /> View Live Drops
+          </Button>
         </div>
       </div>
+
+      {isRewardsVisible && (
+        <div className="mt-4 bg-black/30 rounded-xl p-6 border border-accent/20 shadow-lg animate-in fade-in-0 slide-in-from-top-5 duration-300">
+          <div className="flex flex-col md:flex-row items-center justify-between mb-6">
+            <div className="flex flex-col items-center mb-4 md:mb-0">
+              <div className="flex items-center gap-2 mb-4">
+                <Trophy className="h-6 w-6 text-primary" />
+                <h2 className={`text-2xl font-bold ${getLevelColor(currentLevel)}`}>
+                  Level {currentLevel}
+                </h2>
+              </div>
+            </div>
+
+            <div className="flex flex-col items-center gap-2">
+              <Button 
+                onClick={() => navigate('/rewards')} 
+                className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800"
+              >
+                <Gift className="h-5 w-5" /> View All Rewards <ChevronRight className="h-4 w-4" />
+              </Button>
+              
+              <div className="text-sm text-amber-500 flex items-center gap-1">
+                <Calendar className="h-4 w-4" />
+                <span>New rewards every 24 hours</span>
+              </div>
+              
+              {!canClaimReward && userProgress?.last_reward_claim && (
+                <div className="flex items-center gap-1 text-muted-foreground text-sm">
+                  <Clock className="h-4 w-4" />
+                  <span>Next claim available in 24h</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+            {rewardTiers.map((tier) => (
+              <div 
+                key={tier.name} 
+                className={`p-4 bg-black/20 rounded-lg border border-${tier.color}/30 flex items-center justify-between`}
+              >
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Star className={`h-4 w-4 ${tier.color}`} />
+                    <h4 className={`font-medium ${tier.color}`}>{tier.name} (Level {tier.level}+)</h4>
+                  </div>
+                  <p className="text-sm text-muted-foreground">Up to ${tier.maxAmount.toLocaleString()}</p>
+                </div>
+                <div className="flex items-center">
+                  {currentLevel >= tier.level ? (
+                    canClaimReward ? (
+                      <div className="flex items-center bg-green-500/20 text-green-500 px-3 py-1 rounded-full text-xs">
+                        <Check className="h-3 w-3 mr-1" /> Claimable
+                      </div>
+                    ) : (
+                      <div className="flex items-center bg-amber-500/20 text-amber-500 px-3 py-1 rounded-full text-xs">
+                        <Clock className="h-3 w-3 mr-1" /> Cooldown
+                      </div>
+                    )
+                  ) : (
+                    <div className="flex items-center bg-gray-500/20 text-gray-500 px-3 py-1 rounded-full text-xs">
+                      <X className="h-3 w-3 mr-1" /> Locked
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <LiveDropsModal isOpen={showLiveDrops} onOpenChange={setShowLiveDrops} />
     </div>
   );
 };
