@@ -1,10 +1,11 @@
 
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Droplets, Crown, Trophy, ArrowDown } from "lucide-react";
+import { Droplets, Crown, Trophy, ArrowDown, RefreshCw } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getRewardTierClass } from "@/utils/rewardUtils";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 interface Drop {
   id: string;
@@ -23,6 +24,7 @@ interface LiveDropsModalProps {
 export const LiveDropsModal = ({ isOpen, onOpenChange }: LiveDropsModalProps) => {
   const [drops, setDrops] = useState<Drop[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   // Mock data for demonstration
   const mockDrops: Drop[] = [
@@ -68,41 +70,47 @@ export const LiveDropsModal = ({ isOpen, onOpenChange }: LiveDropsModalProps) =>
     }
   ];
 
-  useEffect(() => {
-    const fetchRecentDrops = async () => {
-      setLoading(true);
-      try {
-        // In a real implementation, we would fetch from Supabase
-        // const { data, error } = await supabase
-        //   .from('case_openings')
-        //   .select('id, profiles!inner(username), case_items!inner(name, value), user_progress!inner(current_level), created_at')
-        //   .order('created_at', { ascending: false })
-        //   .limit(20);
-        
-        // if (error) throw error;
-        
-        // const formattedDrops = data.map(drop => ({
-        //   id: drop.id,
-        //   username: drop.profiles.username,
-        //   itemName: drop.case_items.name,
-        //   value: drop.case_items.value,
-        //   level: drop.user_progress.current_level,
-        //   timestamp: drop.created_at
-        // }));
-        
-        // Using mock data for now
-        setDrops(mockDrops);
-      } catch (error) {
-        console.error("Error fetching drops:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchRecentDrops = async () => {
+    setLoading(true);
+    try {
+      // In a real implementation, we would fetch from Supabase
+      // const { data, error } = await supabase
+      //   .from('case_openings')
+      //   .select('id, profiles!inner(username), case_items!inner(name, value), user_progress!inner(current_level), created_at')
+      //   .order('created_at', { ascending: false })
+      //   .limit(20);
+      
+      // if (error) throw error;
+      
+      // const formattedDrops = data.map(drop => ({
+      //   id: drop.id,
+      //   username: drop.profiles.username,
+      //   itemName: drop.case_items.name,
+      //   value: drop.case_items.value,
+      //   level: drop.user_progress.current_level,
+      //   timestamp: drop.created_at
+      // }));
+      
+      // Using mock data for now
+      setDrops(mockDrops);
+    } catch (error) {
+      console.error("Error fetching drops:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
 
+  useEffect(() => {
     if (isOpen) {
       fetchRecentDrops();
     }
   }, [isOpen]);
+
+  const handleRefresh = () => {
+    setRefreshing(true);
+    fetchRecentDrops();
+  };
 
   const formatTimeAgo = (timestamp: string) => {
     const seconds = Math.floor((Date.now() - new Date(timestamp).getTime()) / 1000);
@@ -124,7 +132,20 @@ export const LiveDropsModal = ({ isOpen, onOpenChange }: LiveDropsModalProps) =>
           </DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4 mt-4">
+        <div className="flex justify-end mb-4">
+          <Button 
+            variant="outline" 
+            size="sm" 
+            className="flex items-center gap-1 border-teal-500/50 text-teal-500 hover:bg-teal-500/10"
+            onClick={handleRefresh}
+            disabled={loading || refreshing}
+          >
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
+        
+        <div className="space-y-4">
           {loading ? (
             <div className="text-center py-8">
               <div className="animate-pulse">Loading recent drops...</div>

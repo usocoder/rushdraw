@@ -49,3 +49,16 @@ export const getRewardTierClass = (level: number): string => {
 export const formatRewardValue = (value: number): string => {
   return `$${value.toLocaleString()}`;
 };
+
+/**
+ * Get the color class for a level display
+ * @param level The user's current level
+ * @returns CSS class string for styling the level display
+ */
+export const getLevelColor = (level: number): string => {
+  if (level >= 90) return "text-amber-500"; // Legendary
+  if (level >= 70) return "text-purple-500"; // Epic
+  if (level >= 50) return "text-blue-500"; // Rare
+  if (level >= 30) return "text-green-500"; // Uncommon
+  return "text-gray-300"; // Common
+};
