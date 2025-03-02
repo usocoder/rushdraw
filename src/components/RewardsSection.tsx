@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-import { getLevelColor } from "@/utils/rewardUtils";
+import { getLevelColor, getRewardSuccessChance } from "@/utils/rewardUtils";
 import { LiveDropsModal } from "@/components/LiveDropsModal";
 
 export const RewardsSection = () => {
@@ -59,6 +58,11 @@ export const RewardsSection = () => {
 
   const handleOpenLiveDrops = () => {
     setShowLiveDrops(true);
+  };
+
+  const getClaimProbabilityText = (level: number) => {
+    const chance = getRewardSuccessChance(level) * 100;
+    return `${Math.round(chance)}% success rate`;
   };
 
   const rewardTiers = [
@@ -125,7 +129,7 @@ export const RewardsSection = () => {
               
               <div className="text-sm text-amber-500 flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                <span>New rewards every 24 hours</span>
+                <span>New rewards every 24 hours - {getClaimProbabilityText(currentLevel)}</span>
               </div>
               
               {!canClaimReward && userProgress?.last_reward_claim && (
@@ -149,6 +153,7 @@ export const RewardsSection = () => {
                     <h4 className={`font-medium ${tier.color}`}>{tier.name} (Level {tier.level}+)</h4>
                   </div>
                   <p className="text-sm text-muted-foreground">Up to ${tier.maxAmount.toLocaleString()}</p>
+                  <p className="text-xs text-muted-foreground">{getClaimProbabilityText(tier.level)}% chance</p>
                 </div>
                 <div className="flex items-center">
                   {currentLevel >= tier.level ? (

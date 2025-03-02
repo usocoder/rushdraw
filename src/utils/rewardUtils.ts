@@ -62,3 +62,39 @@ export const getLevelColor = (level: number): string => {
   if (level >= 30) return "text-green-500"; // Uncommon
   return "text-gray-300"; // Common
 };
+
+/**
+ * Calculate the reward success chance based on user level
+ * Ensures at least 80% success rate overall
+ * @param level The user's current level
+ * @returns A number between 0 and 1 representing success probability
+ */
+export const getRewardSuccessChance = (level: number): number => {
+  // Base success rate of 80%
+  let baseRate = 0.8;
+  
+  // Higher levels get better chances
+  if (level >= 90) return Math.min(1, baseRate + 0.15); // 95% chance
+  if (level >= 70) return Math.min(1, baseRate + 0.12); // 92% chance
+  if (level >= 50) return Math.min(1, baseRate + 0.1); // 90% chance
+  if (level >= 30) return Math.min(1, baseRate + 0.05); // 85% chance
+  if (level >= 10) return baseRate; // 80% chance
+  
+  // Even lowest levels get at least 75% chance
+  return Math.max(0.75, baseRate - 0.05);
+};
+
+/**
+ * Calculate the reward amount based on user level with increased chances
+ * @param level The user's current level
+ * @returns A reward amount within the appropriate range for the level
+ */
+export const calculateRewardAmount = (level: number): number => {
+  const maxReward = getMaxRewardValue(level);
+  
+  // Minimum reward is between 50-70% of max reward, increasing with level
+  const minPercentage = Math.min(0.7, 0.5 + (level / 300));
+  
+  // Calculate a random amount between min percentage and 100% of max reward
+  return Math.floor(Math.random() * (maxReward - (maxReward * minPercentage))) + (maxReward * minPercentage);
+};

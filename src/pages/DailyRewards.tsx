@@ -8,7 +8,13 @@ import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { useBalance } from "@/contexts/BalanceContext";
 import { useNavigate } from "react-router-dom";
 import { Gift, Trophy, Star, Clock, ArrowLeft, TrendingUp } from "lucide-react";
-import { getMaxRewardValue, getRewardTier, getRewardTierClass, formatRewardValue } from "@/utils/rewardUtils";
+import { 
+  getMaxRewardValue, 
+  getRewardTier, 
+  getRewardTierClass, 
+  formatRewardValue, 
+  calculateRewardAmount 
+} from "@/utils/rewardUtils";
 
 const DailyRewards = () => {
   const { user } = useBrowserAuth();
@@ -105,10 +111,9 @@ const DailyRewards = () => {
       if (error) throw error;
 
       if (data[0].success) {
-        // Add legendary reward based on level
+        // Add legendary reward based on level with improved calculation
         const currentLevel = userProgress?.current_level || 1;
-        const maxReward = getMaxRewardValue(currentLevel);
-        const rewardAmount = Math.floor(Math.random() * maxReward * 0.5) + maxReward * 0.5; // Between 50% and 100% of max reward
+        const rewardAmount = calculateRewardAmount(currentLevel);
         
         await createTransaction('level_reward', rewardAmount);
         
