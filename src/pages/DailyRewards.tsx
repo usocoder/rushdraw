@@ -7,13 +7,16 @@ import { useToast } from "@/components/ui/use-toast";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { useBalance } from "@/contexts/BalanceContext";
 import { useNavigate } from "react-router-dom";
-import { Gift, Trophy, Star, Clock, ArrowLeft, TrendingUp } from "lucide-react";
+import { Gift, Trophy, Star, Clock, ArrowLeft, TrendingUp, AlertTriangle } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { 
   getMaxRewardValue, 
   getRewardTier, 
   getRewardTierClass, 
   formatRewardValue, 
-  calculateRewardAmount 
+  calculateRewardAmount,
+  getProgressToNextLevel,
+  getXpRequiredForLevel
 } from "@/utils/rewardUtils";
 
 const DailyRewards = () => {
@@ -22,6 +25,7 @@ const DailyRewards = () => {
   const navigate = useNavigate();
   const { createTransaction } = useBalance();
   const [timeRemaining, setTimeRemaining] = useState<string | null>(null);
+  const [progressPercent, setProgressPercent] = useState(0);
 
   const { data: userProgress, refetch: refetchProgress } = useQuery({
     queryKey: ['userProgressRewards', user?.id],
@@ -50,6 +54,23 @@ const DailyRewards = () => {
     enabled: !!user,
   });
 
+  const { data: nextLevel } = useQuery({
+    queryKey: ['nextLevel', userProgress?.current_level],
+    queryFn: async () => {
+      if (!userProgress) return null;
+      
+      const { data, error } = await supabase
+        .from('levels')
+        .select('*')
+        .eq('level_number', userProgress.current_level + 1)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!userProgress,
+  });
+
   const { data: dailyRewards } = useQuery({
     queryKey: ['dailyRewardsPage'],
     queryFn: async () => {
@@ -70,6 +91,27 @@ const DailyRewards = () => {
       return data || [];
     },
   });
+
+  useEffect(() => {
+    if (userProgress && nextLevel) {
+      const progress = getProgressToNextLevel(
+        userProgress.current_xp, 
+        userProgress.current_level, 
+        nextLevel.xp_required
+      );
+      setProgressPercent(progress);
+    } else if (userProgress) {
+      // If no next level data, calculate using the utility function
+      const currentLevelXp = getXpRequiredForLevel(userProgress.current_level);
+      const nextLevelXp = getXpRequiredForLevel(userProgress.current_level + 1);
+      const progress = getProgressToNextLevel(
+        userProgress.current_xp,
+        userProgress.current_level,
+        nextLevelXp
+      );
+      setProgressPercent(progress);
+    }
+  }, [userProgress, nextLevel]);
 
   useEffect(() => {
     if (!userProgress?.last_reward_claim) {
@@ -152,6 +194,8 @@ const DailyRewards = () => {
   }
 
   const currentLevel = userProgress?.current_level || 1;
+  const currentXp = userProgress?.current_xp || 0;
+  const nextLevelXp = nextLevel?.xp_required || getXpRequiredForLevel(currentLevel + 1);
   const eligibleRewards = dailyRewards?.filter(reward => reward.level_required <= currentLevel) || [];
   const highestReward = eligibleRewards.length > 0 
     ? eligibleRewards.reduce((prev, current) => 
@@ -177,7 +221,19 @@ const DailyRewards = () => {
       </div>
 
       <div className="max-w-4xl mx-auto">
+        {/* XP Progress Bar */}
         <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 mb-8">
+          <div className="mb-4">
+            <div className="flex justify-between mb-2">
+              <span className="text-sm text-muted-foreground">Current XP: {currentXp.toLocaleString()}</span>
+              <span className="text-sm text-muted-foreground">Next Level: {nextLevelXp.toLocaleString()} XP</span>
+            </div>
+            <Progress value={progressPercent} className="h-3" />
+            <p className="text-xs text-center mt-1 text-muted-foreground">
+              {Math.round(progressPercent)}% to Level {currentLevel + 1}
+            </p>
+          </div>
+          
           <div className="flex flex-col md:flex-row items-center gap-6">
             <div className="w-full md:w-1/3 flex flex-col items-center justify-center p-4 bg-gray-800 rounded-lg">
               <div className={`text-4xl font-bold mb-2 ${getRewardTierClass(currentLevel)}`}>
@@ -227,13 +283,24 @@ const DailyRewards = () => {
                 
                 <Button 
                   onClick={handleClaimReward} 
-                  disabled={!!timeRemaining}
-                  className={`${!timeRemaining ? 'bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800' : ''}`}
+                  disabled={!!timeRemaining || eligibleRewards.length === 0}
+                  className={`${!timeRemaining && eligibleRewards.length > 0 ? 'bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800' : ''}`}
                   size="lg"
                 >
-                  {timeRemaining ? `Cooldown: ${timeRemaining}` : "Claim Daily Reward"}
+                  {timeRemaining ? `Cooldown: ${timeRemaining}` : 
+                   eligibleRewards.length === 0 ? "No rewards available" : 
+                   "Claim Daily Reward"}
                 </Button>
               </div>
+              
+              {eligibleRewards.length === 0 && (
+                <div className="mt-4 p-3 bg-amber-500/10 border border-amber-500/30 rounded-lg flex items-center gap-2">
+                  <AlertTriangle className="h-5 w-5 text-amber-500" />
+                  <p className="text-sm text-amber-500">
+                    No rewards found for your level. Please contact an administrator to set up rewards.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         </div>

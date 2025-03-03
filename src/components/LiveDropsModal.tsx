@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getRewardTierClass } from "@/utils/rewardUtils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { RealtimePostgresChangesPayload } from "@supabase/supabase-js";
 
 interface Drop {
   id: string;
@@ -26,7 +27,7 @@ export const LiveDropsModal = ({ isOpen, onOpenChange }: LiveDropsModalProps) =>
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Mock data for demonstration
+  // Fallback data in case Supabase fetch fails
   const mockDrops: Drop[] = [
     {
       id: "1",
@@ -73,28 +74,40 @@ export const LiveDropsModal = ({ isOpen, onOpenChange }: LiveDropsModalProps) =>
   const fetchRecentDrops = async () => {
     setLoading(true);
     try {
-      // In a real implementation, we would fetch from Supabase
-      // const { data, error } = await supabase
-      //   .from('case_openings')
-      //   .select('id, profiles!inner(username), case_items!inner(name, value), user_progress!inner(current_level), created_at')
-      //   .order('created_at', { ascending: false })
-      //   .limit(20);
+      const { data, error } = await supabase
+        .from('case_openings')
+        .select(`
+          id, 
+          created_at,
+          value_won,
+          profiles:user_id (username),
+          items:item_won (name),
+          user_progress!inner(current_level)
+        `)
+        .order('created_at', { ascending: false })
+        .limit(20);
       
-      // if (error) throw error;
+      if (error) throw error;
       
-      // const formattedDrops = data.map(drop => ({
-      //   id: drop.id,
-      //   username: drop.profiles.username,
-      //   itemName: drop.case_items.name,
-      //   value: drop.case_items.value,
-      //   level: drop.user_progress.current_level,
-      //   timestamp: drop.created_at
-      // }));
-      
-      // Using mock data for now
-      setDrops(mockDrops);
+      if (data && data.length > 0) {
+        const formattedDrops = data.map(drop => ({
+          id: drop.id,
+          username: drop.profiles?.username || 'Anonymous',
+          itemName: drop.items?.name || 'Mystery Item',
+          value: drop.value_won || 0,
+          level: drop.user_progress?.current_level || 1,
+          timestamp: drop.created_at
+        }));
+        
+        setDrops(formattedDrops);
+      } else {
+        // Use mock data if no real data is available
+        setDrops(mockDrops);
+      }
     } catch (error) {
       console.error("Error fetching drops:", error);
+      // Use mock data as fallback
+      setDrops(mockDrops);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -104,6 +117,51 @@ export const LiveDropsModal = ({ isOpen, onOpenChange }: LiveDropsModalProps) =>
   useEffect(() => {
     if (isOpen) {
       fetchRecentDrops();
+      
+      // Set up real-time subscription
+      const channel = supabase.channel('case-opening-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'case_openings',
+          },
+          async (payload: RealtimePostgresChangesPayload<any>) => {
+            console.log('New case opening:', payload);
+            // Fetch the complete data for the new opening
+            const { data, error } = await supabase
+              .from('case_openings')
+              .select(`
+                id, 
+                created_at,
+                value_won,
+                profiles:user_id (username),
+                items:item_won (name),
+                user_progress!inner(current_level)
+              `)
+              .eq('id', payload.new.id)
+              .single();
+            
+            if (!error && data) {
+              const newDrop: Drop = {
+                id: data.id,
+                username: data.profiles?.username || 'Anonymous',
+                itemName: data.items?.name || 'Mystery Item',
+                value: data.value_won || 0,
+                level: data.user_progress?.current_level || 1,
+                timestamp: data.created_at
+              };
+              
+              setDrops(prevDrops => [newDrop, ...prevDrops.slice(0, 19)]);
+            }
+          }
+        )
+        .subscribe();
+      
+      return () => {
+        supabase.removeChannel(channel);
+      };
     }
   }, [isOpen]);
 

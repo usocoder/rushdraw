@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-import { getLevelColor, getRewardSuccessChance } from "@/utils/rewardUtils";
+import { getLevelColor, getRewardSuccessChance, getProgressToNextLevel, getXpRequiredForLevel } from "@/utils/rewardUtils";
 import { LiveDropsModal } from "@/components/LiveDropsModal";
 
 export const RewardsSection = () => {
@@ -18,8 +19,9 @@ export const RewardsSection = () => {
   const navigate = useNavigate();
   const [showLiveDrops, setShowLiveDrops] = useState(false);
   const [isRewardsVisible, setIsRewardsVisible] = useState(false);
+  const [progressPercent, setProgressPercent] = useState(0);
 
-  const { data: userProgress } = useQuery({
+  const { data: userProgress, refetch: refetchProgress } = useQuery({
     queryKey: ['userProgress', user?.id],
     queryFn: async () => {
       const { data, error } = await supabase
@@ -52,6 +54,44 @@ export const RewardsSection = () => {
     enabled: !!user,
   });
 
+  const { data: nextLevel } = useQuery({
+    queryKey: ['nextLevel', userProgress?.current_level],
+    queryFn: async () => {
+      if (!userProgress) return null;
+      
+      const { data, error } = await supabase
+        .from('levels')
+        .select('*')
+        .eq('level_number', userProgress.current_level + 1)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!userProgress,
+  });
+
+  useEffect(() => {
+    if (userProgress && nextLevel) {
+      const progress = getProgressToNextLevel(
+        userProgress.current_xp, 
+        userProgress.current_level, 
+        nextLevel.xp_required
+      );
+      setProgressPercent(progress);
+    } else if (userProgress) {
+      // If no next level data, calculate using the utility function
+      const currentLevelXp = getXpRequiredForLevel(userProgress.current_level);
+      const nextLevelXp = getXpRequiredForLevel(userProgress.current_level + 1);
+      const progress = getProgressToNextLevel(
+        userProgress.current_xp,
+        userProgress.current_level,
+        nextLevelXp
+      );
+      setProgressPercent(progress);
+    }
+  }, [userProgress, nextLevel]);
+
   const toggleRewards = () => {
     setIsRewardsVisible(!isRewardsVisible);
   };
@@ -83,6 +123,8 @@ export const RewardsSection = () => {
   }
 
   const currentLevel = userProgress?.current_level || 1;
+  const currentXp = userProgress?.current_xp || 0;
+  const nextLevelXp = nextLevel?.xp_required || getXpRequiredForLevel(currentLevel + 1);
   const canClaimReward = !userProgress?.last_reward_claim || 
     new Date(userProgress.last_reward_claim).getTime() + 24 * 60 * 60 * 1000 < Date.now();
 
@@ -116,6 +158,17 @@ export const RewardsSection = () => {
                 <h2 className={`text-2xl font-bold ${getLevelColor(currentLevel)}`}>
                   Level {currentLevel}
                 </h2>
+              </div>
+              
+              <div className="w-full max-w-[200px] space-y-2">
+                <div className="flex justify-between text-xs">
+                  <span className="text-muted-foreground">XP: {currentXp.toLocaleString()}</span>
+                  <span className="text-muted-foreground">Next: {nextLevelXp.toLocaleString()}</span>
+                </div>
+                <Progress value={progressPercent} className="h-2" />
+                <p className="text-xs text-center text-muted-foreground">
+                  {Math.round(progressPercent)}% to Level {currentLevel + 1}
+                </p>
               </div>
             </div>
 
@@ -153,7 +206,7 @@ export const RewardsSection = () => {
                     <h4 className={`font-medium ${tier.color}`}>{tier.name} (Level {tier.level}+)</h4>
                   </div>
                   <p className="text-sm text-muted-foreground">Up to ${tier.maxAmount.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground">{getClaimProbabilityText(tier.level)}% chance</p>
+                  <p className="text-xs text-muted-foreground">{getClaimProbabilityText(tier.level)}</p>
                 </div>
                 <div className="flex items-center">
                   {currentLevel >= tier.level ? (

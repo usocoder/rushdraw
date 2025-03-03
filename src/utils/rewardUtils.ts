@@ -109,3 +109,31 @@ export const calculateRewardAmount = (level: number): number => {
     return Math.floor((0.8 + (0.2 * Math.random())) * maxReward);
   }
 };
+
+/**
+ * Calculate XP required for each level (making levels harder to achieve)
+ * @param level The level to calculate XP for
+ * @returns XP required to reach this level
+ */
+export const getXpRequiredForLevel = (level: number): number => {
+  // Base XP requirement with increased curve for higher levels
+  return Math.floor(500 * Math.pow(level, 1.5));
+};
+
+/**
+ * Get the progress percentage to the next level
+ * @param currentXp Current XP amount
+ * @param currentLevel Current level
+ * @param nextLevelXp XP required for the next level
+ * @returns A percentage (0-100) representing progress to the next level
+ */
+export const getProgressToNextLevel = (currentXp: number, currentLevel: number, nextLevelXp: number): number => {
+  const currentLevelXp = getXpRequiredForLevel(currentLevel);
+  const xpSinceLastLevel = currentXp - currentLevelXp;
+  const xpRequiredForNextLevel = nextLevelXp - currentLevelXp;
+  
+  if (xpRequiredForNextLevel <= 0) return 100;
+  
+  const progress = (xpSinceLastLevel / xpRequiredForNextLevel) * 100;
+  return Math.min(Math.max(0, progress), 100);
+};
