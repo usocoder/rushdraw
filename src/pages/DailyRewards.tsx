@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +8,7 @@ import { useBalance } from "@/contexts/BalanceContext";
 import { useNavigate } from "react-router-dom";
 import { Gift, Trophy, Star, Clock, ArrowLeft, TrendingUp, AlertTriangle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { CaseGrid } from "@/components/CaseGrid";
 import { 
   getMaxRewardValue, 
   getRewardTier, 
@@ -101,7 +101,6 @@ const DailyRewards = () => {
       );
       setProgressPercent(progress);
     } else if (userProgress) {
-      // If no next level data, calculate using the utility function
       const currentLevelXp = getXpRequiredForLevel(userProgress.current_level);
       const nextLevelXp = getXpRequiredForLevel(userProgress.current_level + 1);
       const progress = getProgressToNextLevel(
@@ -153,7 +152,6 @@ const DailyRewards = () => {
       if (error) throw error;
 
       if (data[0].success) {
-        // Add legendary reward based on level with improved calculation
         const currentLevel = userProgress?.current_level || 1;
         const rewardAmount = calculateRewardAmount(currentLevel);
         
@@ -217,11 +215,10 @@ const DailyRewards = () => {
           </h1>
         </div>
         
-        <div className="w-[80px]"></div> {/* Empty div for balanced layout */}
+        <div className="w-[80px]"></div>
       </div>
 
       <div className="max-w-4xl mx-auto">
-        {/* XP Progress Bar */}
         <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-xl p-6 shadow-lg border border-gray-700 mb-8">
           <div className="mb-4">
             <div className="flex justify-between mb-2">
@@ -374,6 +371,15 @@ const DailyRewards = () => {
             </div>
           </div>
         </div>
+      </div>
+      
+      <div className="mt-12">
+        <h2 className="text-2xl font-bold text-center mb-4">Browse All Cases</h2>
+        <p className="text-center text-muted-foreground mb-8 max-w-2xl mx-auto">
+          Explore our premium collection of cases ranging from budget to exclusive. 
+          Open cases to win fantastic rewards!
+        </p>
+        <CaseGrid />
       </div>
     </div>
   );

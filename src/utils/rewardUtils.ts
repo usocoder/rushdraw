@@ -85,7 +85,7 @@ export const getRewardSuccessChance = (level: number): number => {
 
 /**
  * Calculate the reward amount based on user level with improved distribution
- * Most rewards (80%) will be in the lower to middle range
+ * Most rewards (99.9%) will be in the lower range, making big wins extremely rare
  * @param level The user's current level
  * @returns A reward amount within the appropriate range for the level
  */
@@ -95,18 +95,21 @@ export const calculateRewardAmount = (level: number): number => {
   // Generate a random number between 0 and 1
   const randomValue = Math.random();
   
-  // 80% chance to get a reward in the lower to mid range (10-50% of max)
+  // 80% chance to get a very small reward (0.5-2% of max)
   if (randomValue < 0.8) {
-    // Calculate a reward between 10% and 50% of the maximum value
-    return Math.floor((0.1 + (0.4 * Math.random())) * maxReward);
+    return Math.floor((0.005 + (0.015 * Math.random())) * maxReward);
   } 
-  // 15% chance to get a reward in the mid to high range (50-80% of max)
+  // 15% chance to get a small reward (2-5% of max)
   else if (randomValue < 0.95) {
-    return Math.floor((0.5 + (0.3 * Math.random())) * maxReward);
+    return Math.floor((0.02 + (0.03 * Math.random())) * maxReward);
   }
-  // 5% chance to get a reward in the high range (80-100% of max)
+  // 4.9% chance to get a medium reward (5-15% of max)
+  else if (randomValue < 0.999) {
+    return Math.floor((0.05 + (0.1 * Math.random())) * maxReward);
+  }
+  // 0.1% (1 in 1000) chance to get a high reward (15-100% of max)
   else {
-    return Math.floor((0.8 + (0.2 * Math.random())) * maxReward);
+    return Math.floor((0.15 + (0.85 * Math.random())) * maxReward);
   }
 };
 

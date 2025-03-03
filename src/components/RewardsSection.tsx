@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -80,7 +79,6 @@ export const RewardsSection = () => {
       );
       setProgressPercent(progress);
     } else if (userProgress) {
-      // If no next level data, calculate using the utility function
       const currentLevelXp = getXpRequiredForLevel(userProgress.current_level);
       const nextLevelXp = getXpRequiredForLevel(userProgress.current_level + 1);
       const progress = getProgressToNextLevel(
@@ -177,7 +175,7 @@ export const RewardsSection = () => {
                 onClick={() => navigate('/rewards')} 
                 className="flex items-center gap-2 bg-gradient-to-r from-amber-500 to-amber-700 hover:from-amber-600 hover:to-amber-800"
               >
-                <Gift className="h-5 w-5" /> View All Rewards <ChevronRight className="h-4 w-4" />
+                <Gift className="h-5 w-5" /> View All Rewards & Cases <ChevronRight className="h-4 w-4" />
               </Button>
               
               <div className="text-sm text-amber-500 flex items-center gap-1">
@@ -227,6 +225,17 @@ export const RewardsSection = () => {
                 </div>
               </div>
             ))}
+          </div>
+
+          <div className="flex justify-center mt-6">
+            <Button
+              onClick={() => navigate('/rewards')}
+              size="lg"
+              variant="default"
+              className="w-full md:w-auto px-8 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+            >
+              Browse All Cases
+            </Button>
           </div>
         </div>
       )}
