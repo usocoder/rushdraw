@@ -80,9 +80,8 @@ export const LiveDropsModal = ({ isOpen, onOpenChange }: LiveDropsModalProps) =>
           id, 
           created_at,
           value_won,
-          profiles:user_id (username),
-          items:item_won (name),
-          user_progress!inner(current_level)
+          user_id,
+          item_won
         `)
         .order('created_at', { ascending: false })
         .limit(20);
@@ -90,14 +89,49 @@ export const LiveDropsModal = ({ isOpen, onOpenChange }: LiveDropsModalProps) =>
       if (error) throw error;
       
       if (data && data.length > 0) {
-        const formattedDrops = data.map(drop => ({
-          id: drop.id,
-          username: drop.profiles?.username || 'Anonymous',
-          itemName: drop.items?.name || 'Mystery Item',
-          value: drop.value_won || 0,
-          level: drop.user_progress?.current_level || 1,
-          timestamp: drop.created_at
-        }));
+        // Get unique user IDs to fetch profiles and progress
+        const userIds = [...new Set(data.map(drop => drop.user_id))];
+        const itemIds = [...new Set(data.map(drop => drop.item_won))];
+        
+        // Fetch user profiles
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, username')
+          .in('id', userIds);
+          
+        if (profilesError) throw profilesError;
+        
+        // Fetch user progress
+        const { data: userProgress, error: progressError } = await supabase
+          .from('user_progress')
+          .select('user_id, current_level')
+          .in('user_id', userIds);
+          
+        if (progressError) throw progressError;
+        
+        // Fetch items
+        const { data: items, error: itemsError } = await supabase
+          .from('case_items')
+          .select('id, name')
+          .in('id', itemIds);
+          
+        if (itemsError) throw itemsError;
+
+        // Map everything together
+        const formattedDrops = data.map(drop => {
+          const profile = profiles?.find(p => p.id === drop.user_id);
+          const progress = userProgress?.find(p => p.user_id === drop.user_id);
+          const item = items?.find(i => i.id === drop.item_won);
+          
+          return {
+            id: drop.id,
+            username: profile?.username || 'Anonymous',
+            itemName: item?.name || 'Mystery Item',
+            value: drop.value_won || 0,
+            level: progress?.current_level || 1,
+            timestamp: drop.created_at
+          };
+        });
         
         setDrops(formattedDrops);
       } else {
@@ -129,32 +163,50 @@ export const LiveDropsModal = ({ isOpen, onOpenChange }: LiveDropsModalProps) =>
           },
           async (payload: RealtimePostgresChangesPayload<any>) => {
             console.log('New case opening:', payload);
-            // Fetch the complete data for the new opening
-            const { data, error } = await supabase
-              .from('case_openings')
-              .select(`
-                id, 
-                created_at,
-                value_won,
-                profiles:user_id (username),
-                items:item_won (name),
-                user_progress!inner(current_level)
-              `)
-              .eq('id', payload.new.id)
-              .single();
             
-            if (!error && data) {
-              const newDrop: Drop = {
-                id: data.id,
-                username: data.profiles?.username || 'Anonymous',
-                itemName: data.items?.name || 'Mystery Item',
-                value: data.value_won || 0,
-                level: data.user_progress?.current_level || 1,
-                timestamp: data.created_at
-              };
+            // Get the user profile for this opening
+            const { data: profile, error: profileError } = await supabase
+              .from('profiles')
+              .select('username')
+              .eq('id', payload.new.user_id)
+              .single();
               
-              setDrops(prevDrops => [newDrop, ...prevDrops.slice(0, 19)]);
+            if (profileError) {
+              console.error('Error fetching profile:', profileError);
             }
+            
+            // Get the user's level
+            const { data: progress, error: progressError } = await supabase
+              .from('user_progress')
+              .select('current_level')
+              .eq('user_id', payload.new.user_id)
+              .single();
+              
+            if (progressError) {
+              console.error('Error fetching user progress:', progressError);
+            }
+            
+            // Get the item name
+            const { data: item, error: itemError } = await supabase
+              .from('case_items')
+              .select('name')
+              .eq('id', payload.new.item_won)
+              .single();
+              
+            if (itemError) {
+              console.error('Error fetching item:', itemError);
+            }
+            
+            const newDrop: Drop = {
+              id: payload.new.id,
+              username: profile?.username || 'Anonymous',
+              itemName: item?.name || 'Mystery Item',
+              value: payload.new.value_won || 0,
+              level: progress?.current_level || 1,
+              timestamp: payload.new.created_at
+            };
+            
+            setDrops(prevDrops => [newDrop, ...prevDrops.slice(0, 19)]);
           }
         )
         .subscribe();
