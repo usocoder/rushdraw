@@ -57,74 +57,67 @@ export const BattleModalContent = ({
 
   return (
     <div className="p-4 sm:p-6">
-      <AnimatePresence>
-        <motion.div 
-          className="grid grid-cols-1 gap-6"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.3 }}
-        >
-          {!battleWinner && (
-            <motion.div
-              className="grid grid-cols-1 gap-4 md:gap-6"
-              initial={{ scale: 0.98 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.3 }}
-            >
-              <div className="relative">
-                <div className="absolute -left-2 top-1/2 -translate-y-1/2 h-6 w-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-r shadow-glow-sm"></div>
-                <div className="bg-gradient-to-r from-accent/20 to-transparent p-1 rounded-lg">
-                  <BattleSpinner
-                    caseData={safeCase}
-                    isSpinning={isSpinning}
-                    onSpinComplete={(item) => onSpinComplete(item, "You")}
-                    playerName="You"
-                  />
-                </div>
+      <AnimatePresence mode="wait">
+        {!battleWinner && (
+          <motion.div 
+            className="grid grid-cols-1 gap-4 md:gap-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.4 }}
+          >
+            <div className="relative">
+              <div className="absolute -left-2 top-1/2 -translate-y-1/2 h-6 w-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-r shadow-glow-sm"></div>
+              <div className="bg-gradient-to-r from-accent/20 to-transparent p-2 rounded-lg border border-accent/10">
+                <BattleSpinner
+                  caseData={safeCase}
+                  isSpinning={isSpinning}
+                  onSpinComplete={(item) => onSpinComplete(item, "You")}
+                  playerName="You"
+                />
               </div>
+            </div>
 
-              {isBattleMode && safeOpponents.map((opponent, index) => (
-                <motion.div 
-                  key={index}
-                  className="relative"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * (index + 1) }}
-                >
-                  <div className="absolute -left-2 top-1/2 -translate-y-1/2 h-6 w-2 bg-gradient-to-r from-red-500 to-orange-500 rounded-r shadow-glow-sm"></div>
-                  <div className="bg-gradient-to-r from-accent/10 to-transparent p-1 rounded-lg">
-                    <BattleSpinner
-                      key={index}
-                      caseData={safeCase}
-                      isSpinning={isSpinning}
-                      onSpinComplete={(item) => onSpinComplete(item, opponent)}
-                      playerName={opponent}
-                      isOpponent
-                    />
-                  </div>
-                </motion.div>
-              ))}
-            </motion.div>
-          )}
-
-          <AnimatePresence>
-            {battleWinner && (
-              <motion.div
+            {isBattleMode && safeOpponents.map((opponent, index) => (
+              <motion.div 
+                key={index}
+                className="relative"
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}
+                transition={{ delay: 0.1 * (index + 1) }}
               >
-                <BattleResults
-                  winner={battleWinner}
-                  isFreePlay={isFreePlay}
-                  casePrice={casePrice}
-                  onWin={onWin}
-                />
+                <div className="absolute -left-2 top-1/2 -translate-y-1/2 h-6 w-2 bg-gradient-to-r from-red-500 to-orange-500 rounded-r shadow-glow-sm"></div>
+                <div className="bg-gradient-to-r from-accent/10 to-transparent p-2 rounded-lg border border-accent/10">
+                  <BattleSpinner
+                    key={index}
+                    caseData={safeCase}
+                    isSpinning={isSpinning}
+                    onSpinComplete={(item) => onSpinComplete(item, opponent)}
+                    playerName={opponent}
+                    isOpponent
+                  />
+                </div>
               </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
+            ))}
+          </motion.div>
+        )}
+
+        {battleWinner && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="mt-4"
+          >
+            <BattleResults
+              winner={battleWinner}
+              isFreePlay={isFreePlay}
+              casePrice={casePrice}
+              onWin={onWin}
+              opponents={safeOpponents}
+            />
+          </motion.div>
+        )}
       </AnimatePresence>
     </div>
   );
