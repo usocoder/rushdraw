@@ -201,6 +201,15 @@ const DailyRewards = () => {
       ) 
     : null;
 
+  const rewardTiers = [
+    { name: "Legendary", level: 90, maxAmount: 80000, color: "text-amber-500" },
+    { name: "Epic", level: 70, maxAmount: 70000, color: "text-purple-500" },
+    { name: "Rare", level: 50, maxAmount: 50000, color: "text-blue-500" },
+    { name: "Uncommon", level: 30, maxAmount: 30000, color: "text-green-500" },
+    { name: "Common", level: 10, maxAmount: 10000, color: "text-gray-300" },
+    { name: "Starter", level: 1, maxAmount: 1000, color: "text-gray-400" }
+  ];
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex items-center justify-between mb-8">
@@ -327,48 +336,18 @@ const DailyRewards = () => {
           </div>
         )}
         
-        <div className="bg-card rounded-lg p-6 border border-accent/20">
-          <h3 className="text-lg font-semibold mb-4">Reward Tiers</h3>
+        <div className="bg-card rounded-lg p-6 border border-accent/20 mb-8">
+          <h3 className="text-lg font-semibold mb-4">Daily Reward Tiers</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="p-4 bg-gray-800 rounded-lg border border-amber-500/30">
-              <div className="flex items-center gap-2 mb-2">
-                <Star className="h-4 w-4 text-amber-500" />
-                <h4 className="font-medium text-amber-500">Legendary (Level 90+)</h4>
+            {rewardTiers.map(tier => (
+              <div key={tier.name} className={`p-4 bg-gray-800 rounded-lg border border-${tier.color.replace('text-', '')}/30`}>
+                <div className="flex items-center gap-2 mb-2">
+                  <Star className={`h-4 w-4 ${tier.color}`} />
+                  <h4 className={`font-medium ${tier.color}`}>{tier.name} (Level {tier.level}+)</h4>
+                </div>
+                <p className="text-sm text-muted-foreground">Up to ${tier.maxAmount.toLocaleString()}</p>
               </div>
-              <p className="text-sm text-muted-foreground">Up to $80,000</p>
-            </div>
-            
-            <div className="p-4 bg-gray-800 rounded-lg border border-purple-500/30">
-              <div className="flex items-center gap-2 mb-2">
-                <Star className="h-4 w-4 text-purple-500" />
-                <h4 className="font-medium text-purple-500">Epic (Level 70-89)</h4>
-              </div>
-              <p className="text-sm text-muted-foreground">Up to $70,000</p>
-            </div>
-            
-            <div className="p-4 bg-gray-800 rounded-lg border border-blue-500/30">
-              <div className="flex items-center gap-2 mb-2">
-                <Star className="h-4 w-4 text-blue-500" />
-                <h4 className="font-medium text-blue-500">Rare (Level 50-69)</h4>
-              </div>
-              <p className="text-sm text-muted-foreground">Up to $50,000</p>
-            </div>
-            
-            <div className="p-4 bg-gray-800 rounded-lg border border-green-500/30">
-              <div className="flex items-center gap-2 mb-2">
-                <Star className="h-4 w-4 text-green-500" />
-                <h4 className="font-medium text-green-500">Uncommon (Level 30-49)</h4>
-              </div>
-              <p className="text-sm text-muted-foreground">Up to $30,000</p>
-            </div>
-            
-            <div className="p-4 bg-gray-800 rounded-lg border border-gray-500/30">
-              <div className="flex items-center gap-2 mb-2">
-                <Star className="h-4 w-4 text-gray-300" />
-                <h4 className="font-medium text-gray-300">Common (Level 1-29)</h4>
-              </div>
-              <p className="text-sm text-muted-foreground">Up to $10,000</p>
-            </div>
+            ))}
           </div>
         </div>
       </div>

@@ -95,21 +95,21 @@ export const calculateRewardAmount = (level: number): number => {
   // Generate a random number between 0 and 1
   const randomValue = Math.random();
   
-  // 80% chance to get a very small reward (0.5-2% of max)
-  if (randomValue < 0.8) {
-    return Math.floor((0.005 + (0.015 * Math.random())) * maxReward);
+  // 90% chance to get a very small reward (0.1-1% of max)
+  if (randomValue < 0.9) {
+    return Math.floor((0.001 + (0.009 * Math.random())) * maxReward);
   } 
-  // 15% chance to get a small reward (2-5% of max)
-  else if (randomValue < 0.95) {
-    return Math.floor((0.02 + (0.03 * Math.random())) * maxReward);
+  // 9% chance to get a small reward (1-3% of max)
+  else if (randomValue < 0.99) {
+    return Math.floor((0.01 + (0.02 * Math.random())) * maxReward);
   }
-  // 4.9% chance to get a medium reward (5-15% of max)
+  // 0.9% chance to get a medium reward (3-10% of max)
   else if (randomValue < 0.999) {
-    return Math.floor((0.05 + (0.1 * Math.random())) * maxReward);
+    return Math.floor((0.03 + (0.07 * Math.random())) * maxReward);
   }
-  // 0.1% (1 in 1000) chance to get a high reward (15-100% of max)
+  // 0.1% (1 in 1000) chance to get a high reward (10-100% of max)
   else {
-    return Math.floor((0.15 + (0.85 * Math.random())) * maxReward);
+    return Math.floor((0.1 + (0.9 * Math.random())) * maxReward);
   }
 };
 

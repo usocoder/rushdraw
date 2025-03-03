@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -103,15 +104,6 @@ export const RewardsSection = () => {
     return `${Math.round(chance)}% success rate`;
   };
 
-  const rewardTiers = [
-    { name: "Legendary", level: 90, maxAmount: 80000, color: "text-amber-500" },
-    { name: "Epic", level: 70, maxAmount: 70000, color: "text-purple-500" },
-    { name: "Rare", level: 50, maxAmount: 50000, color: "text-blue-500" },
-    { name: "Uncommon", level: 30, maxAmount: 30000, color: "text-green-500" },
-    { name: "Common", level: 10, maxAmount: 10000, color: "text-gray-300" },
-    { name: "Starter", level: 1, maxAmount: 1000, color: "text-gray-400" }
-  ];
-
   if (!user) {
     return (
       <div className="text-center py-8">
@@ -180,7 +172,7 @@ export const RewardsSection = () => {
               
               <div className="text-sm text-amber-500 flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                <span>New rewards every 24 hours - {getClaimProbabilityText(currentLevel)}</span>
+                <span>Visit Daily Rewards page for special tier rewards</span>
               </div>
               
               {!canClaimReward && userProgress?.last_reward_claim && (
@@ -192,49 +184,14 @@ export const RewardsSection = () => {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-            {rewardTiers.map((tier) => (
-              <div 
-                key={tier.name} 
-                className={`p-4 bg-black/20 rounded-lg border border-${tier.color}/30 flex items-center justify-between`}
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Star className={`h-4 w-4 ${tier.color}`} />
-                    <h4 className={`font-medium ${tier.color}`}>{tier.name} (Level {tier.level}+)</h4>
-                  </div>
-                  <p className="text-sm text-muted-foreground">Up to ${tier.maxAmount.toLocaleString()}</p>
-                  <p className="text-xs text-muted-foreground">{getClaimProbabilityText(tier.level)}</p>
-                </div>
-                <div className="flex items-center">
-                  {currentLevel >= tier.level ? (
-                    canClaimReward ? (
-                      <div className="flex items-center bg-green-500/20 text-green-500 px-3 py-1 rounded-full text-xs">
-                        <Check className="h-3 w-3 mr-1" /> Claimable
-                      </div>
-                    ) : (
-                      <div className="flex items-center bg-amber-500/20 text-amber-500 px-3 py-1 rounded-full text-xs">
-                        <Clock className="h-3 w-3 mr-1" /> Cooldown
-                      </div>
-                    )
-                  ) : (
-                    <div className="flex items-center bg-gray-500/20 text-gray-500 px-3 py-1 rounded-full text-xs">
-                      <X className="h-3 w-3 mr-1" /> Locked
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="flex justify-center mt-6">
+          <div className="mt-6 flex justify-center">
             <Button
               onClick={() => navigate('/rewards')}
               size="lg"
               variant="default"
               className="w-full md:w-auto px-8 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
             >
-              Browse All Cases
+              Browse All Cases & Claim Daily Rewards
             </Button>
           </div>
         </div>
