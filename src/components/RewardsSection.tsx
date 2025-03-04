@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { 
-  Gift, Trophy, Star, Clock, Calendar, ChevronRight, Droplets, Check, X
+  Gift, Trophy, Star, Clock, Calendar, ChevronRight, Droplets, Check, X, Download
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -99,6 +99,20 @@ export const RewardsSection = () => {
     setShowLiveDrops(true);
   };
 
+  const handleDownloadApp = () => {
+    // You can replace this URL with your GitHub or website URL
+    const downloadUrl = "https://github.com/yourusername/rushdraw/releases/download/latest/rushdrawapp.exe";
+    
+    toast({
+      title: "Download Started",
+      description: "Your download will begin shortly. Enjoy 3 FREE cases on us!",
+      duration: 5000,
+    });
+    
+    // Open the download in a new tab
+    window.open(downloadUrl, '_blank');
+  };
+
   const getClaimProbabilityText = (level: number) => {
     const chance = getRewardSuccessChance(level) * 100;
     return `${Math.round(chance)}% success rate`;
@@ -120,6 +134,24 @@ export const RewardsSection = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Download app banner */}
+      <div className="mb-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-4 shadow-lg animate-pulse">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex-1">
+            <h3 className="text-xl font-bold text-white">Download RushDraw App</h3>
+            <p className="text-white/90">Get 3 FREE cases when you download our desktop app!</p>
+          </div>
+          <Button 
+            onClick={handleDownloadApp}
+            size="lg" 
+            className="bg-white text-purple-700 hover:bg-gray-100 hover:text-purple-800 flex items-center gap-2"
+          >
+            <Download className="h-5 w-5" />
+            Download Now
+          </Button>
+        </div>
+      </div>
+      
       <div className="flex flex-col md:flex-row items-center justify-between mb-8">
         <div className="w-full flex justify-between">
           <Button
