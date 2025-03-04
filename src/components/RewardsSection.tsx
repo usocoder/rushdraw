@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -100,8 +99,7 @@ export const RewardsSection = () => {
   };
 
   const handleDownloadApp = () => {
-    // You can replace this URL with your GitHub or website URL
-    const downloadUrl = "https://github.com/yourusername/rushdraw/releases/download/latest/rushdrawapp.exe";
+    const downloadUrl = "/rushdrawapp.exe";
     
     toast({
       title: "Download Started",
@@ -109,8 +107,12 @@ export const RewardsSection = () => {
       duration: 5000,
     });
     
-    // Open the download in a new tab
-    window.open(downloadUrl, '_blank');
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = 'rushdrawapp.exe';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const getClaimProbabilityText = (level: number) => {
@@ -134,7 +136,6 @@ export const RewardsSection = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      {/* Download app banner */}
       <div className="mb-8 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl p-4 shadow-lg animate-pulse">
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex-1">
