@@ -105,7 +105,7 @@ export const RewardsSection = () => {
     
     toast({
       title: "Download Started",
-      description: "Your download will begin shortly. Enjoy 3 FREE cases on us!",
+      description: "Your download will begin shortly. Enjoy 5 FREE cases on us!",
       duration: 5000,
     });
     
@@ -139,7 +139,7 @@ export const RewardsSection = () => {
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex-1">
             <h3 className="text-xl font-bold text-white">Download RushDraw App</h3>
-            <p className="text-white/90">Get 3 FREE cases when you download our desktop app!</p>
+            <p className="text-white/90">Get 5 FREE cases when you download our desktop app!</p>
           </div>
           <Button 
             onClick={handleDownloadApp}
