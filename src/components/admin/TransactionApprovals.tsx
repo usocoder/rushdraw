@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -15,11 +14,7 @@ interface TransactionWithProfile {
   pending_amount: number;
   created_at: string;
   crypto_address: string | null;
-  item_details: {
-    description: string;
-    shipping_address: string;
-    contact_info: string;
-  } | null;
+  item_details: any;  // Using any to avoid TypeScript issues with JSON type
   username?: string;
 }
 

@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -5,7 +6,9 @@ import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { TransactionApprovals } from "@/components/admin/TransactionApprovals";
+import { UserManagement } from "@/components/admin/UserManagement";
 import { X } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -54,7 +57,20 @@ const Admin = () => {
         </Button>
       </div>
 
-      <TransactionApprovals />
+      <Tabs defaultValue="transactions" className="w-full">
+        <TabsList className="grid w-full grid-cols-2 mb-6">
+          <TabsTrigger value="transactions">Pending Transactions</TabsTrigger>
+          <TabsTrigger value="users">User Management</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="transactions">
+          <TransactionApprovals />
+        </TabsContent>
+        
+        <TabsContent value="users">
+          <UserManagement />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
