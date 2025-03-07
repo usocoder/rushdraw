@@ -17,9 +17,9 @@ import { Badge } from "@/components/ui/badge";
 
 interface UserDetails {
   id: string;
-  email: string;
   username: string;
   created_at: string;
+  email?: string;
   password?: string;
 }
 
@@ -30,57 +30,31 @@ export const UserManagement = () => {
   const { data: users, isLoading, refetch } = useQuery({
     queryKey: ['admin-users'],
     queryFn: async () => {
-      console.log('Fetching users...');
+      console.log('Fetching users from profiles...');
       
-      // Fetch auth users with their email
-      const { data: authUsers, error: authError } = await supabase.auth.admin.listUsers();
-      
-      if (authError) {
-        console.error('Error fetching auth users:', authError);
-        // For admin functions, we need service role permissions
-        // Instead, let's use the public profiles table to get basic user info
-        const { data: profiles, error: profileError } = await supabase
-          .from('profiles')
-          .select('id, username, email, created_at');
-        
-        if (profileError) {
-          console.error('Error fetching profiles:', profileError);
-          throw profileError;
-        }
-        
-        return profiles || [];
-      }
-
-      if (!authUsers) {
-        return [];
-      }
-
-      // Fetch profiles to get usernames
-      const { data: profiles, error: profileError } = await supabase
+      // Fetch profiles directly from the profiles table
+      const { data: profiles, error } = await supabase
         .from('profiles')
-        .select('id, username');
-
-      if (profileError) {
-        console.error('Error fetching profiles:', profileError);
-        throw profileError;
+        .select('id, username, created_at');
+      
+      if (error) {
+        console.error('Error fetching profiles:', error);
+        throw error;
       }
-
-      // Combine the data
-      const combinedUsers = authUsers.users.map(user => {
-        const profile = profiles?.find(p => p.id === user.id);
-        return {
-          id: user.id,
-          email: user.email || 'No email',
-          username: profile?.username || user.email || 'Unknown user',
-          created_at: user.created_at,
-          // Note: We don't actually have access to the password since Supabase
-          // properly secures them with hashing. This is just for demonstration.
-          password: "••••••••" // Placeholder for actual password
-        };
-      });
-
-      console.log('Combined users data:', combinedUsers);
-      return combinedUsers;
+      
+      console.log('Fetched profiles data:', profiles);
+      
+      // Format the user data
+      const formattedUsers = profiles?.map(profile => ({
+        id: profile.id,
+        username: profile.username || 'Unknown user',
+        created_at: profile.created_at,
+        // Note: We don't actually have access to the password since Supabase
+        // properly secures them with hashing. This is just for demonstration.
+        password: "••••••••" // Placeholder for actual password
+      })) || [];
+      
+      return formattedUsers;
     },
   });
 
@@ -114,7 +88,7 @@ export const UserManagement = () => {
                   <User className="w-5 h-5 text-muted-foreground" />
                   <div>
                     <p className="font-medium">{user.username}</p>
-                    <p className="text-sm text-muted-foreground">{user.email}</p>
+                    <p className="text-sm text-muted-foreground">User ID: {user.id.slice(0, 8)}...</p>
                   </div>
                 </div>
                 <Button variant="ghost" size="sm">
@@ -150,7 +124,9 @@ export const UserManagement = () => {
                 <Mail className="w-8 h-8 text-primary mt-1" />
                 <div>
                   <p className="text-sm text-muted-foreground">Email Address</p>
-                  <p className="font-medium text-lg">{selectedUser.email}</p>
+                  <p className="font-medium text-lg">
+                    {selectedUser.email || "Email not available in profile"}
+                  </p>
                 </div>
               </div>
               
