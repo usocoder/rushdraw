@@ -1,10 +1,10 @@
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Loader2, User, Wallet } from "lucide-react";
+import { Loader2, User, Wallet, Package } from "lucide-react";
 
 interface TransactionWithProfile {
   id: string;
@@ -15,6 +15,11 @@ interface TransactionWithProfile {
   pending_amount: number;
   created_at: string;
   crypto_address: string | null;
+  item_details: {
+    description: string;
+    shipping_address: string;
+    contact_info: string;
+  } | null;
   username?: string;
 }
 
@@ -123,7 +128,8 @@ export const TransactionApprovals = () => {
                 <div className="flex justify-between items-start">
                   <div>
                     <p className="font-semibold">
-                      {transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
+                      {transaction.type === 'item_request' ? 'Item Request' : 
+                       transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1)}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       Amount: ${transaction.amount}
@@ -157,12 +163,26 @@ export const TransactionApprovals = () => {
                     <User className="w-4 h-4" />
                     <span>{transaction.username}</span>
                   </div>
+                  
                   {transaction.type === 'withdraw' && transaction.crypto_address && (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <Wallet className="w-4 h-4" />
                       <span className="font-mono break-all">
                         {transaction.crypto_address}
                       </span>
+                    </div>
+                  )}
+                  
+                  {transaction.type === 'item_request' && transaction.item_details && (
+                    <div className="mt-3 space-y-2 border-t pt-2">
+                      <h4 className="font-medium flex items-center gap-1">
+                        <Package className="w-4 h-4" /> Item Details
+                      </h4>
+                      <div className="text-muted-foreground space-y-1">
+                        <p><strong>Description:</strong> {transaction.item_details.description}</p>
+                        <p><strong>Shipping:</strong> {transaction.item_details.shipping_address}</p>
+                        <p><strong>Contact:</strong> {transaction.item_details.contact_info}</p>
+                      </div>
                     </div>
                   )}
                 </div>

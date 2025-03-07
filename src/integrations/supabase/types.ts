@@ -352,6 +352,7 @@ export type Database = {
           created_at: string
           crypto_address: string | null
           id: string
+          item_details: Json | null
           pending_amount: number | null
           status: string
           type: string
@@ -363,6 +364,7 @@ export type Database = {
           created_at?: string
           crypto_address?: string | null
           id?: string
+          item_details?: Json | null
           pending_amount?: number | null
           status?: string
           type: string
@@ -374,6 +376,7 @@ export type Database = {
           created_at?: string
           crypto_address?: string | null
           id?: string
+          item_details?: Json | null
           pending_amount?: number | null
           status?: string
           type?: string
