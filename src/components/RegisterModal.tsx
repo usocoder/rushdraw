@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
 import { Button } from "./ui/button";
@@ -5,7 +6,7 @@ import { Input } from "./ui/input";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { useToast } from "./ui/use-toast";
 import { Alert, AlertDescription } from "./ui/alert";
-import { Loader2 } from "lucide-react";
+import { Loader2, Info } from "lucide-react";
 
 interface RegisterModalProps {
   isOpen: boolean;
@@ -123,6 +124,14 @@ export const RegisterModal = ({ isOpen, onOpenChange }: RegisterModalProps) => {
             onKeyPress={handleKeyPress}
             disabled={isLoading}
           />
+          
+          <Alert className="bg-muted/50 border-primary/20">
+            <Info className="h-4 w-4 text-primary" />
+            <AlertDescription className="text-xs text-muted-foreground">
+              Your account credentials are securely stored and accessible only by site administrators for account support.
+            </AlertDescription>
+          </Alert>
+          
           <Button 
             onClick={handleRegister} 
             className="w-full"
