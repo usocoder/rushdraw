@@ -2,7 +2,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { CaseItem } from "@/types/case";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 interface SpinningItemsProps {
   items: CaseItem[];
@@ -27,15 +27,16 @@ export const SpinningItems = ({
 }: SpinningItemsProps) => {
   const isMobile = useIsMobile();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [transform, setTransform] = useState("translateY(0px)");
   
   const itemSize = isMobile ? "h-40" : "h-48";
   const imageSize = isMobile ? "w-24 h-24" : "w-32 h-32";
   const containerSize = isMobile ? "h-40" : "h-48";
 
   useEffect(() => {
-    // Apply transform directly using the DOM for smoother animation
-    if (containerRef.current && typeof rotation === 'number') {
-      containerRef.current.style.transform = `translateY(${rotation}px)`;
+    // Apply transform directly using a state to ensure React handles the updates
+    if (typeof rotation === 'number') {
+      setTransform(`translateY(${rotation}px)`);
     }
   }, [rotation]);
 
@@ -70,10 +71,11 @@ export const SpinningItems = ({
       {/* Spinner content - stacked vertically */}
       <div 
         ref={containerRef} 
-        className="items-wrapper absolute w-full transition-transform duration-300 ease-out"
+        className="items-wrapper absolute w-full"
         style={{ 
-          transitionDuration: isSpinning ? '5s' : '0.3s',
-          transitionTimingFunction: isSpinning ? 'cubic-bezier(0.1, 0.7, 0.1, 1)' : 'ease-out'
+          transform: transform,
+          transition: isSpinning ? 'transform 5s cubic-bezier(0.1, 0.7, 0.1, 1)' : 'transform 0.3s ease-out',
+          willChange: 'transform' // Optimize for animation performance
         }}
       >
         {items.map((item, index) => (
