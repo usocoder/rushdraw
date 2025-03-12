@@ -1,1 +1,22 @@
+
 project_id = "lvyqjogxspinjufcrmnf"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage"]
+
+[db]
+port = 54322
+
+[realtime]
+enabled = true
+
+[storage]
+enabled = true
+
+[functions.seed-case-items]
+verify_jwt = false
+
+[functions.create-case-opening]
+verify_jwt = false

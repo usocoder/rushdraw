@@ -6,6 +6,7 @@ import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { TransactionApprovals } from "@/components/admin/TransactionApprovals";
+import { SeedItems } from "@/components/admin/SeedItems";
 import { X } from "lucide-react";
 
 const Admin = () => {
@@ -49,6 +50,7 @@ const Admin = () => {
           <Button onClick={() => navigate('/admin/items')}>
             Manage Items
           </Button>
+          <SeedItems />
         </div>
         <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
           <X className="h-4 w-4" />
