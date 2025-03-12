@@ -13,9 +13,13 @@ export const SeedItems = () => {
     setIsLoading(true);
     
     try {
-      const { data, error } = await supabase.functions.invoke('seed-case-items');
+      // Call the Supabase Edge Function
+      const { data, error } = await supabase.functions.invoke('seed-case-items', {
+        method: 'POST'
+      });
       
       if (error) {
+        console.error('Error invoking function:', error);
         throw error;
       }
       
@@ -35,7 +39,7 @@ export const SeedItems = () => {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to add items to the database.',
+        description: 'Failed to add items to the database. Check the console for details.',
       });
     } finally {
       setIsLoading(false);

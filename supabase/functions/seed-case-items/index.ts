@@ -19,6 +19,8 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
     const supabase = createClient(supabaseUrl, supabaseKey);
     
+    console.log('Starting seeding process...');
+    
     // Define all items that can be used across different cases
     const allItems = [
       // Electronics
@@ -290,6 +292,8 @@ serve(async (req) => {
       }
     ];
 
+    console.log(`Preparing to create ${cases.length} cases with items...`);
+
     // Create cases and items
     for (const caseItem of cases) {
       // Insert the case
@@ -312,11 +316,13 @@ serve(async (req) => {
         continue;
       }
       
+      console.log(`Created case: ${caseItem.name} with ID: ${caseData.id}`);
+      
       // Insert items with calculated multipliers
       for (const item of caseItem.items) {
         const multiplier = parseFloat((item.value / caseItem.price).toFixed(2));
         
-        await supabase
+        const { error: itemError } = await supabase
           .from('case_items')
           .insert({
             name: item.name,
@@ -327,6 +333,12 @@ serve(async (req) => {
             image_url: item.image_url,
             case_id: caseData.id
           });
+          
+        if (itemError) {
+          console.error(`Error adding item ${item.name}:`, itemError);
+        } else {
+          console.log(`Added item: ${item.name} to case: ${caseItem.name}`);
+        }
       }
     }
 

@@ -4,19 +4,29 @@ project_id = "lvyqjogxspinjufcrmnf"
 [api]
 enabled = true
 port = 54321
-schemas = ["public", "storage"]
+schemas = ["public", "storage", "graphql_public"]
 
 [db]
 port = 54322
 
-[realtime]
-enabled = true
+[studio]
+port = 54323
+
+[inbucket]
+port = 54324
+
+[auth]
+port = 54325
+uri = "http://localhost:54325"
+
+[analytics]
+port = 54327
 
 [storage]
-enabled = true
+port = 54328
+
+[realtime]
+port = 54330
 
 [functions.seed-case-items]
-verify_jwt = false
-
-[functions.create-case-opening]
-verify_jwt = false
+verify_jwt = true
