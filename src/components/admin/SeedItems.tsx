@@ -15,11 +15,8 @@ export const SeedItems = () => {
     try {
       console.log('Calling seed-case-items function...');
       
-      // Call the Supabase Edge Function
-      const { data, error } = await supabase.functions.invoke('seed-case-items', {
-        method: 'POST',
-        body: {} // Empty body is fine for this function
-      });
+      // Call the Supabase Edge Function with minimal configuration
+      const { data, error } = await supabase.functions.invoke('seed-case-items');
       
       if (error) {
         console.error('Error invoking function:', error);
@@ -30,19 +27,14 @@ export const SeedItems = () => {
       
       toast({
         title: 'Success',
-        description: `Items added: ${data?.itemsAdded || 0}. Cases updated: ${data?.casesUpdated || 0}.`,
+        description: `Items added successfully.`,
       });
-      
-      // Reload the page after 2 seconds to see new items
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
     } catch (error) {
       console.error('Error seeding items:', error);
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: error.message || 'Failed to add items to the database. Check the console for details.',
+        description: 'Failed to add items. This may be due to a Supabase project configuration issue.',
       });
     } finally {
       setIsLoading(false);
