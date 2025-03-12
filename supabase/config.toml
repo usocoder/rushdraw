@@ -16,17 +16,17 @@ port = 54323
 port = 54324
 
 [auth]
-port = 54325
-uri = "http://localhost:54325"
+enabled = true
 
 [analytics]
-port = 54327
+enabled = true
 
 [storage]
-port = 54328
+enabled = true
 
 [realtime]
-port = 54330
+enabled = true
 
 [functions.seed-case-items]
 verify_jwt = true
+
