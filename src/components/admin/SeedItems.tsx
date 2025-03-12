@@ -18,10 +18,7 @@ export const SeedItems = () => {
       // Call the Supabase Edge Function
       const { data, error } = await supabase.functions.invoke('seed-case-items', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: {}
+        body: {} // Empty body is fine for this function
       });
       
       if (error) {
