@@ -5,7 +5,14 @@ import { PriceFilter } from "./PriceFilter";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "./ui/skeleton";
-import { Pagination } from "./ui/pagination";
+import { 
+  Pagination, 
+  PaginationContent, 
+  PaginationItem, 
+  PaginationLink, 
+  PaginationNext, 
+  PaginationPrevious 
+} from "./ui/pagination";
 
 export const CaseGrid = () => {
   const [activeFilter, setActiveFilter] = useState("all");
@@ -104,30 +111,30 @@ export const CaseGrid = () => {
       {totalPages > 1 && (
         <div className="flex justify-center mt-8">
           <Pagination>
-            <Pagination.Content>
-              <Pagination.Item>
-                <Pagination.Previous 
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious 
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  isDisabled={currentPage === 1}
+                  className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
                 />
-              </Pagination.Item>
+              </PaginationItem>
               {Array.from({ length: totalPages }).map((_, index) => (
-                <Pagination.Item key={index}>
-                  <Pagination.Link 
+                <PaginationItem key={index}>
+                  <PaginationLink 
                     isActive={currentPage === index + 1}
                     onClick={() => setCurrentPage(index + 1)}
                   >
                     {index + 1}
-                  </Pagination.Link>
-                </Pagination.Item>
+                  </PaginationLink>
+                </PaginationItem>
               ))}
-              <Pagination.Item>
-                <Pagination.Next 
+              <PaginationItem>
+                <PaginationNext 
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  isDisabled={currentPage === totalPages}
+                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
                 />
-              </Pagination.Item>
-            </Pagination.Content>
+              </PaginationItem>
+            </PaginationContent>
           </Pagination>
         </div>
       )}
