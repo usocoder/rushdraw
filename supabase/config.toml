@@ -28,5 +28,4 @@ enabled = true
 enabled = true
 
 [functions.seed-case-items]
-verify_jwt = true
-
+verify_jwt = false

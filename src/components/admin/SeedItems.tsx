@@ -13,9 +13,15 @@ export const SeedItems = () => {
     setIsLoading(true);
     
     try {
+      console.log('Calling seed-case-items function...');
+      
       // Call the Supabase Edge Function
       const { data, error } = await supabase.functions.invoke('seed-case-items', {
-        method: 'POST'
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: {}
       });
       
       if (error) {
@@ -23,12 +29,12 @@ export const SeedItems = () => {
         throw error;
       }
       
+      console.log('Seed result:', data);
+      
       toast({
         title: 'Success',
         description: 'Items have been added to the database.',
       });
-      
-      console.log('Seed result:', data);
       
       // Reload the page after 2 seconds to see new items
       setTimeout(() => {

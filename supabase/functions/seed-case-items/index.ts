@@ -1,6 +1,7 @@
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1';
+// Follow Deno's ES modules approach
+import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -8,8 +9,11 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  console.log("Processing request to seed-case-items");
+  
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log("Handling OPTIONS request");
     return new Response(null, { headers: corsHeaders });
   }
 
@@ -17,6 +21,13 @@ serve(async (req) => {
     // Initialize Supabase client
     const supabaseUrl = Deno.env.get('SUPABASE_URL') ?? '';
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '';
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error("Missing Supabase URL or key");
+      throw new Error("Missing environment variables for Supabase connection");
+    }
+    
+    console.log("Initializing Supabase client");
     const supabase = createClient(supabaseUrl, supabaseKey);
     
     console.log('Starting seeding process...');
@@ -355,7 +366,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error seeding database:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: error.message || "Unknown error occurred" }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500 
