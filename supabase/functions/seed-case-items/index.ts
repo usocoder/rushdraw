@@ -31,6 +31,7 @@ serve(async (req) => {
     const supabase = createClient(supabaseUrl, supabaseKey);
     
     // First, get all existing cases
+    console.log("Fetching existing cases...");
     const { data: existingCases, error: casesError } = await supabase
       .from('cases')
       .select('id, name, price');
@@ -80,11 +81,28 @@ serve(async (req) => {
     for (const caseItem of existingCases) {
       console.log(`Processing case: ${caseItem.name} (ID: ${caseItem.id})`);
       
+      // Check if case already has items
+      const { data: existingItems, error: itemsError } = await supabase
+        .from('case_items')
+        .select('id')
+        .eq('case_id', caseItem.id)
+        .limit(1);
+        
+      if (itemsError) {
+        console.error(`Error checking existing items for case ${caseItem.name}:`, itemsError);
+        continue; // Skip this case and proceed to the next one
+      }
+      
+      if (existingItems && existingItems.length > 0) {
+        console.log(`Case ${caseItem.name} already has items. Skipping...`);
+        continue; // Skip this case if it already has items
+      }
+      
       for (const item of sampleItems) {
         // Calculate multiplier based on case price and item value
         const multiplier = parseFloat((item.value / caseItem.price).toFixed(2));
         
-        const { error: insertError } = await supabase
+        const { data: insertedItem, error: insertError } = await supabase
           .from('case_items')
           .insert({
             name: item.name,
@@ -94,12 +112,14 @@ serve(async (req) => {
             rarity: item.rarity,
             image_url: item.image_url,
             case_id: caseItem.id
-          });
+          })
+          .select('id')
+          .single();
           
         if (insertError) {
           console.error(`Error adding item ${item.name} to case ${caseItem.name}:`, insertError);
         } else {
-          console.log(`Added item: ${item.name} to case: ${caseItem.name} with multiplier: ${multiplier}`);
+          console.log(`Added item: ${item.name} to case: ${caseItem.name} with multiplier: ${multiplier} (ID: ${insertedItem.id})`);
           addedItemsCount++;
         }
       }

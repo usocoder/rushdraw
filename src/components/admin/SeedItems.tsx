@@ -33,7 +33,7 @@ export const SeedItems = () => {
       
       toast({
         title: 'Success',
-        description: 'Items have been added to the database.',
+        description: `Items added: ${data.itemsAdded}. Cases updated: ${data.casesUpdated}.`,
       });
       
       // Reload the page after 2 seconds to see new items
@@ -45,7 +45,7 @@ export const SeedItems = () => {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to add items to the database. Check the console for details.',
+        description: error.message || 'Failed to add items to the database. Check the console for details.',
       });
     } finally {
       setIsLoading(false);
