@@ -27,5 +27,6 @@ enabled = true
 [realtime]
 enabled = true
 
+[functions]
 [functions.seed-case-items]
 verify_jwt = false

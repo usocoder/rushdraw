@@ -33,7 +33,7 @@ export const SeedItems = () => {
       
       toast({
         title: 'Success',
-        description: `Items added: ${data.itemsAdded}. Cases updated: ${data.casesUpdated}.`,
+        description: `Items added: ${data?.itemsAdded || 0}. Cases updated: ${data?.casesUpdated || 0}.`,
       });
       
       // Reload the page after 2 seconds to see new items

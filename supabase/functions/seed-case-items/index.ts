@@ -76,6 +76,7 @@ serve(async (req) => {
     
     // Count of successfully added items
     let addedItemsCount = 0;
+    let updatedCasesCount = 0;
     
     // Add items to each case
     for (const caseItem of existingCases) {
@@ -85,8 +86,7 @@ serve(async (req) => {
       const { data: existingItems, error: itemsError } = await supabase
         .from('case_items')
         .select('id')
-        .eq('case_id', caseItem.id)
-        .limit(1);
+        .eq('case_id', caseItem.id);
         
       if (itemsError) {
         console.error(`Error checking existing items for case ${caseItem.name}:`, itemsError);
@@ -94,9 +94,11 @@ serve(async (req) => {
       }
       
       if (existingItems && existingItems.length > 0) {
-        console.log(`Case ${caseItem.name} already has items. Skipping...`);
+        console.log(`Case ${caseItem.name} already has ${existingItems.length} items. Skipping...`);
         continue; // Skip this case if it already has items
       }
+      
+      let caseAddedItems = 0;
       
       for (const item of sampleItems) {
         // Calculate multiplier based on case price and item value
@@ -121,7 +123,12 @@ serve(async (req) => {
         } else {
           console.log(`Added item: ${item.name} to case: ${caseItem.name} with multiplier: ${multiplier} (ID: ${insertedItem.id})`);
           addedItemsCount++;
+          caseAddedItems++;
         }
+      }
+      
+      if (caseAddedItems > 0) {
+        updatedCasesCount++;
       }
     }
 
@@ -129,7 +136,7 @@ serve(async (req) => {
       JSON.stringify({ 
         message: "Successfully added items to existing cases", 
         itemsAdded: addedItemsCount,
-        casesUpdated: existingCases.length
+        casesUpdated: updatedCasesCount
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
