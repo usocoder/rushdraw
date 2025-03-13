@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -10,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { useToast } from "@/components/ui/use-toast";
 import { useNavigate } from "react-router-dom";
-import { getLevelColor, getRewardSuccessChance, getProgressToNextLevel, getXpRequiredForLevel, getRewardTier, getRewardTierClass } from "@/utils/rewardUtils";
+import { getLevelColor, getRewardSuccessChance, getProgressToNextLevel, getXpRequiredForLevel } from "@/utils/rewardUtils";
 import { LiveDropsModal } from "@/components/LiveDropsModal";
 
 export const RewardsSection = () => {
@@ -116,11 +115,6 @@ export const RewardsSection = () => {
     document.body.removeChild(link);
   };
 
-  const getClaimProbabilityText = (level: number) => {
-    const chance = getRewardSuccessChance(level) * 100;
-    return `${Math.round(chance)}% success rate`;
-  };
-
   if (!user) {
     return (
       <div className="text-center py-8">
@@ -134,16 +128,6 @@ export const RewardsSection = () => {
   const nextLevelXp = nextLevel?.xp_required || getXpRequiredForLevel(currentLevel + 1);
   const canClaimReward = !userProgress?.last_reward_claim || 
     new Date(userProgress.last_reward_claim).getTime() + 24 * 60 * 60 * 1000 < Date.now();
-
-  // Define reward tiers for display
-  const rewardTiers = [
-    { name: "Legendary", level: 90, color: "text-amber-500" },
-    { name: "Epic", level: 70, color: "text-purple-500" },
-    { name: "Rare", level: 50, color: "text-blue-500" },
-    { name: "Uncommon", level: 30, color: "text-green-500" },
-    { name: "Common", level: 10, color: "text-gray-300" },
-    { name: "Starter", level: 1, color: "text-gray-400" }
-  ];
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -225,21 +209,6 @@ export const RewardsSection = () => {
                   <span>Next claim available in 24h</span>
                 </div>
               )}
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <h3 className="text-lg font-semibold mb-4">Daily Reward Tiers</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2">
-              {rewardTiers.map(tier => (
-                <div key={tier.name} className={`p-3 bg-black/20 rounded-lg border border-${tier.color.replace('text-', '')}/30`}>
-                  <div className="flex items-center gap-2 mb-1">
-                    <Star className={`h-4 w-4 ${tier.color}`} />
-                    <h4 className={`text-sm font-medium ${tier.color}`}>{tier.name}</h4>
-                  </div>
-                  <p className="text-xs text-muted-foreground">Level {tier.level}+</p>
-                </div>
-              ))}
             </div>
           </div>
 
