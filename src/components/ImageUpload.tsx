@@ -40,32 +40,65 @@ export const ImageUpload = ({ onUploadComplete }: ImageUploadProps) => {
     setIsUploading(true);
 
     try {
-      const formData = new FormData();
-      formData.append('file', file);
+      // First attempt: Try using the edge function
+      try {
+        const formData = new FormData();
+        formData.append('file', file);
 
-      const { data: functionData, error } = await supabase.functions.invoke('upload-case-image', {
-        body: formData,
-      });
+        const { data: functionData, error } = await supabase.functions.invoke('upload-case-image', {
+          body: formData,
+        });
+
+        if (error) {
+          throw error;
+        }
+
+        if (functionData?.url) {
+          onUploadComplete(functionData.url);
+          toast({
+            title: "Success",
+            description: "Image uploaded successfully",
+          });
+          setIsUploading(false);
+          return;
+        }
+      } catch (edgeFunctionError) {
+        console.error('Edge function upload error:', edgeFunctionError);
+        // Continue to fallback upload method
+      }
+
+      // Fallback: Direct upload to storage bucket
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { data, error } = await supabase.storage
+        .from('case-images')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
       if (error) {
         throw error;
       }
 
-      if (functionData?.url) {
-        onUploadComplete(functionData.url);
-        toast({
-          title: "Success",
-          description: "Image uploaded successfully",
-        });
-      } else {
-        throw new Error("No URL returned from upload function");
-      }
+      // Get the public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('case-images')
+        .getPublicUrl(filePath);
+
+      onUploadComplete(publicUrl);
+      toast({
+        title: "Success",
+        description: "Image uploaded successfully (direct storage)",
+      });
     } catch (error) {
       console.error('Upload error:', error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to upload image",
+        description: "Failed to upload image. Please try again.",
       });
     } finally {
       setIsUploading(false);
