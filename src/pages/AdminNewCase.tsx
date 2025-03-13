@@ -90,10 +90,24 @@ const AdminNewCase = () => {
   const handleImageUpload = (url: string) => {
     console.log("Image uploaded:", url);
     setUploadedImageUrl(url);
+    
+    // Ensure the URL is properly set in the form
     setValue('image_url', url, { 
       shouldValidate: true, 
       shouldDirty: true 
     });
+    
+    // Force a re-render to show the image
+    setTimeout(() => {
+      const img = new Image();
+      img.src = url;
+      img.onload = () => {
+        console.log("Image loaded successfully:", url);
+      };
+      img.onerror = () => {
+        console.error("Failed to load image:", url);
+      };
+    }, 500);
   };
 
   if (isLoading) {
@@ -148,9 +162,13 @@ const AdminNewCase = () => {
                   <p className="text-sm text-green-600 mb-2">Image uploaded successfully</p>
                   <div className="relative border border-gray-200 rounded-md p-2 bg-gray-50">
                     <img 
-                      src={uploadedImageUrl} 
+                      src={uploadedImageUrl}
                       alt="Case preview" 
-                      className="h-40 w-auto object-contain mx-auto" 
+                      className="h-40 w-auto object-contain mx-auto"
+                      onError={(e) => {
+                        console.error("Image failed to load:", uploadedImageUrl);
+                        e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%23d1d5db' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E";
+                      }}
                     />
                   </div>
                 </div>

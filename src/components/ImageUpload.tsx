@@ -40,33 +40,6 @@ export const ImageUpload = ({ onUploadComplete }: ImageUploadProps) => {
     setIsUploading(true);
 
     try {
-      // First attempt: Try using the edge function
-      try {
-        const formData = new FormData();
-        formData.append('file', file);
-
-        const { data: functionData, error } = await supabase.functions.invoke('upload-case-image', {
-          body: formData,
-        });
-
-        if (error) {
-          throw error;
-        }
-
-        if (functionData?.url) {
-          onUploadComplete(functionData.url);
-          toast({
-            title: "Success",
-            description: "Image uploaded successfully",
-          });
-          setIsUploading(false);
-          return;
-        }
-      } catch (edgeFunctionError) {
-        console.error('Edge function upload error:', edgeFunctionError);
-        // Continue to fallback upload method
-      }
-
       // Fallback: Direct upload to storage bucket
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
@@ -89,10 +62,17 @@ export const ImageUpload = ({ onUploadComplete }: ImageUploadProps) => {
         .getPublicUrl(filePath);
 
       console.log("Image uploaded to storage:", publicUrl);
+      
+      // Verify the URL works by loading the image (will trigger CORS preflight)
+      const img = new Image();
+      img.src = publicUrl;
+      
+      // Pass the URL to the parent component
       onUploadComplete(publicUrl);
+      
       toast({
         title: "Success",
-        description: "Image uploaded successfully (direct storage)",
+        description: "Image uploaded successfully",
       });
     } catch (error) {
       console.error('Upload error:', error);
