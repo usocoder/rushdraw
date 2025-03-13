@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Loader2 } from "lucide-react";
+import { Loader2, UploadCloud } from "lucide-react";
 
 interface ImageUploadProps {
   onUploadComplete: (url: string) => void;
@@ -88,6 +88,7 @@ export const ImageUpload = ({ onUploadComplete }: ImageUploadProps) => {
         .from('case-images')
         .getPublicUrl(filePath);
 
+      console.log("Image uploaded to storage:", publicUrl);
       onUploadComplete(publicUrl);
       toast({
         title: "Success",
@@ -128,7 +129,10 @@ export const ImageUpload = ({ onUploadComplete }: ImageUploadProps) => {
             Uploading...
           </>
         ) : (
-          'Choose Image'
+          <>
+            <UploadCloud className="mr-2 h-4 w-4" />
+            Choose Image
+          </>
         )}
       </Button>
     </div>

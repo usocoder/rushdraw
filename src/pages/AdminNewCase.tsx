@@ -88,6 +88,7 @@ const AdminNewCase = () => {
   };
 
   const handleImageUpload = (url: string) => {
+    console.log("Image uploaded:", url);
     setUploadedImageUrl(url);
     setValue('image_url', url, { 
       shouldValidate: true, 
@@ -143,13 +144,15 @@ const AdminNewCase = () => {
               <ImageUpload onUploadComplete={handleImageUpload} />
               
               {uploadedImageUrl && (
-                <div className="mt-2">
-                  <p className="text-sm text-green-600">Image uploaded successfully</p>
-                  <img 
-                    src={uploadedImageUrl} 
-                    alt="Uploaded case" 
-                    className="mt-2 h-40 w-auto object-contain rounded border border-gray-200" 
-                  />
+                <div className="mt-4">
+                  <p className="text-sm text-green-600 mb-2">Image uploaded successfully</p>
+                  <div className="relative border border-gray-200 rounded-md p-2 bg-gray-50">
+                    <img 
+                      src={uploadedImageUrl} 
+                      alt="Case preview" 
+                      className="h-40 w-auto object-contain mx-auto" 
+                    />
+                  </div>
                 </div>
               )}
               
