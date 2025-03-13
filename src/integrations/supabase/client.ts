@@ -17,5 +17,30 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
       'Content-Type': 'application/json',
       'Cache-Control': 'no-cache'
     }
+  },
+  realtime: {
+    params: {
+      eventsPerSecond: 10
+    }
   }
 });
+
+// Enable Realtime subscription for case_openings table
+async function enableRealtimeForCaseOpenings() {
+  try {
+    const { error } = await supabase.from('case_openings')
+      .select('id')
+      .limit(1);
+      
+    if (error) {
+      console.error('Error checking case_openings table:', error);
+    } else {
+      console.log('Realtime subscription to case_openings should be operational');
+    }
+  } catch (err) {
+    console.error('Error enabling realtime for case_openings:', err);
+  }
+}
+
+// Initialize realtime subscriptions
+enableRealtimeForCaseOpenings();

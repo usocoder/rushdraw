@@ -133,8 +133,10 @@ export const LiveDropsModal = ({ isOpen, onOpenChange }: LiveDropsModalProps) =>
           };
         });
         
+        console.log("Fetched real drops:", formattedDrops);
         setDrops(formattedDrops);
       } else {
+        console.log("No real drops found, using mock data");
         // Use mock data if no real data is available
         setDrops(mockDrops);
       }
@@ -153,7 +155,7 @@ export const LiveDropsModal = ({ isOpen, onOpenChange }: LiveDropsModalProps) =>
       fetchRecentDrops();
       
       // Set up real-time subscription
-      const channel = supabase.channel('case-opening-changes')
+      const channel = supabase.channel('live-case-openings')
         .on(
           'postgres_changes',
           {
@@ -162,56 +164,64 @@ export const LiveDropsModal = ({ isOpen, onOpenChange }: LiveDropsModalProps) =>
             table: 'case_openings',
           },
           async (payload: RealtimePostgresChangesPayload<any>) => {
-            console.log('New case opening:', payload);
+            console.log('New case opening detected:', payload);
             
-            // Get the user profile for this opening
-            const { data: profile, error: profileError } = await supabase
-              .from('profiles')
-              .select('username')
-              .eq('id', payload.new.user_id)
-              .single();
+            try {
+              // Get the user profile for this opening
+              const { data: profile, error: profileError } = await supabase
+                .from('profiles')
+                .select('username')
+                .eq('id', payload.new.user_id)
+                .single();
+                
+              if (profileError) {
+                console.error('Error fetching profile:', profileError);
+              }
               
-            if (profileError) {
-              console.error('Error fetching profile:', profileError);
-            }
-            
-            // Get the user's level
-            const { data: progress, error: progressError } = await supabase
-              .from('user_progress')
-              .select('current_level')
-              .eq('user_id', payload.new.user_id)
-              .single();
+              // Get the user's level
+              const { data: progress, error: progressError } = await supabase
+                .from('user_progress')
+                .select('current_level')
+                .eq('user_id', payload.new.user_id)
+                .single();
+                
+              if (progressError) {
+                console.error('Error fetching user progress:', progressError);
+              }
               
-            if (progressError) {
-              console.error('Error fetching user progress:', progressError);
-            }
-            
-            // Get the item name
-            const { data: item, error: itemError } = await supabase
-              .from('case_items')
-              .select('name')
-              .eq('id', payload.new.item_won)
-              .single();
+              // Get the item name
+              const { data: item, error: itemError } = await supabase
+                .from('case_items')
+                .select('name')
+                .eq('id', payload.new.item_won)
+                .single();
+                
+              if (itemError) {
+                console.error('Error fetching item:', itemError);
+              }
               
-            if (itemError) {
-              console.error('Error fetching item:', itemError);
+              const newDrop: Drop = {
+                id: payload.new.id,
+                username: profile?.username || 'Anonymous',
+                itemName: item?.name || 'Mystery Item',
+                value: payload.new.value_won || 0,
+                level: progress?.current_level || 1,
+                timestamp: payload.new.created_at
+              };
+              
+              console.log('Adding new live drop to list:', newDrop);
+              setDrops(prevDrops => [newDrop, ...prevDrops.slice(0, 19)]);
+            } catch (error) {
+              console.error('Error processing real-time drop:', error);
             }
-            
-            const newDrop: Drop = {
-              id: payload.new.id,
-              username: profile?.username || 'Anonymous',
-              itemName: item?.name || 'Mystery Item',
-              value: payload.new.value_won || 0,
-              level: progress?.current_level || 1,
-              timestamp: payload.new.created_at
-            };
-            
-            setDrops(prevDrops => [newDrop, ...prevDrops.slice(0, 19)]);
           }
         )
-        .subscribe();
+        .subscribe((status) => {
+          console.log('Realtime subscription status:', status);
+        });
       
       return () => {
+        console.log('Removing realtime channel');
         supabase.removeChannel(channel);
       };
     }

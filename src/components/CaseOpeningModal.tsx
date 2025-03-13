@@ -1,3 +1,4 @@
+
 import { Dialog, DialogContent } from "./ui/dialog";
 import { useState, useEffect } from "react";
 import { Case, CaseItem } from "../types/case";
@@ -10,6 +11,7 @@ import { ModalControls } from "./case-opening/ModalControls";
 import { OpeningHeader } from "./case-opening/OpeningHeader";
 import { CaseOpeningContent } from "./case-opening/CaseOpeningContent";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CaseOpeningModalProps {
   isOpen: boolean;
@@ -99,6 +101,30 @@ export const CaseOpeningModal = ({
     }
   }, [isOpen, balance, caseData.price, user, isFreePlay, onOpenChange, toast]);
 
+  // Record the case opening to the database
+  const recordCaseOpening = async (item: CaseItem, winAmount: number) => {
+    if (!user || isFreePlay) return;
+    
+    try {
+      const { error } = await supabase
+        .from('case_openings')
+        .insert({
+          user_id: user.id,
+          case_id: caseData.id,
+          item_won: item.id,
+          value_won: winAmount
+        });
+        
+      if (error) {
+        console.error('Error recording case opening:', error);
+      } else {
+        console.log('Case opening recorded successfully');
+      }
+    } catch (err) {
+      console.error('Exception recording case opening:', err);
+    }
+  };
+
   const handleSpinComplete = async (item: CaseItem, player: string) => {
     if (isBattleMode) {
       if (!battleWinner || calculateMultiplier(item, caseData.price) > calculateMultiplier(battleWinner.item, caseData.price)) {
@@ -118,6 +144,11 @@ export const CaseOpeningModal = ({
             variant: "default",
           });
         }
+        
+        // Record the case opening in the database
+        await recordCaseOpening(item, winAmount);
+        
+        // Update user balance
         await createTransaction('case_win', winAmount);
       }
     }
