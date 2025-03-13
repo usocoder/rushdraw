@@ -11,7 +11,8 @@ import {
   PaginationItem, 
   PaginationLink, 
   PaginationNext, 
-  PaginationPrevious 
+  PaginationPrevious,
+  PaginationEllipsis
 } from "./ui/pagination";
 
 export const CaseGrid = () => {
@@ -70,6 +71,31 @@ export const CaseGrid = () => {
     );
   }
 
+  // Generate page numbers to display
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    
+    // Always show first page
+    pageNumbers.push(1);
+    
+    // Add current page and surrounding pages
+    for (let i = Math.max(2, currentPage - 1); i <= Math.min(totalPages - 1, currentPage + 1); i++) {
+      if (!pageNumbers.includes(i)) {
+        pageNumbers.push(i);
+      }
+    }
+    
+    // Always show last page if there is more than one page
+    if (totalPages > 1 && !pageNumbers.includes(totalPages)) {
+      pageNumbers.push(totalPages);
+    }
+    
+    // Sort the page numbers
+    return pageNumbers.sort((a, b) => a - b);
+  };
+
+  const pageNumbers = getPageNumbers();
+
   return (
     <div className="py-8">
       <PriceFilter activeFilter={activeFilter} onFilterChange={(filter) => {
@@ -119,24 +145,30 @@ export const CaseGrid = () => {
                   className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
                 />
               </PaginationItem>
-              {Array.from({ length: Math.min(5, totalPages) }).map((_, index) => {
-                // Show at most 5 page numbers
-                let pageNumber;
-                if (totalPages <= 5) {
-                  pageNumber = index + 1;
-                } else {
-                  // Complex logic to show pages around current page
-                  if (currentPage <= 3) {
-                    pageNumber = index + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNumber = totalPages - 4 + index;
-                  } else {
-                    pageNumber = currentPage - 2 + index;
-                  }
+              
+              {pageNumbers.map((pageNumber, index) => {
+                // Check if we need to add ellipsis
+                const prevPage = pageNumbers[index - 1];
+                if (prevPage && pageNumber - prevPage > 1) {
+                  return (
+                    <React.Fragment key={`ellipsis-${index}`}>
+                      <PaginationItem>
+                        <PaginationEllipsis />
+                      </PaginationItem>
+                      <PaginationItem>
+                        <PaginationLink 
+                          isActive={currentPage === pageNumber}
+                          onClick={() => setCurrentPage(pageNumber)}
+                        >
+                          {pageNumber}
+                        </PaginationLink>
+                      </PaginationItem>
+                    </React.Fragment>
+                  );
                 }
                 
                 return (
-                  <PaginationItem key={index}>
+                  <PaginationItem key={pageNumber}>
                     <PaginationLink 
                       isActive={currentPage === pageNumber}
                       onClick={() => setCurrentPage(pageNumber)}
@@ -146,6 +178,7 @@ export const CaseGrid = () => {
                   </PaginationItem>
                 );
               })}
+              
               <PaginationItem>
                 <PaginationNext 
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
