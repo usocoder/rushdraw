@@ -71,11 +71,12 @@ export const SpinningItems = ({
       {/* Spinner content - stacked vertically */}
       <div 
         ref={containerRef} 
-        className="items-wrapper absolute w-full"
+        className="items-wrapper absolute w-full will-change-transform"
         style={{ 
           transform: transform,
-          transition: isSpinning ? 'transform 5s cubic-bezier(0.1, 0.7, 0.1, 1)' : 'transform 0.3s ease-out',
-          willChange: 'transform' // Optimize for animation performance
+          transition: isSpinning 
+            ? 'transform 5s cubic-bezier(0.1, 0.7, 0.1, 1)' 
+            : 'transform 0.3s ease-out',
         }}
       >
         {items.map((item, index) => (
@@ -92,7 +93,7 @@ export const SpinningItems = ({
             <div className="flex flex-row w-full h-full items-center justify-between">
               <div className="flex-1 flex items-center justify-center">
                 <img 
-                  src={item?.image || "/placeholder.svg"}
+                  src={item?.image || item?.image_url || "/placeholder.svg"}
                   alt={item?.name || "Loading..."}
                   className={`
                     ${imageSize} object-contain transition-all duration-300
@@ -100,6 +101,9 @@ export const SpinningItems = ({
                       !isSpinning && finalItem?.id === item?.id ? 'scale-105' : ''}
                   `}
                   loading="eager"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src = "/placeholder.svg";
+                  }}
                 />
               </div>
               
@@ -112,8 +116,9 @@ export const SpinningItems = ({
                   item?.rarity === 'rare' ? 'text-blue-500' : 
                   item?.rarity === 'epic' ? 'text-purple-500' : 'text-primary'
                 }`}>
-                  {/* Remove decimal places from the multiplier value */}
-                  {Math.floor(item?.multiplier || 0)}x
+                  {/* Format the multiplier value for display */}
+                  {item?.multiplier ? Math.floor(item.multiplier) : 
+                   item?.value ? Math.floor(item.value / 100) : 0}x
                 </p>
               </div>
             </div>

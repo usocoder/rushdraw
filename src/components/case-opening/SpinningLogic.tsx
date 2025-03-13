@@ -83,8 +83,6 @@ export const useSpinningLogic = ({
           let nonce: number;
           
           try {
-            console.log('Using client seed:', usedClientSeed);
-            
             // Get server seed and nonce from edge function
             const { data, error } = await supabase.functions.invoke<CaseOpeningResponse>('create-case-opening', {
               body: { client_seed: usedClientSeed }
@@ -96,7 +94,6 @@ export const useSpinningLogic = ({
 
             serverSeed = data.server_seed;
             nonce = data.nonce;
-            console.log('Received server seed and nonce:', { serverSeed, nonce });
           } catch (invokeError) {
             console.warn("Edge function failed, using client-side fallback:", invokeError);
             // Client-side fallback when the Edge Function fails
@@ -122,8 +119,6 @@ export const useSpinningLogic = ({
             };
           }
           
-          console.log('Selected winner:', winner);
-          
           // Store game data for provably fair verification
           setGameData({
             clientSeed: usedClientSeed,
@@ -132,15 +127,17 @@ export const useSpinningLogic = ({
             roll
           });
 
-          // Generate spinner items with duplicated sequences for smooth looping
-          const displayCount = 50; // Total number of items to display
-          const extraSpins = 4; // Number of full cycles before showing the winner
+          // Generate spinner items with optimized sequence
           const itemHeight = getItemHeight();
           
-          // Create a pool of random items (excluding the winner to avoid duplicates)
+          // Create a pool of random items for spinning (excluding the winner to avoid duplicates)
           const itemPool = items.filter(item => item.id !== winner.id);
           
-          // Create sequence of items with winner placed at a predetermined position
+          // Pre-compute a smaller set of items for better performance
+          // Reducing number of items for better performance
+          const displayCount = 30; // Reduced from 50 for better performance
+          
+          // Create sequence of items with winner placed at a specific position
           const fullSequence: CaseItem[] = [];
           
           // Add enough random items to fill the sequence
@@ -162,28 +159,32 @@ export const useSpinningLogic = ({
           const centerOffset = Math.floor(itemHeight / 2);
           const finalPosition = -(winnerIndex * itemHeight) + centerOffset;
           
-          // Calculate total spin distance including extra spins
+          // Adjust for fewer spins for smoother animation
+          const extraSpins = 3; // Reduced from 4 for smoother animation
           const totalDistance = (extraSpins * displayCount * itemHeight) + Math.abs(finalPosition);
           
           // Set up the spin animation
           // Start by instantly moving up (negative value)
           setRotation(0);
           
-          // Set a small timeout to ensure the initial position is rendered
+          // Use a short timeout to ensure the DOM is updated before starting animation
           setTimeout(() => {
-            // Then animate down to the final position
-            setRotation(-totalDistance);
-            
-            // Set timeout for when animation completes
-            setTimeout(() => {
-              setFinalItem(winner);
-              setIsRevealing(true);
+            // Use requestAnimationFrame for smoother transition
+            requestAnimationFrame(() => {
+              // Then animate down to the final position
+              setRotation(-totalDistance);
               
+              // Set timeout for when animation completes
               setTimeout(() => {
-                onComplete(winner);
-              }, 1000); // Delay before calling onComplete
-            }, 5000); // Match the CSS transition duration (5s)
-          }, 50); 
+                setFinalItem(winner);
+                setIsRevealing(true);
+                
+                setTimeout(() => {
+                  onComplete(winner);
+                }, 1000); // Delay before calling onComplete
+              }, 5000); // Match the CSS transition duration (5s)
+            });
+          }, 20); // Shorter timeout for better responsiveness
         } catch (error) {
           console.error("Error in provably fair setup:", error);
           toast({
@@ -215,8 +216,8 @@ export const useSpinningLogic = ({
     } else {
       // Not spinning, reset states
       if (spinItems.length === 0 && items.length > 0) {
-        // Initialize with some items to avoid showing empty spinner
-        const initialItems = Array(10).fill(null).map(() => items[Math.floor(Math.random() * items.length)]);
+        // Initialize with fewer items to avoid showing empty spinner
+        const initialItems = Array(5).fill(null).map(() => items[Math.floor(Math.random() * items.length)]);
         setSpinItems(initialItems);
       }
     }
@@ -234,8 +235,8 @@ export const useSpinningLogic = ({
     rotation, 
     finalItem, 
     isRevealing,
-    gameData, // Expose game data for verification
-    clientSeed, // Expose current client seed
-    setClientSeed // Allow updating the client seed
+    gameData, 
+    clientSeed, 
+    setClientSeed 
   };
 };
