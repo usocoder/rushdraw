@@ -28,7 +28,8 @@ export const CaseGrid = () => {
         .select(`
           *,
           case_items (*)
-        `);
+        `)
+        .order('price', { ascending: true });
       
       if (error) {
         console.error('Error fetching cases:', error);
@@ -70,7 +71,7 @@ export const CaseGrid = () => {
   }
 
   return (
-    <div className="py-12 px-6 lg:px-8">
+    <div className="py-8">
       <PriceFilter activeFilter={activeFilter} onFilterChange={(filter) => {
         setActiveFilter(filter);
         setCurrentPage(1); // Reset to first page when filter changes
@@ -115,23 +116,40 @@ export const CaseGrid = () => {
               <PaginationItem>
                 <PaginationPrevious 
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
                 />
               </PaginationItem>
-              {Array.from({ length: totalPages }).map((_, index) => (
-                <PaginationItem key={index}>
-                  <PaginationLink 
-                    isActive={currentPage === index + 1}
-                    onClick={() => setCurrentPage(index + 1)}
-                  >
-                    {index + 1}
-                  </PaginationLink>
-                </PaginationItem>
-              ))}
+              {Array.from({ length: Math.min(5, totalPages) }).map((_, index) => {
+                // Show at most 5 page numbers
+                let pageNumber;
+                if (totalPages <= 5) {
+                  pageNumber = index + 1;
+                } else {
+                  // Complex logic to show pages around current page
+                  if (currentPage <= 3) {
+                    pageNumber = index + 1;
+                  } else if (currentPage >= totalPages - 2) {
+                    pageNumber = totalPages - 4 + index;
+                  } else {
+                    pageNumber = currentPage - 2 + index;
+                  }
+                }
+                
+                return (
+                  <PaginationItem key={index}>
+                    <PaginationLink 
+                      isActive={currentPage === pageNumber}
+                      onClick={() => setCurrentPage(pageNumber)}
+                    >
+                      {pageNumber}
+                    </PaginationLink>
+                  </PaginationItem>
+                );
+              })}
               <PaginationItem>
                 <PaginationNext 
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
                 />
               </PaginationItem>
             </PaginationContent>
