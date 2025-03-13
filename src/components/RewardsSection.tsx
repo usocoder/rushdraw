@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -111,7 +112,6 @@ export const RewardsSection = () => {
     link.href = downloadUrl;
     link.download = 'rushdrawapp.exe';
     document.body.appendChild(link);
-    link.click();
     document.body.removeChild(link);
   };
 
@@ -136,6 +136,7 @@ export const RewardsSection = () => {
           <div className="flex-1">
             <h3 className="text-xl font-bold text-white">Download RushDraw App</h3>
             <p className="text-white/90">Get 5 FREE cases when you download our desktop app!</p>
+            <p className="text-white/80 text-sm mt-1">Android and iOS coming soon</p>
           </div>
           <Button 
             onClick={handleDownloadApp}
@@ -200,7 +201,7 @@ export const RewardsSection = () => {
               
               <div className="text-sm text-amber-500 flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
-                <span>Visit Daily Rewards page for special tier rewards</span>
+                <span>Visit Daily Rewards page for special rewards</span>
               </div>
               
               {!canClaimReward && userProgress?.last_reward_claim && (

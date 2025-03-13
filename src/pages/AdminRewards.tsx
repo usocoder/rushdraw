@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -119,23 +120,6 @@ const AdminRewards = () => {
     }
   };
 
-  const getRewardValue = (level: number) => {
-    if (level >= 90) return "$80,000";
-    if (level >= 70) return "$70,000";
-    if (level >= 50) return "$50,000";
-    if (level >= 30) return "$30,000";
-    if (level >= 10) return "$10,000";
-    return "$1,000";
-  };
-
-  const getRewardClass = (level: number) => {
-    if (level >= 90) return "text-amber-500 font-bold"; // Legendary
-    if (level >= 70) return "text-purple-500 font-bold"; // Epic
-    if (level >= 50) return "text-blue-500 font-bold"; // Rare
-    if (level >= 30) return "text-green-500 font-bold"; // Uncommon
-    return "text-gray-300 font-bold"; // Common
-  };
-
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="flex justify-between items-center mb-8">
@@ -199,11 +183,8 @@ const AdminRewards = () => {
                 className="flex justify-between items-center p-4 bg-background rounded"
               >
                 <div className="flex items-center gap-2">
-                  <span className={getRewardClass(reward.level_required)}>Level {reward.level_required}:</span>{" "}
+                  <span className="font-bold">Level {reward.level_required}:</span>{" "}
                   {reward.case.name}
-                  <span className="ml-2 text-sm text-muted-foreground">
-                    ({getRewardValue(reward.level_required)} potential value)
-                  </span>
                 </div>
                 <Button
                   variant="destructive"
