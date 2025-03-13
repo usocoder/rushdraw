@@ -1,8 +1,10 @@
+
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 interface ImageUploadProps {
   onUploadComplete: (url: string) => void;
@@ -41,9 +43,13 @@ export const ImageUpload = ({ onUploadComplete }: ImageUploadProps) => {
       const formData = new FormData();
       formData.append('file', file);
 
-      const { data: functionData } = await supabase.functions.invoke('upload-case-image', {
+      const { data: functionData, error } = await supabase.functions.invoke('upload-case-image', {
         body: formData,
       });
+
+      if (error) {
+        throw error;
+      }
 
       if (functionData?.url) {
         onUploadComplete(functionData.url);
@@ -51,6 +57,8 @@ export const ImageUpload = ({ onUploadComplete }: ImageUploadProps) => {
           title: "Success",
           description: "Image uploaded successfully",
         });
+      } else {
+        throw new Error("No URL returned from upload function");
       }
     } catch (error) {
       console.error('Upload error:', error);
@@ -79,8 +87,16 @@ export const ImageUpload = ({ onUploadComplete }: ImageUploadProps) => {
         variant="outline"
         onClick={() => document.getElementById('image')?.click()}
         disabled={isUploading}
+        className="w-full"
       >
-        {isUploading ? 'Uploading...' : 'Choose Image'}
+        {isUploading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Uploading...
+          </>
+        ) : (
+          'Choose Image'
+        )}
       </Button>
     </div>
   );

@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +24,11 @@ const AdminNewCase = () => {
   const navigate = useNavigate();
   const { user } = useBrowserAuth();
   const { toast } = useToast();
-  const { register, handleSubmit, setValue, formState: { errors } } = useForm<FormData>();
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>();
+  
+  // Watch the image_url value to show preview
+  const imageUrl = watch('image_url');
 
   const { data: userRole, isLoading } = useQuery({
     queryKey: ['userRole', user?.id],
@@ -47,6 +52,16 @@ const AdminNewCase = () => {
   }, [user, userRole, isLoading, navigate]);
 
   const onSubmit = async (data: FormData) => {
+    // Make sure we have the image URL
+    if (!data.image_url) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please upload an image for the case",
+      });
+      return;
+    }
+
     const { error } = await supabase
       .from('cases')
       .insert([{
@@ -73,7 +88,11 @@ const AdminNewCase = () => {
   };
 
   const handleImageUpload = (url: string) => {
-    setValue('image_url', url);
+    setUploadedImageUrl(url);
+    setValue('image_url', url, { 
+      shouldValidate: true, 
+      shouldDirty: true 
+    });
   };
 
   if (isLoading) {
@@ -119,14 +138,29 @@ const AdminNewCase = () => {
               )}
             </div>
 
-            <ImageUpload onUploadComplete={handleImageUpload} />
-            <Input 
-              type="hidden"
-              {...register("image_url", { required: "Image URL is required" })}
-            />
-            {errors.image_url && (
-              <p className="text-sm text-red-500">{errors.image_url.message}</p>
-            )}
+            <div>
+              <Label>Case Image</Label>
+              <ImageUpload onUploadComplete={handleImageUpload} />
+              
+              {uploadedImageUrl && (
+                <div className="mt-2">
+                  <p className="text-sm text-green-600">Image uploaded successfully</p>
+                  <img 
+                    src={uploadedImageUrl} 
+                    alt="Uploaded case" 
+                    className="mt-2 h-40 w-auto object-contain rounded border border-gray-200" 
+                  />
+                </div>
+              )}
+              
+              <input 
+                type="hidden"
+                {...register("image_url", { required: "Image URL is required" })}
+              />
+              {errors.image_url && (
+                <p className="text-sm text-red-500">{errors.image_url.message}</p>
+              )}
+            </div>
 
             <div>
               <Label htmlFor="category">Category</Label>
