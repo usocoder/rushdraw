@@ -45,9 +45,7 @@ export const CaseCard = ({ name, price, image, bestDrop, items = [], id, categor
         </div>
         <h3 className="text-lg font-semibold text-white mb-2">{name}</h3>
         <div className="text-secondary text-sm space-y-1 mb-4">
-          <p>Win up to {price > 0 ? (bestItem?.multiplier * 100).toFixed(0) : 0}x your bet</p>
-          <p>Top multiplier: {bestItem?.multiplier || 0}x</p>
-          <p>Legendary odds: {(items.find(item => item.rarity === 'legendary')?.odds || 0) * 100}%</p>
+          <p>Win up to {price > 0 && bestItem?.multiplier ? (bestItem?.multiplier * 100).toFixed(0) : 100}x your bet</p>
         </div>
         <div className="mt-auto">
           <button 

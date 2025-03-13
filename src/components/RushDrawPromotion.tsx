@@ -2,7 +2,7 @@
 import { useState } from "react";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { useNavigate } from "react-router-dom";
-import { Download, ArrowRight, Gift, Trophy } from "lucide-react";
+import { Download, Gift, Trophy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 
@@ -79,12 +79,6 @@ export const RushDrawPromotion = () => {
                 onClick={handleNavigateToRewards}
               >
                 Explore all rewards
-                <motion.div
-                  animate={{ x: isHovered ? 5 : 0 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </motion.div>
               </motion.button>
             </div>
           </div>
