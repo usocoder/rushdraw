@@ -1,174 +1,144 @@
 
-import { Button } from "@/components/ui/button";
-import { Sparkles } from "lucide-react";
-import { motion } from "framer-motion";
 import { useState } from "react";
-import { CaseOpeningModal } from "./CaseOpeningModal";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
-import { RegisterModal } from "./RegisterModal";
+import { useNavigate } from "react-router-dom";
+import { Download, ArrowRight, Gift, Trophy } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 
 export const RushDrawPromotion = () => {
-  const [isOpeningCase, setIsOpeningCase] = useState(false);
-  const [showRegister, setShowRegister] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
   const { user } = useBrowserAuth();
+  const navigate = useNavigate();
 
-  // Sample Mystery RushDraw Case data
-  const mysteryCase = {
-    id: "rushdraw-mystery",
-    name: "Mystery RushDraw Case",
-    price: 500,
-    image: "https://placehold.co/600x600/3a0ca3/e0e0e0?text=Mystery+Case",
-    bestDrop: "Win up to 100,000x",
-    category: "premium",
-    items: [
-      {
-        id: "mystery-legendary",
-        name: "Legendary Mystery Item",
-        value: 500000,
-        multiplier: 1000,
-        odds: 0.01,
-        rarity: "legendary",
-        image: "https://placehold.co/200x200/ffd700/000000?text=Legendary"
-      },
-      {
-        id: "mystery-epic",
-        name: "Epic Mystery Item",
-        value: 50000,
-        multiplier: 100,
-        odds: 0.05,
-        rarity: "epic",
-        image: "https://placehold.co/200x200/9900ff/ffffff?text=Epic"
-      },
-      {
-        id: "mystery-rare",
-        name: "Rare Mystery Item",
-        value: 5000,
-        multiplier: 10,
-        odds: 0.15,
-        rarity: "rare",
-        image: "https://placehold.co/200x200/0070dd/ffffff?text=Rare"
-      },
-      {
-        id: "mystery-uncommon",
-        name: "Uncommon Mystery Item",
-        value: 1000,
-        multiplier: 2,
-        odds: 0.30,
-        rarity: "uncommon",
-        image: "https://placehold.co/200x200/1eff00/000000?text=Uncommon"
-      },
-      {
-        id: "mystery-common",
-        name: "Common Mystery Item",
-        value: 250,
-        multiplier: 0.5,
-        odds: 0.49,
-        rarity: "common",
-        image: "https://placehold.co/200x200/ffffff/000000?text=Common"
-      }
-    ]
-  };
-
-  const handleOpenCase = () => {
-    if (!user) {
-      setShowRegister(true);
-    } else {
-      setIsOpeningCase(true);
-    }
+  const handleNavigateToRewards = () => {
+    navigate("/daily-rewards");
   };
 
   return (
-    <section className="py-12 px-6 lg:px-8 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-r from-purple-900/20 to-blue-900/20 z-0"></div>
-      
-      <motion.div 
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="max-w-5xl mx-auto relative z-10"
-      >
-        <div className="flex flex-col md:flex-row gap-8 items-center">
-          <motion.div 
-            whileHover={{ scale: 1.05 }}
-            transition={{ type: "spring", stiffness: 300 }}
-            className="w-full md:w-1/2 lg:w-2/5"
-          >
-            <div className="relative rounded-2xl overflow-hidden shadow-2xl">
-              <img 
-                src={mysteryCase.image} 
-                alt="Mystery RushDraw Case" 
-                className="w-full aspect-square object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex flex-col justify-end p-6">
-                <div className="animate-pulse flex items-center gap-2 mb-2">
-                  <Sparkles className="h-5 w-5 text-yellow-400" />
-                  <span className="text-yellow-400 font-semibold">RushDraw Exclusive</span>
-                </div>
-                <h2 className="text-2xl font-bold text-white mb-1">Mystery RushDraw Case</h2>
-                <p className="text-white/80 mb-3">${mysteryCase.price}</p>
-                <div className="bg-yellow-500/10 border border-yellow-500/30 rounded-md px-3 py-2 mb-4">
-                  <p className="text-yellow-400 text-sm font-medium">Win up to 100,000x your bet!</p>
+    <div className="w-full py-16 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-background to-background/80">
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          <div className="space-y-6">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="space-y-4"
+            >
+              <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-white">
+                Open your mystery <span className="text-primary">RushDraw</span> Case
+              </h2>
+              <p className="text-xl text-gray-400">
+                Win up to 100,000 times your opening amount with our exclusive cases
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                <Button 
+                  size="lg" 
+                  className="bg-primary hover:bg-primary/90"
+                  onClick={handleNavigateToRewards}
+                >
+                  <Gift className="mr-2 h-5 w-5" />
+                  Claim Daily Rewards
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="lg"
+                  className="group"
+                  asChild
+                >
+                  <a href="/rushdrawapp.exe" download>
+                    <Download className="mr-2 h-5 w-5 group-hover:animate-bounce" />
+                    Download Desktop App
+                  </a>
+                </Button>
+              </div>
+            </motion.div>
+            
+            <div className="pt-6 space-y-4">
+              <div className="flex items-start gap-3">
+                <Trophy className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
+                <div>
+                  <h3 className="font-semibold text-lg">Daily Rewards</h3>
+                  <p className="text-gray-400">Claim free cases and coins every day based on your level</p>
                 </div>
               </div>
-            </div>
-          </motion.div>
-          
-          <div className="w-full md:w-1/2 lg:w-3/5 space-y-4">
-            <div className="inline-flex items-center px-4 py-2 rounded-full bg-primary/10 border border-primary/20">
-              <Sparkles className="h-4 w-4 text-primary mr-2" />
-              <span className="text-sm font-medium">Special Promotion</span>
-            </div>
-            <h2 className="text-3xl md:text-4xl font-bold">
-              Open Your Mystery <span className="text-gradient bg-clip-text text-transparent bg-gradient-to-r from-purple-500 to-blue-500">RushDraw Case</span>
-            </h2>
-            <p className="text-muted-foreground text-lg">
-              Experience the thrill of our exclusive RushDraw technology! This special case contains premium items with incredible multipliers up to 100,000x your opening amount.
-            </p>
-            <ul className="space-y-2">
-              <li className="flex items-start">
-                <div className="mr-2 mt-0.5 rounded-full bg-primary/20 p-1">
-                  <Sparkles className="h-4 w-4 text-primary" />
+              
+              <div className="flex items-start gap-3">
+                <Gift className="h-6 w-6 text-primary flex-shrink-0 mt-1" />
+                <div>
+                  <h3 className="font-semibold text-lg">Premium Prizes</h3>
+                  <p className="text-gray-400">Win exclusive items from our curated collection of high-value rewards</p>
                 </div>
-                <span>Exclusive to RushDraw technology</span>
-              </li>
-              <li className="flex items-start">
-                <div className="mr-2 mt-0.5 rounded-full bg-primary/20 p-1">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                </div>
-                <span>Highest potential rewards on the platform</span>
-              </li>
-              <li className="flex items-start">
-                <div className="mr-2 mt-0.5 rounded-full bg-primary/20 p-1">
-                  <Sparkles className="h-4 w-4 text-primary" />
-                </div>
-                <span>Provably fair algorithm guarantees transparency</span>
-              </li>
-            </ul>
-            <div className="pt-4">
-              <Button 
-                size="lg" 
-                onClick={handleOpenCase}
-                className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-6 text-lg shadow-glow-md"
+              </div>
+              
+              <motion.button
+                onHoverStart={() => setIsHovered(true)}
+                onHoverEnd={() => setIsHovered(false)}
+                className="flex items-center text-primary hover:text-primary/80 font-medium"
+                onClick={handleNavigateToRewards}
               >
-                <Sparkles className="h-5 w-5 mr-2" />
-                Open Mystery Case
-              </Button>
+                Explore all rewards
+                <motion.div
+                  animate={{ x: isHovered ? 5 : 0 }}
+                  transition={{ duration: 0.2 }}
+                >
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </motion.div>
+              </motion.button>
             </div>
           </div>
+          
+          <div className="flex justify-center">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+              className="w-full max-w-md"
+            >
+              <div className="relative">
+                <div className="glass-card p-6 rounded-xl border border-primary/20 shadow-lg shadow-primary/10 overflow-hidden">
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-xl font-bold text-white">RushDraw Mystery Case</h3>
+                    <span className="bg-primary px-3 py-1 rounded-full text-sm font-semibold">Exclusive</span>
+                  </div>
+                  <div className="relative aspect-square mb-6 overflow-hidden rounded-lg bg-gradient-to-br from-gray-900 to-gray-800">
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-5xl font-extrabold text-primary/80">?</div>
+                    </div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                  </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">Win multiplier:</span>
+                      <span className="text-primary font-semibold">Up to 100,000x</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">Legendary odds:</span>
+                      <span className="text-amber-500 font-semibold">0.01%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">Epic odds:</span>
+                      <span className="text-purple-500 font-semibold">0.5%</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-gray-400">Rare odds:</span>
+                      <span className="text-blue-500 font-semibold">5%</span>
+                    </div>
+                  </div>
+                  <Button 
+                    className="w-full mt-6 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+                    onClick={handleNavigateToRewards}
+                  >
+                    Get Started
+                  </Button>
+                </div>
+                <div className="absolute -inset-0.5 bg-gradient-to-r from-primary to-accent/50 opacity-20 blur-xl rounded-xl"></div>
+              </div>
+            </motion.div>
+          </div>
         </div>
-      </motion.div>
-
-      <CaseOpeningModal
-        isOpen={isOpeningCase}
-        onOpenChange={setIsOpeningCase}
-        caseData={mysteryCase}
-        isFreePlay={false}
-      />
-
-      <RegisterModal
-        isOpen={showRegister}
-        onOpenChange={setShowRegister}
-      />
-    </section>
+      </div>
+    </div>
   );
 };
