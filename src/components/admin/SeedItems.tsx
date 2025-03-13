@@ -15,7 +15,6 @@ export const SeedItems = () => {
     try {
       console.log('Calling seed-case-items function...');
       
-      // Call the Supabase Edge Function with minimal configuration
       const { data, error } = await supabase.functions.invoke('seed-case-items');
       
       if (error) {
@@ -25,16 +24,20 @@ export const SeedItems = () => {
       
       console.log('Seed result:', data);
       
-      toast({
-        title: 'Success',
-        description: `Items added successfully.`,
-      });
+      if (data.success) {
+        toast({
+          title: 'Success',
+          description: `Added ${data.totalItemsAdded} items across ${Object.keys(data.itemsAddedPerCase).length} cases.`,
+        });
+      } else {
+        throw new Error(data.message || 'Failed to add items');
+      }
     } catch (error) {
       console.error('Error seeding items:', error);
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to add items. This may be due to a Supabase project configuration issue.',
+        description: error.message || 'Failed to add items. Check the console for details.',
       });
     } finally {
       setIsLoading(false);
