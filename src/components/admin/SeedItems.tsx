@@ -24,13 +24,14 @@ export const SeedItems = () => {
       
       console.log('Seed result:', data);
       
-      if (data.success) {
+      if (data?.success) {
         toast({
           title: 'Success',
-          description: `Added ${data.totalItemsAdded} items across ${Object.keys(data.itemsAddedPerCase).length} cases.`,
+          description: `Added ${data.totalItemsAdded} items across ${Object.keys(data.itemsAddedPerCase || {}).length} cases.`,
+          duration: 5000,
         });
       } else {
-        throw new Error(data.message || 'Failed to add items');
+        throw new Error(data?.message || 'Failed to add items');
       }
     } catch (error) {
       console.error('Error seeding items:', error);
@@ -38,6 +39,7 @@ export const SeedItems = () => {
         variant: 'destructive',
         title: 'Error',
         description: error.message || 'Failed to add items. Check the console for details.',
+        duration: 5000,
       });
     } finally {
       setIsLoading(false);
