@@ -30,7 +30,7 @@ export const RushDrawPromotion = () => {
                 Open your mystery <span className="text-primary">RushDraw</span> Case
               </h2>
               <p className="text-xl text-gray-400">
-                Win up to 100,000 times your opening amount with our exclusive cases
+                Win up to 100,000x your opening amount with our exclusive cases
               </p>
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
                 <Button 
