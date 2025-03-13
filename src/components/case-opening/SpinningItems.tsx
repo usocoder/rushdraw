@@ -56,27 +56,30 @@ export const SpinningItems = ({
         </div>
       )}
       
-      {/* Center position indicator */}
-      <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-0.5 bg-primary z-20">
-        <div className="absolute -left-1 top-0 w-2 h-2 bg-primary rotate-45" />
-        <div className="absolute -left-1 bottom-0 w-2 h-2 bg-primary rotate-45" />
+      {/* Center position indicator with bigger, more visible pointer */}
+      <div className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-1 bg-primary z-20">
+        <div className="absolute -left-1.5 top-0 w-4 h-4 bg-primary rotate-45 shadow-glow-sm" />
+        <div className="absolute -left-1.5 bottom-0 w-4 h-4 bg-primary rotate-45 shadow-glow-sm" />
       </div>
 
-      {/* Gradient fade effect on top and bottom */}
+      {/* Enhanced gradient fade effect on top and bottom */}
       <div className="absolute inset-0 pointer-events-none z-10">
-        <div className="absolute inset-x-0 top-0 h-1/6 bg-gradient-to-b from-background to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 h-1/6 bg-gradient-to-t from-background to-transparent" />
+        <div className="absolute inset-x-0 top-0 h-1/4 bg-gradient-to-b from-background to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-background to-transparent" />
       </div>
 
-      {/* Spinner content - stacked vertically */}
+      {/* Spinner content with hardware acceleration hints */}
       <div 
         ref={containerRef} 
         className="items-wrapper absolute w-full will-change-transform"
         style={{ 
           transform: transform,
           transition: isSpinning 
-            ? 'transform 5s cubic-bezier(0.1, 0.7, 0.1, 1)' 
+            ? 'transform 5s cubic-bezier(0.19, 0.82, 0.165, 1)' // Improved easing function
             : 'transform 0.3s ease-out',
+          backfaceVisibility: 'hidden',
+          perspective: '1000px',
+          WebkitFontSmoothing: 'subpixel-antialiased'
         }}
       >
         {items.map((item, index) => (
@@ -84,9 +87,9 @@ export const SpinningItems = ({
             key={`${item?.id || index}-${index}`}
             className={`
               w-full ${itemSize} p-2 flex
-              ${isRevealing && finalItem?.id === item?.id ? "bg-accent/30 border-primary" : 
+              ${isRevealing && finalItem?.id === item?.id ? "bg-accent/30 border-primary animate-pulse" : 
                 !isSpinning && finalItem?.id === item?.id ? "bg-accent/10" : "bg-accent/5"}
-              border ${isRevealing && finalItem?.id === item?.id ? "border-primary" : "border-accent/20"} 
+              border ${isRevealing && finalItem?.id === item?.id ? "border-primary shadow-glow-sm" : "border-accent/20"} 
               rounded-lg transition-colors duration-300
             `}
           >
@@ -101,6 +104,7 @@ export const SpinningItems = ({
                       !isSpinning && finalItem?.id === item?.id ? 'scale-105' : ''}
                   `}
                   loading="eager"
+                  decoding="async"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src = "/placeholder.svg";
                   }}

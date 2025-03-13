@@ -5,15 +5,12 @@ import { Case } from "../types/case";
 import { CaseOpeningModal } from "./CaseOpeningModal";
 import { RegisterModal } from "./RegisterModal";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
-import { CaseItemsModal } from "./CaseItemsModal";
-import { Box } from "lucide-react";
 
 interface CaseCardProps extends Case {}
 
 export const CaseCard = ({ name, price, image, bestDrop, items = [], id, category }: CaseCardProps) => {
   const [isOpeningCase, setIsOpeningCase] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
-  const [showItems, setShowItems] = useState(false);
   const { user } = useBrowserAuth();
   
   const bestItem = items?.reduce((prev, current) => 
@@ -48,23 +45,16 @@ export const CaseCard = ({ name, price, image, bestDrop, items = [], id, categor
         </div>
         <h3 className="text-lg font-semibold text-white mb-2">{name}</h3>
         <div className="text-secondary text-sm space-y-1 mb-4">
-          <p>Best drop: {bestDrop}</p>
+          <p>Win up to {price > 0 ? (bestItem?.multiplier * 100).toFixed(0) : 0}x your bet</p>
           <p>Top multiplier: {bestItem?.multiplier || 0}x</p>
           <p>Legendary odds: {(items.find(item => item.rarity === 'legendary')?.odds || 0) * 100}%</p>
         </div>
-        <div className="mt-auto space-y-2">
+        <div className="mt-auto">
           <button 
             className="w-full bg-primary hover:bg-accent text-white font-semibold py-2 rounded-lg transition-colors duration-300"
             onClick={handleOpenCase}
           >
             Open Case
-          </button>
-          <button 
-            className="w-full bg-secondary hover:bg-accent text-white font-semibold py-2 rounded-lg transition-colors duration-300 flex items-center justify-center gap-2"
-            onClick={() => setShowItems(true)}
-          >
-            <Box className="h-4 w-4" />
-            View Items
           </button>
         </div>
       </motion.div>
@@ -79,13 +69,6 @@ export const CaseCard = ({ name, price, image, bestDrop, items = [], id, categor
       <RegisterModal
         isOpen={showRegister}
         onOpenChange={setShowRegister}
-      />
-
-      <CaseItemsModal
-        isOpen={showItems}
-        onOpenChange={setShowItems}
-        items={items}
-        caseName={name}
       />
     </>
   );

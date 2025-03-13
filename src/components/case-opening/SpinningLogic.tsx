@@ -135,15 +135,15 @@ export const useSpinningLogic = ({
           
           // Pre-compute a smaller set of items for better performance
           // Reducing number of items for better performance
-          const displayCount = 30; // Reduced from 50 for better performance
+          const displayCount = 25; // Reduced from 30 for even better performance
           
           // Create sequence of items with winner placed at a specific position
           const fullSequence: CaseItem[] = [];
           
           // Add enough random items to fill the sequence
           for (let i = 0; i < displayCount; i++) {
-            // Winner at 75% through the sequence
-            if (i === Math.floor(displayCount * 0.75)) {
+            // Winner at 80% through the sequence for more predictable landing
+            if (i === Math.floor(displayCount * 0.8)) {
               fullSequence.push(winner);
             } else {
               // Random item from pool
@@ -155,36 +155,33 @@ export const useSpinningLogic = ({
           setSpinItems(fullSequence);
           
           // Calculate final position to center the winning item
-          const winnerIndex = Math.floor(displayCount * 0.75);
+          const winnerIndex = Math.floor(displayCount * 0.8);
           const centerOffset = Math.floor(itemHeight / 2);
           const finalPosition = -(winnerIndex * itemHeight) + centerOffset;
           
-          // Adjust for fewer spins for smoother animation
-          const extraSpins = 3; // Reduced from 4 for smoother animation
+          // Use fewer spins for smoother animation
+          const extraSpins = 2; // Reduced from 3 for even smoother animation
           const totalDistance = (extraSpins * displayCount * itemHeight) + Math.abs(finalPosition);
           
-          // Set up the spin animation
-          // Start by instantly moving up (negative value)
-          setRotation(0);
+          // Set up the animation with improved timing
+          // Use a Web Animation API approach for smoother performance
+          document.documentElement.style.setProperty('--spin-distance', `-${totalDistance}px`);
           
-          // Use a short timeout to ensure the DOM is updated before starting animation
-          setTimeout(() => {
-            // Use requestAnimationFrame for smoother transition
-            requestAnimationFrame(() => {
-              // Then animate down to the final position
-              setRotation(-totalDistance);
+          // Apply animation with RAF for better sync with browser render cycle
+          requestAnimationFrame(() => {
+            setRotation(-totalDistance);
+            
+            // Set timeout for when animation completes
+            const animationDuration = 5000; // 5 seconds
+            setTimeout(() => {
+              setFinalItem(winner);
+              setIsRevealing(true);
               
-              // Set timeout for when animation completes
               setTimeout(() => {
-                setFinalItem(winner);
-                setIsRevealing(true);
-                
-                setTimeout(() => {
-                  onComplete(winner);
-                }, 1000); // Delay before calling onComplete
-              }, 5000); // Match the CSS transition duration (5s)
-            });
-          }, 20); // Shorter timeout for better responsiveness
+                onComplete(winner);
+              }, 1000); // Delay before calling onComplete
+            }, animationDuration);
+          });
         } catch (error) {
           console.error("Error in provably fair setup:", error);
           toast({
