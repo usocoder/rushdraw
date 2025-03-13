@@ -40,7 +40,7 @@ export const ImageUpload = ({ onUploadComplete }: ImageUploadProps) => {
     setIsUploading(true);
 
     try {
-      // Fallback: Direct upload to storage bucket
+      // Upload directly to storage bucket
       const fileExt = file.name.split('.').pop();
       const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
       const filePath = `${fileName}`;
@@ -61,13 +61,12 @@ export const ImageUpload = ({ onUploadComplete }: ImageUploadProps) => {
         .from('case-images')
         .getPublicUrl(filePath);
 
-      console.log("Image uploaded to storage:", publicUrl);
+      console.log("Image uploaded:", publicUrl);
       
-      // Verify the URL works by loading the image (will trigger CORS preflight)
-      const img = new Image();
-      img.src = publicUrl;
+      // Give Supabase a moment to fully process the image
+      await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Pass the URL to the parent component
+      // Set image URL to form
       onUploadComplete(publicUrl);
       
       toast({

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ImageOff } from "lucide-react";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -25,6 +25,7 @@ const AdminNewCase = () => {
   const { user } = useBrowserAuth();
   const { toast } = useToast();
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const { register, handleSubmit, setValue, watch, formState: { errors } } = useForm<FormData>();
   
   // Watch the image_url value to show preview
@@ -90,24 +91,23 @@ const AdminNewCase = () => {
   const handleImageUpload = (url: string) => {
     console.log("Image uploaded:", url);
     setUploadedImageUrl(url);
+    setImageLoaded(false); // Reset image loaded state for new image
     
-    // Ensure the URL is properly set in the form
+    // Set the image URL in the form
     setValue('image_url', url, { 
       shouldValidate: true, 
       shouldDirty: true 
     });
-    
-    // Force a re-render to show the image
-    setTimeout(() => {
-      const img = new Image();
-      img.src = url;
-      img.onload = () => {
-        console.log("Image loaded successfully:", url);
-      };
-      img.onerror = () => {
-        console.error("Failed to load image:", url);
-      };
-    }, 500);
+  };
+
+  const handleImageLoad = () => {
+    console.log("Image loaded successfully");
+    setImageLoaded(true);
+  };
+
+  const handleImageError = () => {
+    console.error("Image failed to load:", uploadedImageUrl);
+    setImageLoaded(false);
   };
 
   if (isLoading) {
@@ -161,15 +161,25 @@ const AdminNewCase = () => {
                 <div className="mt-4">
                   <p className="text-sm text-green-600 mb-2">Image uploaded successfully</p>
                   <div className="relative border border-gray-200 rounded-md p-2 bg-gray-50">
-                    <img 
-                      src={uploadedImageUrl}
-                      alt="Case preview" 
-                      className="h-40 w-auto object-contain mx-auto"
-                      onError={(e) => {
-                        console.error("Image failed to load:", uploadedImageUrl);
-                        e.currentTarget.src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%23d1d5db' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cline x1='18' y1='6' x2='6' y2='18'%3E%3C/line%3E%3Cline x1='6' y1='6' x2='18' y2='18'%3E%3C/line%3E%3C/svg%3E";
-                      }}
-                    />
+                    {imageLoaded ? (
+                      <img 
+                        src={uploadedImageUrl}
+                        alt="Case preview" 
+                        className="h-40 w-auto object-contain mx-auto"
+                        onLoad={handleImageLoad}
+                        onError={handleImageError}
+                      />
+                    ) : (
+                      <div className="h-40 flex items-center justify-center">
+                        <div className="text-center">
+                          <ImageOff className="h-8 w-8 mx-auto text-gray-400" />
+                          <p className="text-sm text-gray-500 mt-2">
+                            Preview not available.
+                            <br />Image will still be used when creating the case.
+                          </p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

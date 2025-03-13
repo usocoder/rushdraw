@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ImageOff } from "lucide-react";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
@@ -32,6 +32,8 @@ const AdminNewItem = () => {
   const navigate = useNavigate();
   const { user } = useBrowserAuth();
   const { toast } = useToast();
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [imageLoaded, setImageLoaded] = useState(false);
   const { register, handleSubmit, control, setValue, formState: { errors } } = useForm<FormData>();
 
   const { data: userRole, isLoading: isCheckingRole } = useQuery({
@@ -94,6 +96,23 @@ const AdminNewItem = () => {
       description: "Item created successfully",
     });
     navigate('/admin/items');
+  };
+
+  const handleImageUpload = (url: string) => {
+    console.log("Image uploaded:", url);
+    setUploadedImageUrl(url);
+    setImageLoaded(false);
+    setValue('image_url', url);
+  };
+
+  const handleImageLoad = () => {
+    console.log("Image loaded successfully");
+    setImageLoaded(true);
+  };
+
+  const handleImageError = () => {
+    console.error("Image failed to load:", uploadedImageUrl);
+    setImageLoaded(false);
   };
 
   if (isCheckingRole) {
@@ -184,7 +203,36 @@ const AdminNewItem = () => {
             </div>
 
             <div>
-              <ImageUpload onUploadComplete={(url) => setValue('image_url', url)} />
+              <Label>Item Image</Label>
+              <ImageUpload onUploadComplete={handleImageUpload} />
+              
+              {uploadedImageUrl && (
+                <div className="mt-4">
+                  <p className="text-sm text-green-600 mb-2">Image uploaded successfully</p>
+                  <div className="relative border border-gray-200 rounded-md p-2 bg-gray-50">
+                    {imageLoaded ? (
+                      <img 
+                        src={uploadedImageUrl}
+                        alt="Item preview" 
+                        className="h-40 w-auto object-contain mx-auto"
+                        onLoad={handleImageLoad}
+                        onError={handleImageError}
+                      />
+                    ) : (
+                      <div className="h-40 flex items-center justify-center">
+                        <div className="text-center">
+                          <ImageOff className="h-8 w-8 mx-auto text-gray-400" />
+                          <p className="text-sm text-gray-500 mt-2">
+                            Preview not available.
+                            <br />Image will still be used when creating the item.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
               {errors.image_url && (
                 <p className="text-sm text-red-500">{errors.image_url.message}</p>
               )}
