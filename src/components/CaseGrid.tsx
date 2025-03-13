@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { CaseCard } from "./CaseCard";
 import { PriceFilter } from "./PriceFilter";
 import { useQuery } from "@tanstack/react-query";
