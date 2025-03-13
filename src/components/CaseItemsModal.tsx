@@ -36,7 +36,7 @@ export const CaseItemsModal = ({ isOpen, onOpenChange, items, caseName }: CaseIt
             {items.map((item) => (
               <div key={item.id} className="bg-card p-4 rounded-lg">
                 <img 
-                  src={item.image} 
+                  src={item.image || item.image_url} 
                   alt={item.name} 
                   className="w-full h-32 object-contain mb-2"
                   onError={(e) => {

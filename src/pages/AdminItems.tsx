@@ -1,3 +1,4 @@
+
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -7,6 +8,8 @@ import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
+import { BulkAddItems } from "@/components/admin/BulkAddItems";
+import { SeedItems } from "@/components/admin/SeedItems";
 
 const AdminItems = () => {
   const navigate = useNavigate();
@@ -89,6 +92,27 @@ const AdminItems = () => {
         </Button>
       </div>
 
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <Card>
+          <CardHeader>
+            <CardTitle>Add Sample Items (Edge Function)</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <SeedItems />
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader>
+            <CardTitle>Bulk Add Items by Category</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <BulkAddItems />
+          </CardContent>
+        </Card>
+      </div>
+
+      <h2 className="text-2xl font-bold mb-4">All Items</h2>
       <div className="grid gap-6">
         {items?.map((item) => (
           <Card key={item.id}>
