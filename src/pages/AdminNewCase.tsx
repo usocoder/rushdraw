@@ -61,6 +61,9 @@ const AdminNewCase = () => {
       return;
     }
 
+    // Log the image URL for debugging
+    console.log("Submitting case with image URL:", data.image_url);
+
     const { error } = await supabase
       .from('cases')
       .insert([{
@@ -71,10 +74,11 @@ const AdminNewCase = () => {
       }]);
 
     if (error) {
+      console.error("Case creation error:", error);
       toast({
         variant: "destructive",
         title: "Error",
-        description: "Failed to create case",
+        description: "Failed to create case: " + error.message,
       });
       return;
     }
@@ -87,7 +91,7 @@ const AdminNewCase = () => {
   };
 
   const handleImageLoad = () => {
-    console.log("Image loaded successfully");
+    console.log("Image loaded successfully:", imageUrl);
     setImageLoaded(true);
   };
 
@@ -167,6 +171,7 @@ const AdminNewCase = () => {
                         className="h-40 w-auto object-contain mx-auto"
                         onLoad={handleImageLoad}
                         onError={handleImageError}
+                        crossOrigin="anonymous"
                       />
                     ) : (
                       <div className="h-40 flex items-center justify-center">

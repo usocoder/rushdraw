@@ -73,6 +73,9 @@ const AdminNewItem = () => {
   }, [user, userRole, isCheckingRole, navigate]);
 
   const onSubmit = async (data: FormData) => {
+    // Log the image URL for debugging
+    console.log("Submitting item with image URL:", data.image_url);
+
     const { error } = await supabase
       .from('case_items')
       .insert({
@@ -85,9 +88,10 @@ const AdminNewItem = () => {
       });
 
     if (error) {
+      console.error("Item creation error:", error);
       toast({
         title: "Error",
-        description: "Failed to create item",
+        description: "Failed to create item: " + error.message,
         variant: "destructive",
       });
       return;
@@ -101,7 +105,7 @@ const AdminNewItem = () => {
   };
 
   const handleImageLoad = () => {
-    console.log("Image loaded successfully");
+    console.log("Image loaded successfully:", imageUrl);
     setImageLoaded(true);
   };
 
@@ -225,6 +229,7 @@ const AdminNewItem = () => {
                         className="h-40 w-auto object-contain mx-auto"
                         onLoad={handleImageLoad}
                         onError={handleImageError}
+                        crossOrigin="anonymous"
                       />
                     ) : (
                       <div className="h-40 flex items-center justify-center">
