@@ -18,7 +18,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { useForm, Controller } from "react-hook-form";
-import { ImageUpload } from "@/components/ImageUpload";
 
 interface FormData {
   name: string;
@@ -33,9 +32,11 @@ const AdminNewItem = () => {
   const navigate = useNavigate();
   const { user } = useBrowserAuth();
   const { toast } = useToast();
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [imageLoaded, setImageLoaded] = useState(false);
-  const { register, handleSubmit, control, setValue, formState: { errors } } = useForm<FormData>();
+  const { register, handleSubmit, control, watch, formState: { errors } } = useForm<FormData>();
+  
+  // Watch the image_url to show preview
+  const imageUrl = watch('image_url');
 
   const { data: userRole, isLoading: isCheckingRole } = useQuery({
     queryKey: ['userRole', user?.id],
@@ -99,20 +100,13 @@ const AdminNewItem = () => {
     navigate('/admin/items');
   };
 
-  const handleImageUpload = (url: string) => {
-    console.log("Image uploaded:", url);
-    setUploadedImageUrl(url);
-    setImageLoaded(false);
-    setValue('image_url', url);
-  };
-
   const handleImageLoad = () => {
     console.log("Image loaded successfully");
     setImageLoaded(true);
   };
 
   const handleImageError = () => {
-    console.error("Image failed to load:", uploadedImageUrl);
+    console.error("Image failed to load:", imageUrl);
     setImageLoaded(false);
   };
 
@@ -204,16 +198,29 @@ const AdminNewItem = () => {
             </div>
 
             <div>
-              <Label>Item Image</Label>
-              <ImageUpload onUploadComplete={handleImageUpload} />
+              <Label htmlFor="image_url">Image URL</Label>
+              <Input 
+                id="image_url"
+                type="url"
+                placeholder="https://example.com/image.png"
+                {...register("image_url", { 
+                  required: "Image URL is required",
+                  pattern: {
+                    value: /^(https?:\/\/)/i,
+                    message: "Must be a valid URL starting with http:// or https://"
+                  }
+                })}
+              />
+              {errors.image_url && (
+                <p className="text-sm text-red-500">{errors.image_url.message}</p>
+              )}
               
-              {uploadedImageUrl && (
+              {imageUrl && (
                 <div className="mt-4">
-                  <p className="text-sm text-green-600 mb-2">Image uploaded successfully</p>
                   <div className="relative border border-gray-200 rounded-md p-2 bg-gray-50">
                     {imageLoaded ? (
                       <img 
-                        src={uploadedImageUrl}
+                        src={imageUrl}
                         alt="Item preview" 
                         className="h-40 w-auto object-contain mx-auto"
                         onLoad={handleImageLoad}
@@ -224,18 +231,14 @@ const AdminNewItem = () => {
                         <div className="text-center">
                           <ImageOff className="h-8 w-8 mx-auto text-gray-400" />
                           <p className="text-sm text-gray-500 mt-2">
-                            Preview not available.
-                            <br />Image will still be used when creating the item.
+                            Image preview not available.
+                            <br />Please check your URL.
                           </p>
                         </div>
                       </div>
                     )}
                   </div>
                 </div>
-              )}
-              
-              {errors.image_url && (
-                <p className="text-sm text-red-500">{errors.image_url.message}</p>
               )}
             </div>
 
