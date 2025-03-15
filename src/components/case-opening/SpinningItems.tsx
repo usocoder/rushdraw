@@ -1,5 +1,5 @@
 
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { CaseItem } from "@/types/case";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useEffect, useRef, useState } from "react";
@@ -33,10 +33,14 @@ export const SpinningItems = ({
   const imageSize = isMobile ? "w-24 h-24" : "w-32 h-32";
   const containerSize = isMobile ? "h-40" : "h-48";
 
+  // Use a more performant approach to update transform with requestAnimationFrame
   useEffect(() => {
-    // Apply transform directly using a state to ensure React handles the updates
     if (typeof rotation === 'number') {
-      setTransform(`translateY(${rotation}px)`);
+      // Use requestAnimationFrame for smoother animation updates
+      const frameId = requestAnimationFrame(() => {
+        setTransform(`translateY(${rotation}px)`);
+      });
+      return () => cancelAnimationFrame(frameId);
     }
   }, [rotation]);
 
@@ -68,18 +72,20 @@ export const SpinningItems = ({
         <div className="absolute inset-x-0 bottom-0 h-1/4 bg-gradient-to-t from-background to-transparent" />
       </div>
 
-      {/* Spinner content with hardware acceleration hints */}
+      {/* Spinner content with hardware acceleration and improved animation */}
       <div 
         ref={containerRef} 
         className="items-wrapper absolute w-full will-change-transform"
         style={{ 
           transform: transform,
           transition: isSpinning 
-            ? 'transform 5s cubic-bezier(0.19, 0.82, 0.165, 1)' // Improved easing function
+            ? 'transform 5s cubic-bezier(0.21, 0.61, 0.35, 1)' // Improved easing function for smoother deceleration
             : 'transform 0.3s ease-out',
           backfaceVisibility: 'hidden',
           perspective: '1000px',
-          WebkitFontSmoothing: 'subpixel-antialiased'
+          WebkitFontSmoothing: 'subpixel-antialiased',
+          willChange: 'transform',
+          transformStyle: 'preserve-3d'
         }}
       >
         {items.map((item, index) => (
@@ -90,7 +96,7 @@ export const SpinningItems = ({
               ${isRevealing && finalItem?.id === item?.id ? "bg-accent/30 border-primary animate-pulse" : 
                 !isSpinning && finalItem?.id === item?.id ? "bg-accent/10" : "bg-accent/5"}
               border ${isRevealing && finalItem?.id === item?.id ? "border-primary shadow-glow-sm" : "border-accent/20"} 
-              rounded-lg transition-colors duration-300
+              rounded-lg transition-all duration-300
             `}
           >
             <div className="flex flex-row w-full h-full items-center justify-between">

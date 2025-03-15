@@ -18,43 +18,123 @@ export const WinningResult = ({ item, casePrice, isFreePlay = false, hasRushDraw
   // Calculate the win amount
   const winAmount = casePrice * effectiveMultiplier;
 
+  // Animation variants for smoother transitions
+  const containerVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { 
+        duration: 0.5,
+        ease: "easeOut",
+        when: "beforeChildren",
+        staggerChildren: 0.2
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { scale: 0.8, opacity: 0 },
+    visible: { 
+      scale: 1, 
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 200,
+        damping: 15,
+        mass: 1
+      }
+    }
+  };
+
+  const textVariants = {
+    hidden: { opacity: 0, y: 10 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: {
+        duration: 0.3,
+        ease: "easeOut"
+      }
+    }
+  };
+
+  const iconVariants = {
+    hidden: { scale: 0, rotate: -45 },
+    visible: { 
+      scale: 1, 
+      rotate: 0,
+      transition: {
+        type: "spring",
+        stiffness: 260,
+        damping: 20,
+        delay: 0.4
+      }
+    }
+  };
+
   return (
     <motion.div
       className="mt-6 text-center"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay: 0.2 }}
+      initial="hidden"
+      animate="visible"
+      variants={containerVariants}
     >
       <motion.div 
         className="flex items-center justify-center mb-4"
-        initial={{ scale: 0.8 }}
-        animate={{ scale: 1 }}
-        transition={{ 
-          type: "spring",
-          stiffness: 260,
-          damping: 20,
-          delay: 0.3
-        }}
+        variants={itemVariants}
       >
         <div className="relative">
-          <img 
-            src={item.image}
-            alt={item.name}
-            className={`w-48 h-48 object-contain rounded-lg ${
-              hasRushDraw && item.rarity === 'legendary' 
-                ? 'ring-4 ring-yellow-500 ring-opacity-50' 
-                : ''
-            }`}
-          />
+          <motion.div
+            className="relative"
+            whileHover={{ scale: 1.05 }}
+            transition={{ type: "spring", stiffness: 300, damping: 10 }}
+          >
+            <img 
+              src={item.image}
+              alt={item.name}
+              className={`w-48 h-48 object-contain rounded-lg ${
+                hasRushDraw && item.rarity === 'legendary' 
+                  ? 'ring-4 ring-yellow-500 ring-opacity-50 shadow-lg' 
+                  : ''
+              }`}
+            />
+            {hasRushDraw && item.rarity === 'legendary' && (
+              <motion.div 
+                className="absolute inset-0 rounded-lg"
+                animate={{ 
+                  boxShadow: ['0 0 10px rgba(234, 179, 8, 0.5)', '0 0 20px rgba(234, 179, 8, 0.3)', '0 0 10px rgba(234, 179, 8, 0.5)']
+                }}
+                transition={{ 
+                  duration: 2, 
+                  repeat: Infinity,
+                  ease: "easeInOut" 
+                }}
+              />
+            )}
+          </motion.div>
+          
           {!isFreePlay && (
             <motion.div
-              initial={{ scale: 0 }}
-              animate={{ scale: 1 }}
-              transition={{ delay: 0.5 }}
+              initial="hidden"
+              animate="visible"
+              variants={iconVariants}
               className="absolute -top-2 -right-2"
             >
               {hasRushDraw && item.rarity === 'legendary' ? (
-                <Sparkles className="w-8 h-8 text-yellow-500 animate-pulse" />
+                <motion.div
+                  animate={{ 
+                    rotate: [0, 5, 0, -5, 0],
+                    scale: [1, 1.1, 1, 1.1, 1]
+                  }}
+                  transition={{ 
+                    duration: 2,
+                    repeat: Infinity,
+                    ease: "easeInOut"
+                  }}
+                >
+                  <Sparkles className="w-8 h-8 text-yellow-500" />
+                </motion.div>
               ) : (
                 <Trophy className="w-8 h-8 text-yellow-500" />
               )}
@@ -62,26 +142,42 @@ export const WinningResult = ({ item, casePrice, isFreePlay = false, hasRushDraw
           )}
         </div>
       </motion.div>
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.4 }}
-      >
+      
+      <motion.div variants={textVariants}>
         <h3 className="text-xl font-bold mb-2">
           {isFreePlay ? "You could have won: " : "You won: "}{item.name}!
           {hasRushDraw && item.rarity === 'legendary' && (
-            <span className="ml-2 text-yellow-500">
+            <motion.span 
+              className="ml-2 text-yellow-500 inline-block"
+              animate={{ 
+                scale: [1, 1.05, 1],
+                opacity: [1, 0.8, 1]
+              }}
+              transition={{ 
+                duration: 1.5,
+                repeat: Infinity,
+                ease: "easeInOut" 
+              }}
+            >
               (Rush Draw!)
-            </span>
+            </motion.span>
           )}
         </h3>
-        <p className="text-lg text-primary">
+        
+        <motion.p 
+          className="text-lg text-primary"
+          variants={textVariants}
+        >
           Value: ${Math.round(winAmount)} ({Math.floor(effectiveMultiplier)}x)
-        </p>
+        </motion.p>
+        
         {isFreePlay && (
-          <p className="mt-2 text-muted-foreground">
+          <motion.p 
+            className="mt-2 text-muted-foreground"
+            variants={textVariants}
+          >
             This was just a simulation. Try opening the case for real to win!
-          </p>
+          </motion.p>
         )}
       </motion.div>
     </motion.div>
