@@ -18,6 +18,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/components/ui/use-toast";
 import { useForm, Controller } from "react-hook-form";
+import { validateImageUrl, formatImageUrl, checkImageExists } from "@/utils/imageUtils";
 
 interface FormData {
   name: string;
@@ -33,7 +34,8 @@ const AdminNewItem = () => {
   const { user } = useBrowserAuth();
   const { toast } = useToast();
   const [imageLoaded, setImageLoaded] = useState(false);
-  const { register, handleSubmit, control, watch, formState: { errors } } = useForm<FormData>();
+  const [isCheckingImage, setIsCheckingImage] = useState(false);
+  const { register, handleSubmit, control, watch, setValue, formState: { errors } } = useForm<FormData>();
   
   // Watch the image_url to show preview
   const imageUrl = watch('image_url');
@@ -72,9 +74,40 @@ const AdminNewItem = () => {
     }
   }, [user, userRole, isCheckingRole, navigate]);
 
+  // Check image validity when URL changes
+  useEffect(() => {
+    if (!imageUrl) {
+      setImageLoaded(false);
+      return;
+    }
+
+    const checkImage = async () => {
+      setIsCheckingImage(true);
+      try {
+        const formattedUrl = formatImageUrl(imageUrl);
+        console.log("Checking image URL:", formattedUrl);
+        const exists = await checkImageExists(formattedUrl);
+        setImageLoaded(exists);
+        if (exists && formattedUrl !== imageUrl) {
+          setValue('image_url', formattedUrl);
+        }
+      } catch (error) {
+        console.error("Error checking image:", error);
+        setImageLoaded(false);
+      } finally {
+        setIsCheckingImage(false);
+      }
+    };
+
+    checkImage();
+  }, [imageUrl, setValue]);
+
   const onSubmit = async (data: FormData) => {
+    // Format and validate the image URL
+    const formattedUrl = formatImageUrl(data.image_url);
+    
     // Log the image URL for debugging
-    console.log("Submitting item with image URL:", data.image_url);
+    console.log("Submitting item with image URL:", formattedUrl);
 
     const { error } = await supabase
       .from('case_items')
@@ -83,7 +116,7 @@ const AdminNewItem = () => {
         value: Number(data.value),
         odds: Number(data.odds) / 100, // Convert from percentage to decimal
         rarity: data.rarity,
-        image_url: data.image_url,
+        image_url: formattedUrl,
         case_id: data.case_id,
       });
 
@@ -222,9 +255,15 @@ const AdminNewItem = () => {
               {imageUrl && (
                 <div className="mt-4">
                   <div className="relative border border-gray-200 rounded-md p-2 bg-gray-50">
-                    {imageLoaded ? (
+                    {isCheckingImage ? (
+                      <div className="h-40 flex items-center justify-center">
+                        <div className="text-center">
+                          <p className="text-sm text-gray-500">Checking image...</p>
+                        </div>
+                      </div>
+                    ) : imageLoaded ? (
                       <img 
-                        src={imageUrl}
+                        src={formatImageUrl(imageUrl)}
                         alt="Item preview" 
                         className="h-40 w-auto object-contain mx-auto"
                         onLoad={handleImageLoad}

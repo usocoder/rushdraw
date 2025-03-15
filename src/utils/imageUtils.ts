@@ -45,13 +45,36 @@ export function checkImageExists(url: string): Promise<boolean> {
     const img = new Image();
     
     img.onload = () => {
+      console.log('Image exists at URL:', url);
       resolve(true);
     };
     
     img.onerror = () => {
+      console.error('Image does not exist at URL:', url);
       resolve(false);
     };
     
     img.src = url;
   });
+}
+
+/**
+ * Formats image URLs for display
+ * This is particularly helpful for Supabase storage URLs
+ * 
+ * @param url The original image URL
+ * @returns A properly formatted URL for display
+ */
+export function formatImageUrl(url: string): string {
+  if (!url) return '';
+  
+  const validatedUrl = validateImageUrl(url);
+  
+  // Add cache-busting parameter to prevent caching issues
+  if (validatedUrl) {
+    const separator = validatedUrl.includes('?') ? '&' : '?';
+    return `${validatedUrl}${separator}t=${Date.now()}`;
+  }
+  
+  return '';
 }
