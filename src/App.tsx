@@ -7,6 +7,7 @@ import PricingPage from "@/pages/PricingPage";
 import DashboardPage from "@/pages/DashboardPage";
 import Admin from "@/pages/Admin";
 import AdminOrders from "@/pages/AdminOrders";
+import LoginPage from "@/pages/LoginPage";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { BrowserAuthProvider } from "@/contexts/BrowserAuthContext";
 
@@ -19,6 +20,7 @@ function AppRoutes() {
       <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/admin" element={<Admin />} />
       <Route path="/admin/orders" element={<AdminOrders />} />
+      <Route path="/login" element={<LoginPage />} />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );

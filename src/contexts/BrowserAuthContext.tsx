@@ -1,3 +1,4 @@
+
 import { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -141,25 +142,33 @@ export const BrowserAuthProvider: React.FC<{ children: React.ReactNode }> = ({ c
 
   const logout = async () => {
     try {
+      // First clear the local state to ensure UI updates immediately
+      setUser(null);
+      setError(null);
+      
+      // Then sign out from Supabase
       const { error: signOutError } = await supabase.auth.signOut();
+      
       if (signOutError) {
-        // Handle specific error cases
-        if (signOutError.message.includes('session_not_found') || 
-            signOutError.message.includes('refresh_token_not_found')) {
-          setUser(null);
-          setError(null);
-          return;
-        }
-        setError(signOutError.message);
+        console.error('Logout error:', signOutError);
+        toast({
+          title: "Logout issue",
+          description: "You've been logged out locally, but there was a server issue.",
+          variant: "destructive",
+        });
       } else {
-        setError(null);
-        setUser(null);
+        toast({
+          title: "Logged out",
+          description: "You have successfully logged out",
+        });
       }
     } catch (err) {
       console.error('Logout error:', err);
-      // Even if there's an error, clear the local state
-      setUser(null);
-      setError('An unexpected error occurred during logout');
+      toast({
+        title: "Logout issue",
+        description: "There was an error during logout, but you've been logged out locally.",
+        variant: "destructive",
+      });
     }
   };
 

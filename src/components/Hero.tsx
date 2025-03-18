@@ -3,14 +3,13 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { CryptoDeposit } from "./CryptoDeposit";
 import { WithdrawModal } from "./WithdrawModal";
-import { ArrowDown, ArrowUp, LogIn, LogOut, UserPlus, Wallet, Settings } from "lucide-react";
-import { RegisterModal } from "./RegisterModal";
-import { LoginModal } from "./LoginModal";
+import { LogIn, LogOut, UserPlus, Wallet, Settings } from "lucide-react";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 import { useBalance } from "@/contexts/BalanceContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "@/components/ui/use-toast";
 
 export const Hero = () => {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
@@ -18,6 +17,7 @@ export const Hero = () => {
   const { user, logout } = useBrowserAuth();
   const { balance } = useBalance();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   // Check if user is admin
   const { data: userRole } = useQuery({
@@ -31,6 +31,22 @@ export const Hero = () => {
       
       if (error) throw error;
       return data;
+    },
+    enabled: !!user,
+  });
+
+  // Check admin users table (new admin system)
+  const { data: isAdmin } = useQuery({
+    queryKey: ['adminUser', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('admin_users')
+        .select('id')
+        .eq('user_id', user?.id)
+        .maybeSingle();
+      
+      if (error) throw error;
+      return !!data;
     },
     enabled: !!user,
   });
@@ -60,8 +76,21 @@ export const Hero = () => {
   };
 
   const handleSignOut = async () => {
-    await logout();
-    navigate("/");
+    try {
+      await logout();
+      navigate("/");
+      toast({
+        title: "Logged out",
+        description: "You have been successfully logged out",
+      });
+    } catch (error) {
+      console.error("Logout error:", error);
+      toast({
+        title: "Error",
+        description: "There was a problem logging out. Please try again.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -82,7 +111,7 @@ export const Hero = () => {
               <span className="text-muted-foreground self-center truncate">
                 Welcome, {user.username}!
               </span>
-              {userRole?.role === 'admin' && (
+              {(userRole?.role === 'admin' || isAdmin) && (
                 <Button 
                   variant="outline" 
                   size="sm" 

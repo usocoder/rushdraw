@@ -1,5 +1,5 @@
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
@@ -7,50 +7,89 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { TransactionApprovals } from "@/components/admin/TransactionApprovals";
 import { SeedItems } from "@/components/admin/SeedItems";
-import { X, ShoppingBag, Info } from "lucide-react";
+import { X, ShoppingBag, Info, Loader2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { useToast } from "@/components/ui/use-toast";
 
 const Admin = () => {
   const navigate = useNavigate();
   const { user } = useBrowserAuth();
+  const { toast } = useToast();
+  const [adminChecked, setAdminChecked] = useState(false);
 
   // Check if user is admin
-  const { data: userRole, isLoading: isCheckingRole } = useQuery({
-    queryKey: ['userRole', user?.id],
+  const { data: isAdmin, isLoading: isCheckingAdmin } = useQuery({
+    queryKey: ['adminStatus', user?.id],
     queryFn: async () => {
-      if (!user) return null;
+      if (!user) return false;
 
       // Check admin_users table first (new admin system)
-      const { data: adminData } = await supabase
+      const { data: adminData, error: adminError } = await supabase
         .from('admin_users')
         .select('id')
         .eq('user_id', user.id)
         .maybeSingle();
       
-      if (adminData) return { role: 'admin' };
+      if (adminError) {
+        console.error("Error checking admin status:", adminError);
+        return false;
+      }
+      
+      if (adminData) return true;
       
       // Fall back to user_roles table (old admin system)
-      const { data, error } = await supabase
+      const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', user.id)
-        .single();
+        .maybeSingle();
       
-      if (error) return null;
-      return data;
+      if (roleError) {
+        console.error("Error checking user role:", roleError);
+        return false;
+      }
+      
+      return roleData?.role === 'admin';
     },
     enabled: !!user,
+    retry: false,
+    onSettled: () => {
+      setAdminChecked(true);
+    }
   });
 
   // Redirect non-admin users
   useEffect(() => {
-    if (!isCheckingRole && (!user || userRole?.role !== 'admin')) {
-      navigate('/');
+    if (adminChecked && !isCheckingAdmin) {
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "Please log in to access the admin panel",
+          variant: "destructive",
+        });
+        navigate('/login');
+      } else if (!isAdmin) {
+        toast({
+          title: "Access denied",
+          description: "You do not have administrator privileges",
+          variant: "destructive",
+        });
+        navigate('/');
+      }
     }
-  }, [user, userRole, isCheckingRole, navigate]);
+  }, [user, isAdmin, isCheckingAdmin, adminChecked, navigate, toast]);
 
-  if (isCheckingRole) {
-    return <div>Loading...</div>;
+  if (isCheckingAdmin) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-primary mr-2" />
+        <span>Checking administrator access...</span>
+      </div>
+    );
+  }
+
+  if (!isAdmin || !user) {
+    return null; // Will be redirected by the useEffect
   }
 
   return (
