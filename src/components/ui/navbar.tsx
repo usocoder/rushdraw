@@ -15,6 +15,23 @@ import { useState } from "react";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  
+  // Define module names
+  const moduleNames = [
+    "Introduction",
+    "Risks and Opportunities",
+    "Research and Due Diligence",
+    "Valuation Methods",
+    "Development Budgets",
+    "Project Funding",
+    "Structuring Entities",
+    "Project Programming",
+    "Statutory Approvals",
+    "Design Coordination",
+    "Project Marketing",
+    "Construction Management",
+    "Project Completion"
+  ];
 
   return (
     <div className="border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -44,16 +61,16 @@ const Navbar = () => {
               <NavigationMenuItem>
                 <NavigationMenuTrigger>Modules</NavigationMenuTrigger>
                 <NavigationMenuContent>
-                  <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                    {[...Array(13)].map((_, i) => (
+                  <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px] bg-background">
+                    {moduleNames.map((name, i) => (
                       <li key={i} className="row-span-1">
                         <NavigationMenuLink asChild>
                           <Link
                             to={`/module/${i}`}
-                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground"
+                            className="block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground text-foreground"
                           >
                             <div className="text-sm font-medium leading-none">
-                              {i === 0 ? "Introduction" : `Module ${i}`}
+                              {i === 0 ? "Introduction" : `Module ${i}: ${name}`}
                             </div>
                           </Link>
                         </NavigationMenuLink>
