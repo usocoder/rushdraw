@@ -1,29 +1,59 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
+import { Loader2 } from "lucide-react";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
-    // Simulate login process
-    setTimeout(() => {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) {
+        toast({
+          title: "Login Failed",
+          description: error.message,
+          variant: "destructive"
+        });
+        console.error("Login error:", error);
+      } else if (data.user) {
+        toast({
+          title: "Login Successful",
+          description: "Welcome back!",
+        });
+        navigate("/");
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred",
+        variant: "destructive"
+      });
+      console.error("Login exception:", error);
+    } finally {
       setIsLoading(false);
-      // In a real app, you'd handle authentication here
-      console.log("Login attempted with:", email);
-    }, 1500);
+    }
   };
 
   return (
     <div className="container flex items-center justify-center min-h-[calc(100vh-56px)]">
       <div className="mx-auto max-w-md w-full">
-        <div className="card p-8">
+        <div className="card p-8 shadow-lg rounded-lg border border-gray-200 bg-white">
           <h1 className="text-2xl font-bold text-center mb-6">Login to DevProp Industries</h1>
           
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -31,13 +61,13 @@ const LoginPage = () => {
               <label htmlFor="email" className="text-sm font-medium">
                 Email
               </label>
-              <input
+              <Input
                 id="email"
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-3 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-input"
+                className="w-full"
               />
             </div>
             
@@ -45,18 +75,25 @@ const LoginPage = () => {
               <label htmlFor="password" className="text-sm font-medium">
                 Password
               </label>
-              <input
+              <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-3 py-2 bg-background border border-input rounded-md focus:outline-none focus:ring-2 focus:ring-ring focus:border-input"
+                className="w-full"
               />
             </div>
             
             <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Logging in..." : "Login"}
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Logging in...
+                </>
+              ) : (
+                "Login"
+              )}
             </Button>
           </form>
           
