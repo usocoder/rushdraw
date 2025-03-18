@@ -1,36 +1,7 @@
 
-import { Button } from "./ui/button";
-import { useAuth } from "@/contexts/AuthContext";
-import { Link, useNavigate } from "react-router-dom";
-import { useState } from "react";
-import { LoginModal } from "./LoginModal";
-import { RegisterModal } from "./RegisterModal";
-import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
+import { Link } from "react-router-dom";
 
 const Header = () => {
-  const { user } = useAuth();
-  const { logout } = useBrowserAuth();
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
-  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
-  const navigate = useNavigate();
-
-  const handleLogin = () => {
-    navigate("/login");
-  };
-
-  const handleRegister = () => {
-    navigate("/login", { state: { tab: "register" } });
-  };
-
-  const handleSignOut = async () => {
-    try {
-      await logout();
-      navigate("/");
-    } catch (error) {
-      console.error("Error signing out:", error);
-    }
-  };
-
   return (
     <header className="py-6 border-b border-slate-800">
       <div className="container mx-auto flex justify-between items-center">
@@ -63,36 +34,11 @@ const Header = () => {
           <Link to="/pricing" className="text-slate-300 hover:text-white transition-colors">
             Pricing
           </Link>
-          {user && (
-            <Link to="/dashboard" className="text-slate-300 hover:text-white transition-colors">
-              Dashboard
-            </Link>
-          )}
+          <Link to="/dashboard" className="text-slate-300 hover:text-white transition-colors">
+            Dashboard
+          </Link>
         </nav>
-
-        <div className="flex items-center space-x-4">
-          {user ? (
-            <Button onClick={handleSignOut} variant="destructive">Sign Out</Button>
-          ) : (
-            <>
-              <Button
-                variant="outline"
-                onClick={handleLogin}
-              >
-                Login
-              </Button>
-              <Button
-                onClick={handleRegister}
-              >
-                Register
-              </Button>
-            </>
-          )}
-        </div>
       </div>
-
-      <LoginModal isOpen={isLoginOpen} onOpenChange={setIsLoginOpen} />
-      <RegisterModal isOpen={isRegisterOpen} onOpenChange={setIsRegisterOpen} />
     </header>
   );
 };

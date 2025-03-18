@@ -3,15 +3,11 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { Check } from "lucide-react";
 import { CheckoutModal } from "./CheckoutModal";
-import { useAuth } from "@/contexts/AuthContext";
-import { useNavigate } from "react-router-dom";
 import { toast } from "@/hooks/use-toast";
 
 const PricingSection = () => {
   const [selectedPlan, setSelectedPlan] = useState<{ name: string; price: number } | null>(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
-  const { user } = useAuth();
-  const navigate = useNavigate();
 
   const plans = [
     {
@@ -64,16 +60,6 @@ const PricingSection = () => {
   ];
 
   const handlePlanSelect = (plan: { name: string; price: number }) => {
-    if (!user) {
-      toast({
-        title: "Login Required",
-        description: "Please register or login to purchase a plan",
-        variant: "default",
-      });
-      navigate("/login");
-      return;
-    }
-    
     setSelectedPlan(plan);
     setIsCheckoutOpen(true);
   };
