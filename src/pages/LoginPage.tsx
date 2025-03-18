@@ -54,11 +54,11 @@ const LoginPage = () => {
     <div className="container flex items-center justify-center min-h-[calc(100vh-56px)]">
       <div className="mx-auto max-w-md w-full">
         <div className="card p-8 shadow-lg rounded-lg border border-gray-200 bg-white">
-          <h1 className="text-2xl font-bold text-center mb-6">Login to DevProp Industries</h1>
+          <h1 className="text-2xl font-bold text-center mb-6 text-black">Login to DevProp Industries</h1>
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium text-gray-700">
+              <label htmlFor="email" className="text-sm font-medium text-black">
                 Email
               </label>
               <Input
@@ -72,7 +72,7 @@ const LoginPage = () => {
             </div>
             
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium text-gray-700">
+              <label htmlFor="password" className="text-sm font-medium text-black">
                 Password
               </label>
               <Input
@@ -97,7 +97,7 @@ const LoginPage = () => {
             </Button>
           </form>
           
-          <div className="mt-6 text-center text-sm text-gray-600">
+          <div className="mt-6 text-center text-black">
             <p>Don't have an account? Contact your administrator</p>
           </div>
           

@@ -39,7 +39,9 @@ const ModuleItem = ({ number, title, description, available }: ModuleProps) => {
               <Link to={`/module/${number}`}>Start Module</Link>
             </Button>
           ) : (
-            <Button disabled>Coming Soon</Button>
+            <Button asChild>
+              <Link to="/contact">Contact Us Now</Link>
+            </Button>
           )}
         </div>
       </CollapsibleContent>
@@ -143,7 +145,7 @@ const ModulesPage = () => {
             The online course is structured in a sequential manner consisting of 12 learning modules each delivered over 2 weeks, spanning a total period of 24 weeks.
           </p>
           <p>
-            Modules marked as "Coming Soon" will be unlocked according to your course schedule.
+            Modules marked as "Contact Us Now" require enrollment. Click to get in touch with our team for more information.
           </p>
         </div>
         
