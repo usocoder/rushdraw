@@ -7,7 +7,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { TransactionApprovals } from "@/components/admin/TransactionApprovals";
 import { SeedItems } from "@/components/admin/SeedItems";
-import { X, ShoppingBag } from "lucide-react";
+import { X, ShoppingBag, Info } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -54,23 +55,34 @@ const Admin = () => {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <div className="flex flex-wrap gap-4">
-          <Button onClick={() => navigate('/admin/cases')}>
-            Manage Cases
-          </Button>
-          <Button onClick={() => navigate('/admin/items')}>
-            Manage Items
-          </Button>
-          <Button onClick={() => navigate('/admin/orders')} className="flex items-center gap-2">
-            <ShoppingBag className="h-4 w-4" />
-            View Orders
-          </Button>
-          <SeedItems />
-        </div>
+      <div className="flex justify-between items-center mb-4">
+        <h1 className="text-3xl font-bold">Admin Panel</h1>
         <Button variant="ghost" size="icon" onClick={() => navigate('/')}>
           <X className="h-4 w-4" />
         </Button>
+      </div>
+      
+      <Alert className="mb-6">
+        <Info className="h-4 w-4" />
+        <AlertTitle>Admin Access</AlertTitle>
+        <AlertDescription>
+          This panel is only visible to users with admin privileges. To grant admin access to other users,
+          add their user ID to the admin_users table in the database.
+        </AlertDescription>
+      </Alert>
+
+      <div className="flex flex-wrap gap-4 mb-8">
+        <Button onClick={() => navigate('/admin/cases')}>
+          Manage Cases
+        </Button>
+        <Button onClick={() => navigate('/admin/items')}>
+          Manage Items
+        </Button>
+        <Button onClick={() => navigate('/admin/orders')} className="flex items-center gap-2">
+          <ShoppingBag className="h-4 w-4" />
+          View Orders
+        </Button>
+        <SeedItems />
       </div>
 
       <div className="w-full">
