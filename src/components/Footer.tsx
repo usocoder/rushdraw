@@ -1,4 +1,6 @@
+
 import { Separator } from "@/components/ui/separator";
+import { Link } from "react-router-dom";
 
 export const Footer = () => {
   return (
@@ -26,12 +28,13 @@ export const Footer = () => {
           </div>
           
           <div>
-            <h3 className="text-lg font-semibold mb-4">Payment and Withdrawals</h3>
+            <h3 className="text-lg font-semibold mb-4">Ready to start your property development journey</h3>
             <div className="text-sm text-muted-foreground space-y-2">
               <p>We accept major cryptocurrencies for deposits and withdrawals.</p>
               <p>Daily Rewards.</p>
               <p>Secure payment processing and instant crypto withdrawals.</p>
               <p>KYC verification required for withdrawals over certain limits.</p>
+              <p><Link to="/faq" className="text-blue-600 hover:underline">Frequently Asked Questions</Link></p>
             </div>
           </div>
         </div>
