@@ -1,6 +1,7 @@
+
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight, BookOpen, Building, ChevronRight, GraduationCap, UserCheck, Phone, Check } from "lucide-react";
+import { ArrowRight, BookOpen, Building, ChevronRight, GraduationCap, UserCheck, Phone, Check, HelpCircle } from "lucide-react";
 
 const HomePage = () => {
   return (
@@ -221,6 +222,13 @@ const HomePage = () => {
               <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">
                 <Link to="/modules">
                   View Course Modules
+                </Link>
+              </Button>
+              
+              <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">
+                <Link to="/faq" className="inline-flex items-center">
+                  <HelpCircle className="mr-2 h-4 w-4" />
+                  Frequently Asked Questions
                 </Link>
               </Button>
             </div>

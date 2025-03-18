@@ -7,6 +7,7 @@ import LoginPage from "@/pages/LoginPage";
 import Navbar from "@/components/ui/navbar";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ContactPage from "@/pages/ContactPage";
+import FAQPage from "@/pages/FAQPage";
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
               <Route path="/modules" element={<ModulesPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/contact" element={<ContactPage />} />
+              <Route path="/faq" element={<FAQPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Routes>
           </main>
