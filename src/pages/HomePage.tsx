@@ -128,25 +128,12 @@ const HomePage = () => {
                   </ul>
                 </div>
                 <div className="bg-white p-6 rounded-lg shadow-sm">
-                  <h3 className="text-xl font-semibold mb-4 text-black text-center">Upcoming Q&A Sessions</h3>
-                  <div className="space-y-4">
-                    <div className="border-b pb-3">
-                      <p className="font-medium text-black">Construction Cost Management</p>
-                      <p className="text-sm text-gray-600">Wed, 15 June • 7:00 PM</p>
-                    </div>
-                    <div className="border-b pb-3">
-                      <p className="font-medium text-black">Financing Strategies</p>
-                      <p className="text-sm text-gray-600">Wed, 22 June • 7:00 PM</p>
-                    </div>
-                    <div>
-                      <p className="font-medium text-black">Site Selection & Analysis</p>
-                      <p className="text-sm text-gray-600">Wed, 29 June • 7:00 PM</p>
-                    </div>
-                  </div>
+                  <h3 className="text-xl font-semibold mb-4 text-black text-center">Join Our Live Sessions</h3>
+                  <p className="text-gray-800 mb-6">Our weekly Q&A sessions provide a unique opportunity to get real-time feedback on your property development projects and learn from the experiences of others.</p>
                   <div className="mt-6 text-center">
                     <Button asChild variant="outline">
                       <Link to="/login">
-                        Join Q&A Sessions
+                        Access Live Q&A Sessions
                       </Link>
                     </Button>
                   </div>
