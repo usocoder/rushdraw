@@ -7,7 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
 import { TransactionApprovals } from "@/components/admin/TransactionApprovals";
 import { SeedItems } from "@/components/admin/SeedItems";
-import { X } from "lucide-react";
+import { X, ShoppingBag } from "lucide-react";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -17,13 +17,25 @@ const Admin = () => {
   const { data: userRole, isLoading: isCheckingRole } = useQuery({
     queryKey: ['userRole', user?.id],
     queryFn: async () => {
+      if (!user) return null;
+
+      // Check admin_users table first (new admin system)
+      const { data: adminData } = await supabase
+        .from('admin_users')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (adminData) return { role: 'admin' };
+      
+      // Fall back to user_roles table (old admin system)
       const { data, error } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', user?.id)
+        .eq('user_id', user.id)
         .single();
       
-      if (error) throw error;
+      if (error) return null;
       return data;
     },
     enabled: !!user,
@@ -49,6 +61,10 @@ const Admin = () => {
           </Button>
           <Button onClick={() => navigate('/admin/items')}>
             Manage Items
+          </Button>
+          <Button onClick={() => navigate('/admin/orders')} className="flex items-center gap-2">
+            <ShoppingBag className="h-4 w-4" />
+            View Orders
           </Button>
           <SeedItems />
         </div>
