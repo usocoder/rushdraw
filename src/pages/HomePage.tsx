@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight, BookOpen, Building, ChevronRight, GraduationCap, UserCheck, Phone, Check } from "lucide-react";
@@ -219,7 +218,7 @@ const HomePage = () => {
                 </Link>
               </Button>
               
-              <Button asChild variant="outline" size="lg">
+              <Button asChild size="lg" className="bg-blue-600 hover:bg-blue-700">
                 <Link to="/modules">
                   View Course Modules
                 </Link>
