@@ -29,7 +29,7 @@ interface BotData {
 }
 
 const Dashboard = () => {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
   const { toast } = useToast();
   const [bots, setBots] = useState<BotData[]>([]);
   const [showNewBot, setShowNewBot] = useState(false);
@@ -366,7 +366,7 @@ const Dashboard = () => {
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="username">Username</Label>
-                <Input id="username" value={user?.username || ''} disabled />
+                <Input id="username" value={profile?.username || ''} disabled />
               </div>
               <div>
                 <Label htmlFor="email">Email</Label>
