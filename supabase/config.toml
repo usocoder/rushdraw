@@ -3,30 +3,34 @@ project_id = "lvyqjogxspinjufcrmnf"
 
 [api]
 enabled = true
-port = 54321
-schemas = ["public", "storage", "graphql_public"]
+port = 8080
+schemas = ["public", "storage"]
 
 [db]
-port = 54322
-
-[studio]
-port = 54323
-
-[inbucket]
-port = 54324
-
-[auth]
-enabled = true
-
-[analytics]
-enabled = true
-
-[storage]
-enabled = true
+port = 5432
+shadow_port = 5431
+major_version = 15
 
 [realtime]
 enabled = true
 
-[functions]
-[functions.seed-case-items]
-verify_jwt = false
+[studio]
+enabled = true
+port = 8082
+
+[inbucket]
+enabled = true
+port = 8084
+
+[storage]
+enabled = true
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+
+[functions.openai-bot]
+verify_jwt = true
+
+[functions.whatsapp-integration]
+verify_jwt = true
