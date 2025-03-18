@@ -55,19 +55,19 @@ const ModulesPage = () => {
       number: 0,
       title: "Introduction – Goal setting and motivational planning",
       description: "Goal setting and motivational planning ensures the necessary skills and mindset to define key objectives, stay motivated, and set the foundation for success.",
-      available: true,
+      available: false,
     },
     {
       number: 1,
       title: "Risks and opportunities",
       description: "General economic and property specific risks you need to know when embarking on a development project. Learn about property cycles, how to mitigate risks and reveal opportunities.",
-      available: true,
+      available: false,
     },
     {
       number: 2,
       title: "Research, due diligence and acquisition",
       description: "Master the art of finding lucrative development sites and conducting thorough due diligence research for profitable project identification.",
-      available: true,
+      available: false,
     },
     {
       number: 3,
