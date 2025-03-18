@@ -1,7 +1,6 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { ArrowRight, BookOpen, Building, ChevronRight, GraduationCap, UserCheck, Phone, Check, HelpCircle } from "lucide-react";
+import { ArrowRight, BookOpen, Building, ChevronRight, GraduationCap, UserCheck, Phone, Check, HelpCircle, MessageCircle, ListChecks, Construction } from "lucide-react";
 
 const HomePage = () => {
   return (
@@ -91,6 +90,251 @@ const HomePage = () => {
               <p className="text-gray-800">
                 Access to a range of industry documents and templates to use on your own projects with extensive student support.
               </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Live Q&A Sessions */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex items-center justify-center mb-8">
+              <MessageCircle className="h-10 w-10 text-blue-600 mr-3" />
+              <h2 className="text-3xl font-bold text-black">Live Q&A Sessions Every Week</h2>
+            </div>
+            
+            <div className="bg-blue-50 p-8 rounded-lg shadow-md">
+              <div className="grid md:grid-cols-2 gap-10">
+                <div>
+                  <h3 className="text-xl font-semibold mb-4 text-black">Interactive Learning Experience</h3>
+                  <ul className="space-y-3">
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mt-1 mr-2 flex-shrink-0" />
+                      <p className="text-gray-800">Weekly live Q&A sessions with experienced property developers</p>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mt-1 mr-2 flex-shrink-0" />
+                      <p className="text-gray-800">Get direct answers to your specific project questions</p>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mt-1 mr-2 flex-shrink-0" />
+                      <p className="text-gray-800">Network with other students and share experiences</p>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mt-1 mr-2 flex-shrink-0" />
+                      <p className="text-gray-800">All sessions are recorded for future reference</p>
+                    </li>
+                  </ul>
+                </div>
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <h3 className="text-xl font-semibold mb-4 text-black text-center">Upcoming Q&A Sessions</h3>
+                  <div className="space-y-4">
+                    <div className="border-b pb-3">
+                      <p className="font-medium text-black">Construction Cost Management</p>
+                      <p className="text-sm text-gray-600">Wed, 15 June • 7:00 PM</p>
+                    </div>
+                    <div className="border-b pb-3">
+                      <p className="font-medium text-black">Financing Strategies</p>
+                      <p className="text-sm text-gray-600">Wed, 22 June • 7:00 PM</p>
+                    </div>
+                    <div>
+                      <p className="font-medium text-black">Site Selection & Analysis</p>
+                      <p className="text-sm text-gray-600">Wed, 29 June • 7:00 PM</p>
+                    </div>
+                  </div>
+                  <div className="mt-6 text-center">
+                    <Button asChild variant="outline">
+                      <Link to="/login">
+                        Join Q&A Sessions
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Step-by-Step Project Guides */}
+      <section className="py-16 bg-gray-50">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex items-center justify-center mb-8">
+              <ListChecks className="h-10 w-10 text-blue-600 mr-3" />
+              <h2 className="text-3xl font-bold text-black">Step-by-Step Project Guides</h2>
+            </div>
+            
+            <p className="text-lg text-center mb-10 text-gray-700 max-w-4xl mx-auto">
+              Learn how to start your own property development projects with minimal upfront investment. Our course provides detailed, actionable guides that help you minimize costs while maximizing returns.
+            </p>
+            
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="h-3 bg-blue-600"></div>
+                <div className="p-6">
+                  <h3 className="text-xl font-semibold mb-3 text-black">Phase 1: Planning</h3>
+                  <ul className="space-y-2">
+                    <li className="flex items-start">
+                      <div className="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-semibold mr-2">1</div>
+                      <span className="text-gray-800">Market research strategies</span>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-semibold mr-2">2</div>
+                      <span className="text-gray-800">Site identification techniques</span>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-semibold mr-2">3</div>
+                      <span className="text-gray-800">Due diligence checklists</span>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-blue-800 font-semibold mr-2">4</div>
+                      <span className="text-gray-800">Initial budget planning</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="h-3 bg-green-600"></div>
+                <div className="p-6">
+                  <h3 className="text-xl font-semibold mb-3 text-black">Phase 2: Financing</h3>
+                  <ul className="space-y-2">
+                    <li className="flex items-start">
+                      <div className="flex-shrink-0 h-6 w-6 rounded-full bg-green-100 flex items-center justify-center text-green-800 font-semibold mr-2">1</div>
+                      <span className="text-gray-800">Low-capital entry strategies</span>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="flex-shrink-0 h-6 w-6 rounded-full bg-green-100 flex items-center justify-center text-green-800 font-semibold mr-2">2</div>
+                      <span className="text-gray-800">Joint venture structuring</span>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="flex-shrink-0 h-6 w-6 rounded-full bg-green-100 flex items-center justify-center text-green-800 font-semibold mr-2">3</div>
+                      <span className="text-gray-800">Investor acquisition framework</span>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="flex-shrink-0 h-6 w-6 rounded-full bg-green-100 flex items-center justify-center text-green-800 font-semibold mr-2">4</div>
+                      <span className="text-gray-800">Funding application templates</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              
+              <div className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="h-3 bg-purple-600"></div>
+                <div className="p-6">
+                  <h3 className="text-xl font-semibold mb-3 text-black">Phase 3: Execution</h3>
+                  <ul className="space-y-2">
+                    <li className="flex items-start">
+                      <div className="flex-shrink-0 h-6 w-6 rounded-full bg-purple-100 flex items-center justify-center text-purple-800 font-semibold mr-2">1</div>
+                      <span className="text-gray-800">Project management basics</span>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="flex-shrink-0 h-6 w-6 rounded-full bg-purple-100 flex items-center justify-center text-purple-800 font-semibold mr-2">2</div>
+                      <span className="text-gray-800">Cost control mechanisms</span>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="flex-shrink-0 h-6 w-6 rounded-full bg-purple-100 flex items-center justify-center text-purple-800 font-semibold mr-2">3</div>
+                      <span className="text-gray-800">Builder negotiation tactics</span>
+                    </li>
+                    <li className="flex items-start">
+                      <div className="flex-shrink-0 h-6 w-6 rounded-full bg-purple-100 flex items-center justify-center text-purple-800 font-semibold mr-2">4</div>
+                      <span className="text-gray-800">Exit strategy optimization</span>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+            
+            <div className="mt-10 text-center">
+              <Button asChild>
+                <Link to="/modules" className="inline-flex items-center">
+                  Get Full Access to Step-by-Step Guides
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Builders Resources */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex items-center justify-center mb-8">
+              <Construction className="h-10 w-10 text-blue-600 mr-3" />
+              <h2 className="text-3xl font-bold text-black">Builders Resources</h2>
+            </div>
+            
+            <div className="bg-gray-50 p-8 rounded-lg shadow-md mb-8">
+              <div className="grid md:grid-cols-2 gap-10">
+                <div>
+                  <h3 className="text-xl font-semibold mb-4 text-black">Everything You Need To Get Started</h3>
+                  <p className="mb-4 text-gray-700">
+                    Our extensive network of trusted builders and contractors throughout New Zealand makes finding the right team for your project simple and straightforward.
+                  </p>
+                  <ul className="space-y-3">
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mt-1 mr-2 flex-shrink-0" />
+                      <p className="text-gray-800">Vetted network of reliable builders across all regions</p>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mt-1 mr-2 flex-shrink-0" />
+                      <p className="text-gray-800">Pre-negotiated contractor rates for course members</p>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mt-1 mr-2 flex-shrink-0" />
+                      <p className="text-gray-800">Professional templates for building contracts and agreements</p>
+                    </li>
+                    <li className="flex items-start">
+                      <Check className="h-5 w-5 text-green-500 mt-1 mr-2 flex-shrink-0" />
+                      <p className="text-gray-800">Expert guidance on managing builder relationships</p>
+                    </li>
+                  </ul>
+                </div>
+                <div className="bg-white p-6 rounded-lg shadow-sm">
+                  <h3 className="text-xl font-semibold mb-4 text-black">Included Resources</h3>
+                  <div className="space-y-4">
+                    <div className="flex items-center p-3 border rounded-md">
+                      <div className="bg-blue-100 p-2 rounded-md mr-3">
+                        <Building className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-black">Builder Selection Toolkit</p>
+                        <p className="text-sm text-gray-600">Compare and evaluate builders with our proprietary toolkit</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center p-3 border rounded-md">
+                      <div className="bg-blue-100 p-2 rounded-md mr-3">
+                        <BookOpen className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-black">Construction Contract Templates</p>
+                        <p className="text-sm text-gray-600">Legally-reviewed documents tailored for New Zealand</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center p-3 border rounded-md">
+                      <div className="bg-blue-100 p-2 rounded-md mr-3">
+                        <UserCheck className="h-5 w-5 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="font-medium text-black">Builder Introduction Service</p>
+                        <p className="text-sm text-gray-600">Direct introductions to pre-vetted professionals</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="text-center">
+              <Button asChild>
+                <Link to="/contact">
+                  Access Builder Resources
+                </Link>
+              </Button>
             </div>
           </div>
         </div>
