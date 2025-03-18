@@ -1,8 +1,8 @@
 
 import { Button } from "@/components/ui/button";
-import { Hero } from "@/components/Hero";
-import { FeaturesSection } from "@/components/FeaturesSection";
-import { PricingSection } from "@/components/PricingSection";
+import Hero from "@/components/Hero";
+import FeaturesSection from "@/components/FeaturesSection";
+import PricingSection from "@/components/PricingSection";
 import { RewardsSection } from "@/components/RewardsSection";
 import { RushDrawPromotion } from "@/components/RushDrawPromotion";
 import { Footer } from "@/components/Footer";

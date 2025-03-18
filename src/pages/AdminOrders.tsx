@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -31,16 +30,34 @@ import {
 import { Eye, X, ArrowDown } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
+interface PaymentDetails {
+  email?: string;
+  fullName?: string;
+  billingAddress?: string;
+  cardNumber?: string;
+  cardExpiry?: string;
+  notes?: string;
+}
+
+interface Order {
+  id: string;
+  created_at: string;
+  plan_name: string;
+  plan_price: number;
+  status: string;
+  payment_details: PaymentDetails;
+  user_id?: string;
+}
+
 const AdminOrders = () => {
   const navigate = useNavigate();
   const { user } = useBrowserAuth();
   const [isAdmin, setIsAdmin] = useState(false);
   const [page, setPage] = useState(1);
-  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [showDetails, setShowDetails] = useState(false);
   const pageSize = 10;
 
-  // Check if user is an admin
   useEffect(() => {
     const checkAdmin = async () => {
       if (user) {
@@ -63,7 +80,6 @@ const AdminOrders = () => {
     checkAdmin();
   }, [user, navigate]);
 
-  // Fetch orders
   const { data: orders, isLoading } = useQuery({
     queryKey: ['admin-orders', page],
     queryFn: async () => {
@@ -81,13 +97,28 @@ const AdminOrders = () => {
 
   const totalPages = orders?.count ? Math.ceil(orders.count / pageSize) : 0;
   
-  const formatDate = (dateString) => {
+  const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
   };
 
-  const viewDetails = (order) => {
+  const viewDetails = (order: Order) => {
     setSelectedOrder(order);
     setShowDetails(true);
+  };
+
+  const getCustomerEmail = (order: Order): string => {
+    if (!order.payment_details) return 'N/A';
+    
+    if (typeof order.payment_details === 'string') {
+      try {
+        const parsed = JSON.parse(order.payment_details);
+        return parsed.email || 'N/A';
+      } catch {
+        return 'N/A';
+      }
+    }
+    
+    return order.payment_details.email || 'N/A';
   };
 
   if (!isAdmin) {
@@ -129,7 +160,7 @@ const AdminOrders = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {orders?.data?.map((order) => (
+                  {orders?.data?.map((order: Order) => (
                     <TableRow key={order.id}>
                       <TableCell>{formatDate(order.created_at)}</TableCell>
                       <TableCell>{order.plan_name}</TableCell>
@@ -143,7 +174,7 @@ const AdminOrders = () => {
                           {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
                         </span>
                       </TableCell>
-                      <TableCell>{order.payment_details.email || 'N/A'}</TableCell>
+                      <TableCell>{getCustomerEmail(order)}</TableCell>
                       <TableCell className="text-right">
                         <Button 
                           variant="ghost" 
@@ -204,7 +235,6 @@ const AdminOrders = () => {
         </CardContent>
       </Card>
 
-      {/* Order Details Dialog */}
       <Dialog open={showDetails} onOpenChange={setShowDetails}>
         <DialogContent className="max-w-3xl">
           <DialogHeader>
