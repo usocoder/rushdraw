@@ -58,22 +58,12 @@ export function CheckoutForm({ planName, planPrice, onSuccess, onCancel }: Check
     setIsSubmitting(true);
     
     try {
-      // Get the current user
+      // Get the current user if logged in (optional)
       const { data: { user } } = await supabase.auth.getUser();
-      
-      if (!user) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to complete this purchase",
-          variant: "destructive",
-        });
-        navigate("/login");
-        return;
-      }
       
       // Save the order in Supabase
       const { error } = await supabase.from('orders').insert({
-        user_id: user.id,
+        user_id: user?.id || null, // Make it optional
         plan_name: planName,
         plan_price: planPrice,
         status: 'pending',
