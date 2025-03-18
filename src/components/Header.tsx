@@ -23,8 +23,12 @@ const Header = () => {
   };
 
   const handleSignOut = async () => {
-    await logout();
-    navigate("/");
+    try {
+      await logout();
+      navigate("/");
+    } catch (error) {
+      console.error("Error signing out:", error);
+    }
   };
 
   return (
@@ -68,7 +72,7 @@ const Header = () => {
 
         <div className="flex items-center space-x-4">
           {user ? (
-            <Button onClick={handleSignOut}>Sign Out</Button>
+            <Button onClick={handleSignOut} variant="destructive">Sign Out</Button>
           ) : (
             <>
               <Button

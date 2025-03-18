@@ -1,8 +1,18 @@
 
+import { useState } from "react";
 import { Button } from "./ui/button";
 import { Check } from "lucide-react";
+import { CheckoutModal } from "./CheckoutModal";
+import { useAuth } from "@/contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { toast } from "@/hooks/use-toast";
 
 const PricingSection = () => {
+  const [selectedPlan, setSelectedPlan] = useState<{ name: string; price: number } | null>(null);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
   const plans = [
     {
       name: "Starter",
@@ -53,6 +63,21 @@ const PricingSection = () => {
     }
   ];
 
+  const handlePlanSelect = (plan: { name: string; price: number }) => {
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please register or login to purchase a plan",
+        variant: "default",
+      });
+      navigate("/login");
+      return;
+    }
+    
+    setSelectedPlan(plan);
+    setIsCheckoutOpen(true);
+  };
+
   return (
     <section id="pricing" className="py-20">
       <div className="container mx-auto px-4">
@@ -67,7 +92,7 @@ const PricingSection = () => {
           {plans.map((plan, index) => (
             <div 
               key={index} 
-              className={`pricing-card flex flex-col h-full ${
+              className={`pricing-card flex flex-col h-full p-6 rounded-xl border ${
                 plan.popular ? "border-blue-500 ring-2 ring-blue-500/20" : "border-gray-700"
               }`}
             >
@@ -96,6 +121,7 @@ const PricingSection = () => {
                     : ""
                 }`}
                 size="lg"
+                onClick={() => handlePlanSelect(plan)}
               >
                 {plan.buttonText}
               </Button>
@@ -103,6 +129,15 @@ const PricingSection = () => {
           ))}
         </div>
       </div>
+
+      {selectedPlan && (
+        <CheckoutModal
+          isOpen={isCheckoutOpen}
+          onOpenChange={setIsCheckoutOpen}
+          planName={selectedPlan.name}
+          planPrice={selectedPlan.price}
+        />
+      )}
     </section>
   );
 };
