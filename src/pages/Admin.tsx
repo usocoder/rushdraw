@@ -52,11 +52,15 @@ const Admin = () => {
       return roleData?.role === 'admin';
     },
     enabled: !!user,
-    retry: false,
-    onSettled: () => {
+    retry: false
+  });
+
+  // Set adminChecked to true when query completes
+  useEffect(() => {
+    if (!isCheckingAdmin) {
       setAdminChecked(true);
     }
-  });
+  }, [isCheckingAdmin]);
 
   // Redirect non-admin users
   useEffect(() => {
