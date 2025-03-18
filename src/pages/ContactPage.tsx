@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
-import { Facebook, Loader2, Send, WhatsApp } from "lucide-react";
+import { Facebook, Loader2, Send, MessageCircle } from "lucide-react";
 
 const ContactPage = () => {
   const [name, setName] = useState("");
@@ -78,7 +78,7 @@ const ContactPage = () => {
               
               <div className="flex items-center">
                 <div className="w-10 h-10 rounded-full bg-green-500/10 flex items-center justify-center mr-3">
-                  <WhatsApp className="h-5 w-5 text-green-500" />
+                  <MessageCircle className="h-5 w-5 text-green-500" />
                 </div>
                 <div>
                   <p className="font-medium">WhatsApp</p>
@@ -109,7 +109,7 @@ const ContactPage = () => {
             
             <div className="mt-8 flex space-x-4">
               <Button onClick={openWhatsApp} className="flex-1 bg-green-500 hover:bg-green-600">
-                <WhatsApp className="mr-2 h-4 w-4" />
+                <MessageCircle className="mr-2 h-4 w-4" />
                 WhatsApp
               </Button>
               

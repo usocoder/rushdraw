@@ -58,7 +58,7 @@ const LoginPage = () => {
           
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <label htmlFor="email" className="text-sm font-medium">
+              <label htmlFor="email" className="text-sm font-medium text-gray-700">
                 Email
               </label>
               <Input
@@ -72,7 +72,7 @@ const LoginPage = () => {
             </div>
             
             <div className="space-y-2">
-              <label htmlFor="password" className="text-sm font-medium">
+              <label htmlFor="password" className="text-sm font-medium text-gray-700">
                 Password
               </label>
               <Input
@@ -85,7 +85,7 @@ const LoginPage = () => {
               />
             </div>
             
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -97,7 +97,7 @@ const LoginPage = () => {
             </Button>
           </form>
           
-          <div className="mt-6 text-center text-sm">
+          <div className="mt-6 text-center text-sm text-gray-600">
             <p>Don't have an account? Contact your administrator</p>
           </div>
           
