@@ -1,6 +1,6 @@
 
 import { Button } from "@/components/ui/button";
-import Hero from "@/components/Hero";
+import { Hero } from "@/components/Hero";
 import FeaturesSection from "@/components/FeaturesSection";
 import PricingSection from "@/components/PricingSection";
 import { RewardsSection } from "@/components/RewardsSection";

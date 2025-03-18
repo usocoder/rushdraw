@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -29,7 +30,9 @@ import {
 } from "@/components/ui/pagination";
 import { Eye, X, ArrowDown } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Json } from "@/types/supabase";
 
+// Define interfaces that match the actual data structure from Supabase
 interface PaymentDetails {
   email?: string;
   fullName?: string;
@@ -39,6 +42,7 @@ interface PaymentDetails {
   notes?: string;
 }
 
+// This interface represents what we'll use internally after processing the data
 interface Order {
   id: string;
   created_at: string;
@@ -47,6 +51,19 @@ interface Order {
   status: string;
   payment_details: PaymentDetails;
   user_id?: string;
+  updated_at?: string;
+}
+
+// This interface represents what Supabase returns directly
+interface RawOrder {
+  id: string;
+  created_at: string;
+  plan_name: string;
+  plan_price: number;
+  status: string;
+  payment_details: Json;
+  user_id: string;
+  updated_at: string;
 }
 
 const AdminOrders = () => {
@@ -80,7 +97,7 @@ const AdminOrders = () => {
     checkAdmin();
   }, [user, navigate]);
 
-  const { data: orders, isLoading } = useQuery({
+  const { data: ordersData, isLoading } = useQuery({
     queryKey: ['admin-orders', page],
     queryFn: async () => {
       const { data, error, count } = await supabase
@@ -95,18 +112,40 @@ const AdminOrders = () => {
     enabled: isAdmin,
   });
 
-  const totalPages = orders?.count ? Math.ceil(orders.count / pageSize) : 0;
+  const totalPages = ordersData?.count ? Math.ceil(ordersData.count / pageSize) : 0;
   
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
   };
 
-  const viewDetails = (order: Order) => {
-    setSelectedOrder(order);
+  // Process raw order to ensure payment_details is properly handled
+  const processOrder = (rawOrder: RawOrder): Order => {
+    let paymentDetails: PaymentDetails = {};
+    
+    if (rawOrder.payment_details) {
+      if (typeof rawOrder.payment_details === 'string') {
+        try {
+          paymentDetails = JSON.parse(rawOrder.payment_details) as PaymentDetails;
+        } catch (e) {
+          console.error("Error parsing payment details", e);
+        }
+      } else if (typeof rawOrder.payment_details === 'object') {
+        paymentDetails = rawOrder.payment_details as unknown as PaymentDetails;
+      }
+    }
+    
+    return {
+      ...rawOrder,
+      payment_details: paymentDetails
+    };
+  };
+
+  const viewDetails = (order: RawOrder) => {
+    setSelectedOrder(processOrder(order));
     setShowDetails(true);
   };
 
-  const getCustomerEmail = (order: Order): string => {
+  const getCustomerEmail = (order: RawOrder): string => {
     if (!order.payment_details) return 'N/A';
     
     if (typeof order.payment_details === 'string') {
@@ -116,9 +155,12 @@ const AdminOrders = () => {
       } catch {
         return 'N/A';
       }
+    } else if (typeof order.payment_details === 'object') {
+      const details = order.payment_details as unknown as PaymentDetails;
+      return details.email || 'N/A';
     }
     
-    return order.payment_details.email || 'N/A';
+    return 'N/A';
   };
 
   if (!isAdmin) {
@@ -160,7 +202,7 @@ const AdminOrders = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {orders?.data?.map((order: Order) => (
+                  {ordersData?.data?.map((order: RawOrder) => (
                     <TableRow key={order.id}>
                       <TableCell>{formatDate(order.created_at)}</TableCell>
                       <TableCell>{order.plan_name}</TableCell>
@@ -188,7 +230,7 @@ const AdminOrders = () => {
                     </TableRow>
                   ))}
                   
-                  {orders?.data?.length === 0 && (
+                  {ordersData?.data?.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={6} className="text-center py-8">
                         No orders found
