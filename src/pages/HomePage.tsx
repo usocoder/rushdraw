@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight, BookOpen, Building, ChevronRight, GraduationCap, UserCheck, Phone, Check, HelpCircle, MessageCircle, ListChecks, Construction } from "lucide-react";
@@ -104,34 +105,34 @@ const HomePage = () => {
               <h2 className="text-3xl font-bold text-black">Live Q&A Sessions Every Week</h2>
             </div>
             
-            <div className="bg-blue-50 p-8 rounded-lg shadow-md">
+            <div className="bg-purple-900 p-8 rounded-lg shadow-md">
               <div className="grid md:grid-cols-2 gap-10">
                 <div>
-                  <h3 className="text-xl font-semibold mb-4 text-black">Interactive Learning Experience</h3>
+                  <h3 className="text-xl font-semibold mb-4 text-white">Interactive Learning Experience</h3>
                   <ul className="space-y-3">
                     <li className="flex items-start">
-                      <Check className="h-5 w-5 text-green-500 mt-1 mr-2 flex-shrink-0" />
-                      <p className="text-gray-800">Weekly live Q&A sessions with experienced property developers</p>
+                      <Check className="h-5 w-5 text-green-400 mt-1 mr-2 flex-shrink-0" />
+                      <p className="text-white">Weekly live Q&A sessions with experienced property developers</p>
                     </li>
                     <li className="flex items-start">
-                      <Check className="h-5 w-5 text-green-500 mt-1 mr-2 flex-shrink-0" />
-                      <p className="text-gray-800">Get direct answers to your specific project questions</p>
+                      <Check className="h-5 w-5 text-green-400 mt-1 mr-2 flex-shrink-0" />
+                      <p className="text-white">Get direct answers to your specific project questions</p>
                     </li>
                     <li className="flex items-start">
-                      <Check className="h-5 w-5 text-green-500 mt-1 mr-2 flex-shrink-0" />
-                      <p className="text-gray-800">Network with other students and share experiences</p>
+                      <Check className="h-5 w-5 text-green-400 mt-1 mr-2 flex-shrink-0" />
+                      <p className="text-white">Network with other students and share experiences</p>
                     </li>
                     <li className="flex items-start">
-                      <Check className="h-5 w-5 text-green-500 mt-1 mr-2 flex-shrink-0" />
-                      <p className="text-gray-800">All sessions are recorded for future reference</p>
+                      <Check className="h-5 w-5 text-green-400 mt-1 mr-2 flex-shrink-0" />
+                      <p className="text-white">All sessions are recorded for future reference</p>
                     </li>
                   </ul>
                 </div>
-                <div className="bg-white p-6 rounded-lg shadow-sm">
-                  <h3 className="text-xl font-semibold mb-4 text-black text-center">Join Our Live Sessions</h3>
-                  <p className="text-gray-800 mb-6">Our weekly Q&A sessions provide a unique opportunity to get real-time feedback on your property development projects and learn from the experiences of others.</p>
+                <div className="bg-purple-800 p-6 rounded-lg shadow-sm">
+                  <h3 className="text-xl font-semibold mb-4 text-white text-center">Join Our Live Sessions</h3>
+                  <p className="text-purple-100 mb-6">Our weekly Q&A sessions provide a unique opportunity to get real-time feedback on your property development projects and learn from the experiences of others.</p>
                   <div className="mt-6 text-center">
-                    <Button asChild variant="outline">
+                    <Button asChild variant="outline" className="bg-white text-purple-900 hover:bg-purple-100 border-none">
                       <Link to="/login">
                         Access Live Q&A Sessions
                       </Link>
@@ -471,3 +472,4 @@ const HomePage = () => {
 };
 
 export default HomePage;
+
