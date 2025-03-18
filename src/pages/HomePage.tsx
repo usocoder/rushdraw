@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight, BookOpen, Building, ChevronRight, GraduationCap, UserCheck, Phone, Check } from "lucide-react";
@@ -43,7 +44,7 @@ const HomePage = () => {
             
             <h2 className="text-3xl font-bold mb-6 mt-12 text-black">Our Vision</h2>
             <p className="text-lg mb-8 text-black">
-              Property developers play an important role in our country's economy and welfare. The industry is responsible for creating hundreds of thousands of jobs each year throughout the complete lifecycle of a development project and most importantly providing the much-needed housing stock to satisfy ever-increasing demand for homes. We want to change people's perspective of property developers in New Zealand which is often associated with greed, dishonesty, lack of care for people and the environment, and prioritising personal profit above all else. The truth is that compared to other industries there are tremendous financial risks but also great rewards to those that successfully navigate the process. We want to help nurture the growth of the next generation ethical property developers who want to both realise their own financial and lifestyle freedom while also delivering much-needed housing options to the Australian market with a focus on being ecologically sustainable.
+              Property developers play an important role in our country's economy and welfare. The industry is responsible for creating hundreds of thousands of jobs each year throughout the complete lifecycle of a development project and most importantly providing the much-needed housing stock to satisfy ever-increasing demand for homes. We want to change people's perspective of property developers in New Zealand which is often associated with greed, dishonesty, lack of care for people and the environment, and prioritising personal profit above all else. The truth is that compared to other industries there are tremendous financial risks but also great rewards to those that successfully navigate the process. We want to help nurture the growth of the next generation ethical property developers who want to both realise their own financial and lifestyle freedom while also delivering much-needed housing options to the New Zealand market with a focus on being ecologically sustainable.
             </p>
             
             <div className="flex flex-wrap justify-center gap-2 mt-8">
