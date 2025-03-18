@@ -4,7 +4,6 @@ import { Hero } from "@/components/Hero";
 import FeaturesSection from "@/components/FeaturesSection";
 import PricingSection from "@/components/PricingSection";
 import { RewardsSection } from "@/components/RewardsSection";
-import { RushDrawPromotion } from "@/components/RushDrawPromotion";
 import { Footer } from "@/components/Footer";
 import { useNavigate } from "react-router-dom";
 import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
@@ -19,7 +18,6 @@ const HomePage = () => {
       <FeaturesSection />
       <PricingSection />
       <RewardsSection />
-      <RushDrawPromotion />
       {user && (
         <div className="container mx-auto px-4 py-8 text-center">
           <h2 className="text-2xl font-bold mb-4">Access Dashboard</h2>
