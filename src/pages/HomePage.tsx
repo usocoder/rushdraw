@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight, BookOpen, Building, ChevronRight, GraduationCap, UserCheck, Phone, Check, HelpCircle, MessageCircle, ListChecks, Construction } from "lucide-react";
@@ -22,7 +21,7 @@ const HomePage = () => {
             </p>
             <div className="flex flex-wrap justify-center gap-4">
               <Button asChild size="lg" className="bg-white text-blue-900 hover:bg-gray-200 font-bold">
-                <Link to="/about">Apply Now</Link>
+                <Link to="/contact">Apply Now</Link>
               </Button>
               <Button asChild variant="outline" size="lg" className="border-white text-white hover:bg-white/10">
                 <Link to="/modules">View Course</Link>
@@ -472,4 +471,3 @@ const HomePage = () => {
 };
 
 export default HomePage;
-
