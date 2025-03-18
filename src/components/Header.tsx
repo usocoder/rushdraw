@@ -1,15 +1,31 @@
 
 import { Button } from "./ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { LoginModal } from "./LoginModal";
 import { RegisterModal } from "./RegisterModal";
+import { useBrowserAuth } from "@/contexts/BrowserAuthContext";
 
 const Header = () => {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
+  const { logout } = useBrowserAuth();
   const [isLoginOpen, setIsLoginOpen] = useState(false);
   const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogin = () => {
+    navigate("/login");
+  };
+
+  const handleRegister = () => {
+    navigate("/login", { state: { tab: "register" } });
+  };
+
+  const handleSignOut = async () => {
+    await logout();
+    navigate("/");
+  };
 
   return (
     <header className="py-6 border-b border-slate-800">
@@ -52,17 +68,17 @@ const Header = () => {
 
         <div className="flex items-center space-x-4">
           {user ? (
-            <Button onClick={() => signOut()}>Sign Out</Button>
+            <Button onClick={handleSignOut}>Sign Out</Button>
           ) : (
             <>
               <Button
                 variant="outline"
-                onClick={() => setIsLoginOpen(true)}
+                onClick={handleLogin}
               >
                 Login
               </Button>
               <Button
-                onClick={() => setIsRegisterOpen(true)}
+                onClick={handleRegister}
               >
                 Register
               </Button>

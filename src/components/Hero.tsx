@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "./ui/button";
 import { CryptoDeposit } from "./CryptoDeposit";
@@ -14,8 +15,6 @@ import { useNavigate } from "react-router-dom";
 export const Hero = () => {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [isWithdrawOpen, setIsWithdrawOpen] = useState(false);
-  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
-  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const { user, logout } = useBrowserAuth();
   const { balance } = useBalance();
   const navigate = useNavigate();
@@ -52,6 +51,19 @@ export const Hero = () => {
     enabled: !!user,
   });
 
+  const handleLogin = () => {
+    navigate("/login");
+  };
+
+  const handleRegister = () => {
+    navigate("/login", { state: { tab: "register" } });
+  };
+
+  const handleSignOut = async () => {
+    await logout();
+    navigate("/");
+  };
+
   return (
     <div className="relative overflow-hidden bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4 py-16">
@@ -81,18 +93,18 @@ export const Hero = () => {
                   Admin
                 </Button>
               )}
-              <Button variant="outline" size="sm" onClick={logout} className="shrink-0">
+              <Button variant="outline" size="sm" onClick={handleSignOut} className="shrink-0">
                 <LogOut className="mr-2 h-4 w-4" />
                 Logout
               </Button>
             </>
           ) : (
             <>
-              <Button size="sm" variant="outline" onClick={() => setIsRegisterOpen(true)} className="shrink-0">
+              <Button size="sm" variant="outline" onClick={handleRegister} className="shrink-0">
                 <UserPlus className="mr-2 h-4 w-4" />
                 Register
               </Button>
-              <Button size="sm" variant="ghost" onClick={() => setIsLoginOpen(true)} className="shrink-0">
+              <Button size="sm" variant="ghost" onClick={handleLogin} className="shrink-0">
                 <LogIn className="mr-2 h-4 w-4" />
                 Login
               </Button>
@@ -102,30 +114,25 @@ export const Hero = () => {
 
         <div className="text-center mt-16 sm:mt-0">
           <div className="mb-8 inline-block px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg animate-pulse">
-            <h2 className="text-2xl font-bold text-white">🎉 Weekly Jackpot: $10,000 🎉</h2>
+            <h2 className="text-2xl font-bold text-white">🤖 AI Bot Platform</h2>
           </div>
           
           <h1 className="text-4xl font-bold tracking-tight sm:text-6xl mb-6 bg-clip-text text-transparent bg-gradient-to-r from-primary via-purple-500 to-pink-600">
-            RushDraw
+            Build Powerful AI Bots
           </h1>
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            Experience the thrill of opening cases and winning incredible rewards. Weekly $10,000 jackpot. support@rushdraw.com
+            Create, customize and deploy AI bots for your business. Connect with OpenAI, WhatsApp, SMS, and more.
           </p>
           
           <div className="flex justify-center gap-4">
             {user ? (
               <>
-                <Button size="lg" onClick={() => setIsDepositOpen(true)}>
-                  <ArrowUp className="mr-2" />
-                  Deposit
-                </Button>
-                <Button size="lg" variant="outline" onClick={() => setIsWithdrawOpen(true)}>
-                  <ArrowDown className="mr-2" />
-                  Withdraw
+                <Button size="lg" onClick={() => navigate('/dashboard')}>
+                  Go to Dashboard
                 </Button>
               </>
             ) : (
-              <Button size="lg" onClick={() => setIsRegisterOpen(true)}>
+              <Button size="lg" onClick={handleRegister}>
                 <UserPlus className="mr-2" />
                 Get Started
               </Button>
@@ -141,16 +148,6 @@ export const Hero = () => {
         <WithdrawModal
           isOpen={isWithdrawOpen}
           onOpenChange={setIsWithdrawOpen}
-        />
-
-        <RegisterModal
-          isOpen={isRegisterOpen}
-          onOpenChange={setIsRegisterOpen}
-        />
-
-        <LoginModal
-          isOpen={isLoginOpen}
-          onOpenChange={setIsLoginOpen}
         />
       </div>
     </div>
