@@ -102,7 +102,7 @@ const LoginPage = () => {
           </div>
           
           <div className="mt-4 text-center">
-            <Button asChild variant="ghost" size="sm">
+            <Button asChild variant="default" size="sm" className="bg-purple-600 hover:bg-purple-700">
               <Link to="/">Return to Home</Link>
             </Button>
           </div>
